@@ -1,0 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/theme/gujeuk_theme.dart';
+
+class GujeukApp extends StatelessWidget {
+  const GujeukApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: '구즉 체크인',
+      theme: GujeukTheme.light,
+      debugShowCheckedModeBanner: false,
+      home: const Scaffold(body: Center(child: Text('구즉 체크인'))),
+    );
+  }
+}

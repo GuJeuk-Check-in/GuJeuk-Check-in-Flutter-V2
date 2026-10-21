@@ -29,6 +29,20 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "app"
+    productFlavors {
+        create("gujeuk") {
+            dimension = "app"
+            applicationIdSuffix = ".gujeuk"
+            manifestPlaceholders["appName"] = "구즉 체크인"
+        }
+        create("bubdong") {
+            dimension = "app"
+            applicationIdSuffix = ".bubdong"
+            manifestPlaceholders["appName"] = "법동 체크인"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
