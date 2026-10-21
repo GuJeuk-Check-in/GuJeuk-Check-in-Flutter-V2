@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="구즉" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="buildFlavor" value="gujeuk" />
+    <option name="filePath" value="$PROJECT_DIR$/lib/main_gujeuk.dart" />
+    <method v="2" />
+  </configuration>
+</component>
