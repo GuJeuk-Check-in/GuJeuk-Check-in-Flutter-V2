@@ -28,8 +28,14 @@ class GujeukButton extends StatelessWidget {
   /// 라벨 오른쪽 아이콘. Figma에서는 Primary / Large에만 있습니다 (기본 party).
   final GujeukIcons? icon;
 
-  /// 기본은 부모 너비를 채웁니다. 고정하려면 값을 넘기세요.
-  final double width;
+  /// 기본은 라벨 + 패딩 크기에 맞춥니다. 부모를 채우려면 `double.infinity`를 넘기세요.
+  final double? width;
+
+  /// 버튼 높이. 넘기지 않으면 variant의 기본 높이를 씁니다.
+  final double? height;
+
+  /// 안쪽 여백. 넘기지 않으면 variant의 기본 좌우 패딩을 씁니다.
+  final EdgeInsetsGeometry? padding;
 
   const GujeukButton({
     super.key,
@@ -37,7 +43,9 @@ class GujeukButton extends StatelessWidget {
     this.variant = GujeukButtonVariant.primaryLarge,
     this.onPressed,
     this.icon,
-    this.width = double.infinity,
+    this.width,
+    this.height,
+    this.padding,
   });
 
   @override
@@ -48,8 +56,8 @@ class GujeukButton extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         width: width,
-        height: spec.height,
-        padding: EdgeInsets.symmetric(horizontal: spec.paddingX),
+        height: height ?? spec.height,
+        padding: padding ?? EdgeInsets.symmetric(horizontal: spec.paddingX),
         decoration: BoxDecoration(
           color: spec.background,
           borderRadius: spec.radius,
@@ -59,6 +67,7 @@ class GujeukButton extends StatelessWidget {
           boxShadow: spec.shadows,
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(label, style: spec.textStyle.copyWith(color: spec.textColor)),
