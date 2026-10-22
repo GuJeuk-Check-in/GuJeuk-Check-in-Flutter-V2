@@ -40,21 +40,21 @@ abstract final class BubdongTypography{
   //바디
   static const bodyLg = TextStyle(
     fontFamily: pretendard,
-    fontSize: 52,
+    fontSize: 24,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
 
   static const bodyMd = TextStyle(
     fontFamily: pretendard,
-    fontSize: 52,
+    fontSize: 20,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
 
   static const bodySm = TextStyle(
     fontFamily: pretendard,
-    fontSize: 52,
+    fontSize: 18,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
