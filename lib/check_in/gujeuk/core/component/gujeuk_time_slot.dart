@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 /// Figma `Time Slot` · 시설 예약 시간. [reserved]면 선택할 수 없습니다.
 class GujeukTimeSlot extends StatelessWidget {

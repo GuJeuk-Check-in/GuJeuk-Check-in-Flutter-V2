@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/info_check/presentation/home_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/presentation/home_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 class GujeukApp extends StatelessWidget {
   const GujeukApp({super.key});

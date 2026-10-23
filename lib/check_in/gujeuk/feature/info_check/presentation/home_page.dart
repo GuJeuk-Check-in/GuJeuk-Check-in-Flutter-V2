@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/component/gujeuk_components.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/info_check/presentation/info_check_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/presentation/info_check_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

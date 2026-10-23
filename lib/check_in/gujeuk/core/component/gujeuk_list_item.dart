@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 /// Figma `List Item` · 거주지 검색 결과.
 class GujeukListItem extends StatelessWidget {
