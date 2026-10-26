@@ -4,6 +4,8 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_the
 
 class BaseScaffold extends StatelessWidget {
   final Widget child;
+  final double? horizontal;
+  final double? vertical;
 
   /// 왼쪽 위에 뒤로가기 버튼을 띄웁니다. 시스템 뒤로가기가 막힌 키오스크에서도 돌아갈 수 있게 합니다.
   final bool showBackButton;
@@ -12,13 +14,18 @@ class BaseScaffold extends StatelessWidget {
     super.key,
     required this.child,
     this.showBackButton = false,
+    this.horizontal,
+    this.vertical,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: GujeukSpacing.s20),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontal ?? GujeukSpacing.s20,
+          vertical: vertical ?? 0,
+        ),
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(

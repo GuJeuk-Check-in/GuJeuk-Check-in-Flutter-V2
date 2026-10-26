@@ -12,7 +12,6 @@ class GujeukFieldLabel extends StatelessWidget {
     required this.label,
     this.icon = GujeukIcons.rocket,
   });
-
   @override
   Widget build(BuildContext context) {
     return Row(
