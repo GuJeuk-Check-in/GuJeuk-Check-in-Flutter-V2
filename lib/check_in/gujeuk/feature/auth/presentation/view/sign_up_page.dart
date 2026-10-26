@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/bottom.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/header.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
+
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
+
+  /// 웹과 같은 카드 최대 너비. 1920 화면에서 좌우 448씩 여백이 생깁니다.
+  /// 고정 여백 대신 최대 너비로 잡아 작은 화면에서도 깨지지 않게 합니다.
+  static const double _cardMaxWidth = 1232;
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final SignUpFormController _form = SignUpFormController();
+
+  @override
+  void dispose() {
+    _form.dispose();
+    super.dispose();
+  }
+
+  void _onSubmit() {
+    if (!_form.validate()) return;
+    // TODO 회원가입 요청
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseScaffold(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s100),
+          child: Column(
+            children: [
+              Container(
+                constraints: const BoxConstraints(
+                  maxWidth: SignUpPage._cardMaxWidth,
+                ),
+                padding: EdgeInsets.all(GujeukSpacing.s64),
+                decoration: BoxDecoration(
+                  border: Border.all(color: GujeukColors.borderCard, width: 4),
+                  boxShadow: GujeukShadows.card,
+                  color: GujeukColors.bgSurface,
+                  borderRadius: BorderRadius.circular(GujeukRadius.xl),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Header(),
+                    const SizedBox(height: GujeukSpacing.s40),
+                    Middle(form: _form),
+                    const SizedBox(height: GujeukSpacing.s100),
+                    Bottom(form: _form, onSubmit: _onSubmit),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
