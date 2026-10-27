@@ -13,12 +13,23 @@ class Middle extends StatelessWidget {
 
   const Middle({super.key, required this.form});
 
-  static const _visitPurposes = [
-    ('친친마루\n(게임, 독서 등)', GujeukOptionAccent.orange),
-    ('난장마루\n(노래방 최대 4명)', GujeukOptionAccent.indigo),
-    ('잔치마루\n(노래방 최대 8명)', GujeukOptionAccent.indigo),
-    ('창작마루\n(방송실)', GujeukOptionAccent.indigo),
-    ('통통마루\n(댄스연습실)', GujeukOptionAccent.orange),
+  // API가 카드 색을 주지 않아 시설 id로 정합니다. 서버 DB의 id와 맞는지 확인이 필요합니다.
+  static const _orangePurposeIds = {1, 5};
+
+  // 예약 API가 붙기 전까지 쓰는 임시 시간 목록입니다. 마감 시간도 아직 없습니다.
+  static const _times = [
+    '09:30',
+    '10:30',
+    '11:30',
+    '12:30',
+    '13:30',
+    '14:30',
+    '15:30',
+    '16:30',
+    '17:30',
+    '18:30',
+    '19:30',
+    '20:30',
   ];
 
   // 거주지 검색 API가 붙기 전까지 쓰는 임시 목록입니다.
@@ -58,36 +69,32 @@ class Middle extends StatelessWidget {
             label: '오늘은 무엇을 하러 왔어?',
             icon: GujeukIcons.rocket,
             errorText: form.purposeError,
-            // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그립니다.
-            // 너비 0인 GridView는 assert로 렌더 트리를 깨뜨리므로 그릴 너비가 생길 때까지 비워둡니다.
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth <= 0) return const SizedBox.shrink();
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  // 카드 아래 3D 그림자가 잘리지 않게 합니다.
-                  clipBehavior: Clip.none,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 206,
-                    mainAxisExtent: 140,
-                    crossAxisSpacing: GujeukSpacing.s16,
-                    mainAxisSpacing: GujeukSpacing.s16,
-                  ),
-                  itemCount: _visitPurposes.length,
-                  itemBuilder: (context, index) {
-                    final (label, accent) = _visitPurposes[index];
-                    return GujeukOptionCard(
-                      label: label,
-                      accent: accent,
-                      selected: form.purpose == index,
-                      onTap: () => form.selectPurpose(index),
-                    );
-                  },
-                );
-              },
-            ),
+            child: _purposeGrid(),
           ),
+          if (form.purpose != null) ...[
+            const SizedBox(height: GujeukSpacing.s60),
+            // 마감 시간을 받기 전에는 고를 수 없게 막아둡니다.
+            GujeukTimeSlotPicker(
+              times: _times,
+              reservedTimes: form.reservedTimes ?? const {},
+              selectedTime: form.time,
+              onSelected: form.reservedTimes == null ? null : form.selectTime,
+            ),
+            if (form.reservedLoadError != null) ...[
+              const SizedBox(height: GujeukSpacing.s16),
+              _LoadError(
+                message: form.reservedLoadError!,
+                onRetry: form.loadReservedTimes,
+              ),
+            ],
+            if (form.timeError != null) ...[
+              const SizedBox(height: GujeukSpacing.s16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SignUpErrorText(form.timeError!),
+              ),
+            ],
+          ],
           const SizedBox(height: GujeukSpacing.s60),
           GujeukLabeledField(
             label: '이름이 뭐야?',
@@ -216,6 +223,53 @@ class Middle extends StatelessWidget {
     );
   }
 
+  Widget _purposeGrid() {
+    final purposes = form.purposes;
+    if (purposes == null) {
+      final error = form.purposesLoadError;
+      if (error != null) {
+        return _LoadError(message: error, onRetry: form.loadPurposes);
+      }
+      return const SizedBox(
+        height: 140,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그립니다.
+    // 너비 0인 GridView는 assert로 렌더 트리를 깨뜨리므로 그릴 너비가 생길 때까지 비워둡니다.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth <= 0) return const SizedBox.shrink();
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          // 카드 아래 3D 그림자가 잘리지 않게 합니다.
+          clipBehavior: Clip.none,
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 206,
+            mainAxisExtent: 140,
+            crossAxisSpacing: GujeukSpacing.s16,
+            mainAxisSpacing: GujeukSpacing.s16,
+          ),
+          itemCount: purposes.length,
+          itemBuilder: (context, index) {
+            final purpose = purposes[index];
+            return GujeukOptionCard(
+              // `친친마루(게임, 독서 등)`을 이름과 설명 두 줄로 나눕니다.
+              label: purpose.purpose.replaceFirst('(', '\n('),
+              accent: _orangePurposeIds.contains(purpose.id)
+                  ? GujeukOptionAccent.orange
+                  : GujeukOptionAccent.indigo,
+              selected: form.purpose == purpose.id,
+              onTap: () => form.selectPurpose(purpose.id),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _genderToggle(GujeukGender gender) {
     return GujeukGenderToggle(
       gender: gender,
@@ -241,6 +295,28 @@ class Middle extends StatelessWidget {
           keyboardType: TextInputType.number,
           maxLength: range.maxDigits,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly, range],
+        ),
+      ],
+    );
+  }
+}
+
+/// 조회 실패 문구와 다시 시도 버튼.
+class _LoadError extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _LoadError({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SignUpErrorText(message),
+        GujeukButton(
+          label: '다시 시도',
+          variant: GujeukButtonVariant.neutralMedium,
+          onPressed: onRetry,
         ),
       ],
     );
