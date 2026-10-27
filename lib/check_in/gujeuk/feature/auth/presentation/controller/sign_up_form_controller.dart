@@ -89,6 +89,47 @@ class SignUpFormController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 생년월일 칸에 이 값을 넣어도 되는지. 다른 두 칸에 이미 친 값과 합쳐
+  /// 오늘 이후 날짜나 없는 날짜(4월 31일, 평년 2월 29일 등)가 되면 막습니다.
+  /// 어느 칸부터 치든 같은 규칙이 걸리도록 세 칸 모두 같은 검사를 씁니다.
+  bool canBeBirthYear(int year) =>
+      _isPossibleBirth(year, _birthMonth, _birthDay);
+
+  bool canBeBirthMonth(int month) =>
+      _isPossibleBirth(_birthYear, month, _birthDay);
+
+  bool canBeBirthDay(int day) =>
+      _isPossibleBirth(_birthYear, _birthMonth, day);
+
+  /// 아직 안 친 칸(null)은 어떤 값이든 될 수 있다고 봅니다.
+  bool _isPossibleBirth(int? year, int? month, int? day) {
+    if (month != null && day != null) {
+      // 년도를 모르면 2월 29일도 받도록 윤년(2000)으로 셉니다.
+      final daysInMonth = DateTime(year ?? 2000, month + 1, 0).day;
+      if (day > daysInMonth) return false;
+    }
+    if (year == null) return true;
+    // 안 친 월·일은 가장 이른 1월·1일로 놓고 오늘 이후인지 봅니다.
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return !DateTime(year, month ?? 1, day ?? 1).isAfter(today);
+  }
+
+  /// 4자리를 다 쳤을 때만 년도로 봅니다.
+  int? get _birthYear {
+    final text = birthYearController.text;
+    return text.length == 4 ? int.parse(text) : null;
+  }
+
+  int? get _birthMonth => _parseIn(birthMonthController.text, 1, 12);
+
+  int? get _birthDay => _parseIn(birthDayController.text, 1, 31);
+
+  static int? _parseIn(String text, int min, int max) {
+    final value = int.tryParse(text);
+    return value != null && value >= min && value <= max ? value : null;
+  }
+
   /// 모든 항목을 검사해 에러 문구를 채웁니다. 전부 통과하면 true.
   bool validate() {
     purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
