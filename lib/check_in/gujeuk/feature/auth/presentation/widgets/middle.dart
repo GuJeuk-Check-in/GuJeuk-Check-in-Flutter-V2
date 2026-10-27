@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/number_range_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/gujeuk_signup_field.dart';
@@ -130,15 +131,42 @@ class Middle extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: _birthInput(form.birthYearController, '년도', '2009', 4),
+                  child: _birthInput(
+                    form.birthYearController,
+                    '년도',
+                    '2009',
+                    NumberRangeFormatter(
+                      min: 1900,
+                      max: DateTime.now().year,
+                      accepts: form.canBeBirthYear,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: GujeukSpacing.s26),
                 Expanded(
-                  child: _birthInput(form.birthMonthController, '월', '3', 2),
+                  child: _birthInput(
+                    form.birthMonthController,
+                    '월',
+                    '3',
+                    NumberRangeFormatter(
+                      min: 1,
+                      max: 12,
+                      accepts: form.canBeBirthMonth,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: GujeukSpacing.s26),
                 Expanded(
-                  child: _birthInput(form.birthDayController, '일', '5', 2),
+                  child: _birthInput(
+                    form.birthDayController,
+                    '일',
+                    '5',
+                    NumberRangeFormatter(
+                      min: 1,
+                      max: 31,
+                      accepts: form.canBeBirthDay,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -200,7 +228,7 @@ class Middle extends StatelessWidget {
     TextEditingController controller,
     String label,
     String hintText,
-    int maxLength,
+    NumberRangeFormatter range,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,8 +239,8 @@ class Middle extends StatelessWidget {
           hintText: hintText,
           controller: controller,
           keyboardType: TextInputType.number,
-          maxLength: maxLength,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          maxLength: range.maxDigits,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, range],
         ),
       ],
     );
