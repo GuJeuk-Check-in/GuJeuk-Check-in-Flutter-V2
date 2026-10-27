@@ -47,17 +47,9 @@ class _HomePageState extends State<HomePage> {
             children: [
               GujeukButton(
                 padding: const EdgeInsets.symmetric(horizontal: GujeukSpacing.s48),
-                label: '시작하기',
+                label: '시설 이용하기',
                 variant: GujeukButtonVariant.landing,
                 onPressed: _onStart,
-              ),
-              GujeukButton(
-                padding: const EdgeInsets.symmetric(horizontal: GujeukSpacing.s48),
-                label: '예약하기',
-                variant: GujeukButtonVariant.landingOutline,
-                onPressed: () {
-                  /// todo 예약 페이지 이동
-                },
               ),
             ],
           ),
