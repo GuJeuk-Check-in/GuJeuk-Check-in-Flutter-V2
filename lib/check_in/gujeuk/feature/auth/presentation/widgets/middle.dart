@@ -13,10 +13,7 @@ class Middle extends StatelessWidget {
 
   const Middle({super.key, required this.form});
 
-  // API가 카드 색을 주지 않아 시설 id로 정합니다. 서버 DB의 id와 맞는지 확인이 필요합니다.
-  static const _orangePurposeIds = {1, 5};
-
-  // 예약 API가 붙기 전까지 쓰는 임시 시간 목록입니다. 마감 시간도 아직 없습니다.
+  // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
   static const _times = [
     '09:30',
     '10:30',
@@ -71,7 +68,7 @@ class Middle extends StatelessWidget {
             errorText: form.purposeError,
             child: _purposeGrid(),
           ),
-          if (form.purpose != null) ...[
+          if (form.needsTime) ...[
             const SizedBox(height: GujeukSpacing.s60),
             // 마감 시간을 받기 전에는 고를 수 없게 막아둡니다.
             GujeukTimeSlotPicker(
@@ -224,7 +221,7 @@ class Middle extends StatelessWidget {
   }
 
   Widget _purposeGrid() {
-    final purposes = form.purposes;
+    final purposes = form.visitPurposes;
     if (purposes == null) {
       final error = form.purposesLoadError;
       if (error != null) {
@@ -258,11 +255,11 @@ class Middle extends StatelessWidget {
             return GujeukOptionCard(
               // `친친마루(게임, 독서 등)`을 이름과 설명 두 줄로 나눕니다.
               label: purpose.purpose.replaceFirst('(', '\n('),
-              accent: _orangePurposeIds.contains(purpose.id)
-                  ? GujeukOptionAccent.orange
-                  : GujeukOptionAccent.indigo,
-              selected: form.purpose == purpose.id,
-              onTap: () => form.selectPurpose(purpose.id),
+              // 목적 개수가 API에 따라 달라지므로 색은 순서대로 돌려 씁니다.
+              accent: GujeukOptionAccent
+                  .values[index % GujeukOptionAccent.values.length],
+              selected: form.purpose == purpose.purpose,
+              onTap: () => form.selectPurpose(purpose.purpose),
             );
           },
         );

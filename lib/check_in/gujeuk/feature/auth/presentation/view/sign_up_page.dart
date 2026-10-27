@@ -20,7 +20,7 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  // 서버가 붙으면 ReservationRepositoryImpl로 바꿉니다.
+  // 퍼블리싱용 가짜 응답입니다. 서버 연동 때 실제 구현으로 바꿉니다.
   final SignUpFormController _form = SignUpFormController(
     const FakeReservationRepository(),
   );

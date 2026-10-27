@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_purpose.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 
 /// 회원가입 폼의 입력값과 에러 문구를 한곳에서 관리합니다.
@@ -16,12 +16,15 @@ class SignUpFormController extends ChangeNotifier {
   final birthDayController = TextEditingController();
   final residenceController = TextEditingController();
 
-  /// 고른 시설의 [ReservationPurpose.id].
-  int? purpose;
+  /// 고른 방문 목적. API와 같은 `친친마루(게임, 독서 등)` 모양입니다.
+  String? purpose;
   String? time;
 
-  /// 시설 목록. null이면 아직 못 불러왔습니다.
-  List<ReservationPurpose>? purposes;
+  /// 카드로 보여줄 전체 방문 목적. null이면 아직 못 불러왔습니다.
+  List<VisitPurpose>? visitPurposes;
+
+  /// 예약이 필요한 목적 이름들. null이면 아직 못 불러왔습니다.
+  Set<String>? reservablePurposes;
   String? purposesLoadError;
 
   /// 고른 시설의 오늘 마감 시간. null이면 불러오는 중이거나 실패했습니다.
@@ -71,29 +74,54 @@ class SignUpFormController extends ChangeNotifier {
     }
   }
 
+  /// 고른 목적이 예약이 필요한 시설이라 시간도 골라야 하는지.
+  bool get needsTime => reservablePurposes?.contains(purpose) ?? false;
+
+  /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
+  /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
   Future<void> loadPurposes() async {
     purposesLoadError = null;
     notifyListeners();
     try {
-      purposes = await _reservations.fetchPurposes();
+      final (all, reservable) = await (
+        _reservations.fetchVisitPurposes(),
+        _reservations.fetchReservablePurposes(),
+      ).wait;
+      visitPurposes = all;
+      reservablePurposes = {for (final p in reservable) p.purpose};
     } catch (_) {
-      purposesLoadError = '시설 목록을 불러오지 못했어요';
+      purposesLoadError = '방문 목적을 불러오지 못했어요';
     }
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    // 목록이 오기 전에 이미 목적을 골랐다면 이제 마감 시간을 불러옵니다.
+    if (needsTime) {
+      loadReservedTimes();
+    } else {
+      notifyListeners();
+    }
   }
 
-  void selectPurpose(int id) {
-    if (purpose == id) return;
+  void selectPurpose(String value) {
+    if (purpose == value) return;
     // 시설마다 예약 상황이 다르므로 목적을 바꾸면 고른 시간은 비웁니다.
     time = null;
-    purpose = id;
+    timeError = null;
+    purpose = value;
     purposeError = null;
-    loadReservedTimes();
+    // 이전 목적의 마감 시간 응답이 늦게 와도 버려지게 합니다.
+    _reservedRequest++;
+    reservedTimes = null;
+    reservedLoadError = null;
+    if (needsTime) {
+      loadReservedTimes();
+    } else {
+      notifyListeners();
+    }
   }
 
   /// 오늘 예약 전체를 받아 고른 시설 것만 남깁니다.
   Future<void> loadReservedTimes() async {
-    final selected = purposes?.where((p) => p.id == purpose).firstOrNull;
+    final selected = purpose;
     if (selected == null) return;
     // 응답을 기다리는 사이 다른 시설을 고르면 늦게 온 이전 응답은 버립니다.
     final request = ++_reservedRequest;
@@ -105,7 +133,7 @@ class SignUpFormController extends ChangeNotifier {
       if (request != _reservedRequest) return;
       reservedTimes = {
         for (final slot in slots)
-          if (slot.purpose == selected.purpose) slot.startTime,
+          if (slot.purpose == selected) slot.startTime,
       };
       if (reservedTimes!.contains(time)) time = null;
     } catch (_) {
@@ -159,8 +187,7 @@ class SignUpFormController extends ChangeNotifier {
   bool canBeBirthMonth(int month) =>
       _isPossibleBirth(_birthYear, month, _birthDay);
 
-  bool canBeBirthDay(int day) =>
-      _isPossibleBirth(_birthYear, _birthMonth, day);
+  bool canBeBirthDay(int day) => _isPossibleBirth(_birthYear, _birthMonth, day);
 
   /// 아직 안 친 칸(null)은 어떤 값이든 될 수 있다고 봅니다.
   bool _isPossibleBirth(int? year, int? month, int? day) {
@@ -194,8 +221,8 @@ class SignUpFormController extends ChangeNotifier {
   /// 모든 항목을 검사해 에러 문구를 채웁니다. 전부 통과하면 true.
   bool validate() {
     purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
-    // 시간 칸은 목적을 고른 뒤에만 보이므로 그때만 검사합니다.
-    timeError = purpose != null && time == null ? '몇 시에 이용할지 골라주세요' : null;
+    // 시간 칸은 예약이 필요한 시설을 골랐을 때만 보이므로 그때만 검사합니다.
+    timeError = needsTime && time == null ? '몇 시에 이용할지 골라주세요' : null;
     nameError = nameController.text.trim().isEmpty ? '이름을 적어주세요' : null;
     phoneError = _validatePhone();
     genderError = gender == null ? '성별을 골라주세요' : null;
