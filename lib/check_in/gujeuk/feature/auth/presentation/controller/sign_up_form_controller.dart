@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_purpose.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 
 /// 회원가입 폼의 입력값과 에러 문구를 한곳에서 관리합니다.
 /// [validate]로 전체를 검사하고, 값을 다시 고치면 그 항목의 에러는 지워집니다.
 class SignUpFormController extends ChangeNotifier {
+  final ReservationRepository _reservations;
+
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final birthYearController = TextEditingController();
@@ -12,7 +16,19 @@ class SignUpFormController extends ChangeNotifier {
   final birthDayController = TextEditingController();
   final residenceController = TextEditingController();
 
+  /// 고른 시설의 [ReservationPurpose.id].
   int? purpose;
+  String? time;
+
+  /// 시설 목록. null이면 아직 못 불러왔습니다.
+  List<ReservationPurpose>? purposes;
+  String? purposesLoadError;
+
+  /// 고른 시설의 오늘 마감 시간. null이면 불러오는 중이거나 실패했습니다.
+  Set<String>? reservedTimes;
+  String? reservedLoadError;
+  var _reservedRequest = 0;
+  var _disposed = false;
   GujeukGender? gender;
   String? residence;
   bool agreed = false;
@@ -20,6 +36,7 @@ class SignUpFormController extends ChangeNotifier {
   int femaleCount = 0;
 
   String? purposeError;
+  String? timeError;
   String? nameError;
   String? phoneError;
   String? genderError;
@@ -29,7 +46,7 @@ class SignUpFormController extends ChangeNotifier {
 
   static final _phonePattern = RegExp(r'^01[016789]\d{7,8}$');
 
-  SignUpFormController() {
+  SignUpFormController(this._reservations) {
     // 에러가 떠 있을 때만 지우고 다시 그려, 타이핑마다 폼 전체가 다시 그려지지 않게 합니다.
     nameController.addListener(() {
       if (nameError == null) return;
@@ -54,9 +71,53 @@ class SignUpFormController extends ChangeNotifier {
     }
   }
 
-  void selectPurpose(int value) {
-    purpose = value;
+  Future<void> loadPurposes() async {
+    purposesLoadError = null;
+    notifyListeners();
+    try {
+      purposes = await _reservations.fetchPurposes();
+    } catch (_) {
+      purposesLoadError = '시설 목록을 불러오지 못했어요';
+    }
+    if (!_disposed) notifyListeners();
+  }
+
+  void selectPurpose(int id) {
+    if (purpose == id) return;
+    // 시설마다 예약 상황이 다르므로 목적을 바꾸면 고른 시간은 비웁니다.
+    time = null;
+    purpose = id;
     purposeError = null;
+    loadReservedTimes();
+  }
+
+  /// 오늘 예약 전체를 받아 고른 시설 것만 남깁니다.
+  Future<void> loadReservedTimes() async {
+    final selected = purposes?.where((p) => p.id == purpose).firstOrNull;
+    if (selected == null) return;
+    // 응답을 기다리는 사이 다른 시설을 고르면 늦게 온 이전 응답은 버립니다.
+    final request = ++_reservedRequest;
+    reservedTimes = null;
+    reservedLoadError = null;
+    notifyListeners();
+    try {
+      final slots = await _reservations.fetchReservedSlots();
+      if (request != _reservedRequest) return;
+      reservedTimes = {
+        for (final slot in slots)
+          if (slot.purpose == selected.purpose) slot.startTime,
+      };
+      if (reservedTimes!.contains(time)) time = null;
+    } catch (_) {
+      if (request != _reservedRequest) return;
+      reservedLoadError = '예약 현황을 불러오지 못했어요';
+    }
+    if (!_disposed) notifyListeners();
+  }
+
+  void selectTime(String value) {
+    time = value;
+    timeError = null;
     notifyListeners();
   }
 
@@ -133,6 +194,8 @@ class SignUpFormController extends ChangeNotifier {
   /// 모든 항목을 검사해 에러 문구를 채웁니다. 전부 통과하면 true.
   bool validate() {
     purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
+    // 시간 칸은 목적을 고른 뒤에만 보이므로 그때만 검사합니다.
+    timeError = purpose != null && time == null ? '몇 시에 이용할지 골라주세요' : null;
     nameError = nameController.text.trim().isEmpty ? '이름을 적어주세요' : null;
     phoneError = _validatePhone();
     genderError = gender == null ? '성별을 골라주세요' : null;
@@ -143,6 +206,7 @@ class SignUpFormController extends ChangeNotifier {
 
     return [
       purposeError,
+      timeError,
       nameError,
       phoneError,
       genderError,
@@ -182,6 +246,7 @@ class SignUpFormController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     nameController.dispose();
     phoneController.dispose();
     birthYearController.dispose();
