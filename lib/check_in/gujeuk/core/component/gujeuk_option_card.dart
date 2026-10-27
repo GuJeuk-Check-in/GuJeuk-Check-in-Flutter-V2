@@ -59,7 +59,11 @@ class GujeukOptionCard extends StatelessWidget {
       child: Container(
         width: width,
         height: height ?? 168,
-        padding: const EdgeInsets.all(GujeukSpacing.s16),
+        // 세로 가운데 정렬은 Column이 맡으므로 위아래 여백은 최소한만 둡니다.
+        padding: const EdgeInsets.symmetric(
+          horizontal: GujeukSpacing.s26,
+          vertical: GujeukSpacing.s16,
+        ),
         decoration: BoxDecoration(
           color: selected ? selectedBg : GujeukColors.bgField,
           borderRadius: GujeukRadius.xlAll,

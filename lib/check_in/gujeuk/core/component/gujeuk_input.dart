@@ -14,6 +14,9 @@ class GujeukInput extends StatefulWidget {
   final TextInputType? keyboardType;
   final String? errorText;
 
+  /// 필드에 맞는 입력 규칙(숫자만, 전화번호 형식 등). [maxLength] 제한 뒤에 적용됩니다.
+  final List<TextInputFormatter>? inputFormatters;
+
   /// 입력할 수 있는 최대 글자 수. 넘기지 않으면 제한이 없습니다.
   final int? maxLength;
 
@@ -35,6 +38,7 @@ class GujeukInput extends StatefulWidget {
     this.width = double.infinity,
     this.errorText,
     this.maxLength,
+    this.inputFormatters,
   });
 
   @override
@@ -90,17 +94,18 @@ class _GujeukInputState extends State<GujeukInput> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
+            child: TextFormField(
               onTapOutside: (_) => _focusNode.unfocus(),
               controller: _controller,
               focusNode: _focusNode,
               onChanged: widget.onChanged,
-              onSubmitted: widget.onSubmitted,
+              onFieldSubmitted: widget.onSubmitted,
               keyboardType: widget.keyboardType,
               // TextField.maxLength는 글자 수 카운터를 함께 그리므로 formatter로 제한합니다.
               inputFormatters: [
                 if (widget.maxLength != null)
                   LengthLimitingTextInputFormatter(widget.maxLength),
+                ...?widget.inputFormatters,
               ],
               cursorColor: GujeukColors.actionPrimary,
               style: GujeukTypography.bodyMdMedium.copyWith(
