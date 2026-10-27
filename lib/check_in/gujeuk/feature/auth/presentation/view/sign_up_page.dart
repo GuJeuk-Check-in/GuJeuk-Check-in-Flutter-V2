@@ -37,31 +37,27 @@ class _SignUpPageState extends State<SignUpPage> {
     return BaseScaffold(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s100),
-        child: Column(
-          children: [
-            Container(
-              constraints: const BoxConstraints(
-                maxWidth: SignUpPage._cardMaxWidth,
-              ),
-              padding: EdgeInsets.all(GujeukSpacing.s64),
-              decoration: BoxDecoration(
-                border: Border.all(color: GujeukColors.borderCard, width: 4),
-                boxShadow: GujeukShadows.card,
-                color: GujeukColors.bgSurface,
-                borderRadius: BorderRadius.circular(GujeukRadius.xl),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Header(),
-                  const SizedBox(height: GujeukSpacing.s40),
-                  Middle(form: _form),
-                  const SizedBox(height: GujeukSpacing.s100),
-                  Bottom(form: _form, onSubmit: _onSubmit),
-                ],
-              ),
-            ),
-          ],
+        child: Container(
+          constraints: const BoxConstraints(
+            maxWidth: SignUpPage._cardMaxWidth,
+          ),
+          padding: EdgeInsets.all(GujeukSpacing.s64),
+          decoration: BoxDecoration(
+            border: Border.all(color: GujeukColors.borderCard, width: 4),
+            boxShadow: GujeukShadows.card,
+            color: GujeukColors.bgSurface,
+            borderRadius: BorderRadius.circular(GujeukRadius.xl),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Header(),
+              const SizedBox(height: GujeukSpacing.s40),
+              Middle(form: _form),
+              const SizedBox(height: GujeukSpacing.s100),
+              Bottom(form: _form, onSubmit: _onSubmit),
+            ],
+          ),
         ),
       ),
     );

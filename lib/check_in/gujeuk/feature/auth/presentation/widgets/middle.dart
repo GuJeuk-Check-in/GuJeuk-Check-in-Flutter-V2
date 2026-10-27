@@ -57,25 +57,32 @@ class Middle extends StatelessWidget {
             label: '오늘은 무엇을 하러 왔어?',
             icon: GujeukIcons.rocket,
             errorText: form.purposeError,
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              // 카드 아래 3D 그림자가 잘리지 않게 합니다.
-              clipBehavior: Clip.none,
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 206,
-                mainAxisExtent: 140,
-                crossAxisSpacing: GujeukSpacing.s16,
-                mainAxisSpacing: GujeukSpacing.s16,
-              ),
-              itemCount: _visitPurposes.length,
-              itemBuilder: (context, index) {
-                final (label, accent) = _visitPurposes[index];
-                return GujeukOptionCard(
-                  label: label,
-                  accent: accent,
-                  selected: form.purpose == index,
-                  onTap: () => form.selectPurpose(index),
+            // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그립니다.
+            // 너비 0인 GridView는 assert로 렌더 트리를 깨뜨리므로 그릴 너비가 생길 때까지 비워둡니다.
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth <= 0) return const SizedBox.shrink();
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  // 카드 아래 3D 그림자가 잘리지 않게 합니다.
+                  clipBehavior: Clip.none,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 206,
+                    mainAxisExtent: 140,
+                    crossAxisSpacing: GujeukSpacing.s16,
+                    mainAxisSpacing: GujeukSpacing.s16,
+                  ),
+                  itemCount: _visitPurposes.length,
+                  itemBuilder: (context, index) {
+                    final (label, accent) = _visitPurposes[index];
+                    return GujeukOptionCard(
+                      label: label,
+                      accent: accent,
+                      selected: form.purpose == index,
+                      onTap: () => form.selectPurpose(index),
+                    );
+                  },
                 );
               },
             ),
