@@ -83,8 +83,15 @@ abstract final class BubdongTypography{
   //서브 제목
   static const subtitle = TextStyle(
     fontFamily: pretendard,
-    fontSize: 12,
+    fontSize: 20,
     fontWeight: FontWeight.w600,
+  );
+
+  //라벨
+  static const label = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
   );
 
   //플레이스홀더
