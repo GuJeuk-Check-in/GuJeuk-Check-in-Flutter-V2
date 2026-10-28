@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_dropdown.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_facility_card.dart';
 
-class BubdongApp extends StatefulWidget {
+class BubdongApp extends StatelessWidget {
   const BubdongApp({super.key});
-
-  @override
-  State<BubdongApp> createState() => _BubdongAppState();
-}
-
-class _BubdongAppState extends State<BubdongApp> {
-  String? _selected; // 고른 값 기억
 
   @override
   Widget build(BuildContext context) {
@@ -18,16 +11,38 @@ class _BubdongAppState extends State<BubdongApp> {
       title: '법동 체크인',
       debugShowCheckedModeBanner: false,
       theme: BubdongTheme.light,
-      home: Scaffold(
+      home: const Scaffold(
         body: Center(
           child: SizedBox(
-            width: 460,
-            child: BubdongDropdown(
-              label: '전화번호가 뭐야?',
-              hintText: '친구의 전화번호를 알려줘',
-              items: const ['하나', '둘', '셋'],
-              value: _selected,
-              onChanged: (value) => setState(() => _selected = value),
+            width: 200,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 16,
+              children: [
+                BubdongFacilityCard(title: '인터넷', subtitle: '신청서 작성'),
+                BubdongFacilityCard(
+                  title: '탁구',
+                  subtitle: '신청서 작성',
+                  color: BubdongCardColor.mint,
+                  status: BubdongCardStatus.selected,
+                ),
+                BubdongFacilityCard(
+                  title: '보드게임',
+                  detail: '남은 시간 : 00분',
+                  color: BubdongCardColor.blue,
+                  status: BubdongCardStatus.unavailable,
+                ),
+                BubdongFacilityCard(
+                  title: '휴식',
+                  color: BubdongCardColor.pink,
+                  status: BubdongCardStatus.completed,
+                ),
+                BubdongFacilityCard(
+                  title: '방카',
+                  detail: '2번 좌석 / 남은 시간 : 00분',
+                  status: BubdongCardStatus.inUse,
+                ),
+              ],
             ),
           ),
         ),
