@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_input.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_dropdown.dart';
 
-class BubdongApp extends StatelessWidget {
+class BubdongApp extends StatefulWidget {
   const BubdongApp({super.key});
+
+  @override
+  State<BubdongApp> createState() => _BubdongAppState();
+}
+
+class _BubdongAppState extends State<BubdongApp> {
+  String? _selected; // 고른 값 기억
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +22,12 @@ class BubdongApp extends StatelessWidget {
         body: Center(
           child: SizedBox(
             width: 460,
-            child: BubdongInput(
-              label: '안녕',
-              hintText: '전화번호 입력해줘',
-              validator: (value) => value == '1234' ? null : '틀렸어.',
+            child: BubdongDropdown(
+              label: '전화번호가 뭐야?',
+              hintText: '친구의 전화번호를 알려줘',
+              items: const ['하나', '둘', '셋'],
+              value: _selected,
+              onChanged: (value) => setState(() => _selected = value),
             ),
           ),
         ),
