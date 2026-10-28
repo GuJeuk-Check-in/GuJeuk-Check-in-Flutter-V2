@@ -9,6 +9,19 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/r
 class SignUpFormController extends ChangeNotifier {
   final ReservationRepository _reservations;
 
+  // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
+  static const times = [
+    '09:30',
+    '10:30',
+    '11:30',
+    '12:30',
+    '13:30',
+    '14:30',
+    '15:30',
+    '16:30',
+    '17:30',
+  ];
+
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final birthYearController = TextEditingController();
@@ -46,6 +59,7 @@ class SignUpFormController extends ChangeNotifier {
   String? birthError;
   String? residenceError;
   String? agreementError;
+  String? companionError;
 
   SignUpFormController(this._reservations) {
     // 에러가 떠 있을 때만 지우고 다시 그려, 타이핑마다 폼 전체가 다시 그려지지 않게 합니다.
@@ -74,6 +88,30 @@ class SignUpFormController extends ChangeNotifier {
 
   /// 고른 목적이 예약이 필요한 시설이라 시간도 골라야 하는지.
   bool get needsTime => reservablePurposes?.contains(purpose) ?? false;
+
+  /// 오늘 시작 시간이 이미 지난 칸. 화면을 띄워둔 사이에도 지나가므로 부를 때마다 다시 셉니다.
+  Set<String> get pastTimes {
+    final now = DateTime.now();
+    return {
+      for (final t in times)
+        if (!_todayAt(t, now).isAfter(now)) t,
+    };
+  }
+
+  static DateTime _todayAt(String time, DateTime now) {
+    final hour = int.parse(time.substring(0, 2));
+    final minute = int.parse(time.substring(3, 5));
+    return DateTime(now.year, now.month, now.day, hour, minute);
+  }
+
+  /// 본인을 뺀 동행 최대 인원. 정원이 없는 시설이면 null입니다.
+  int? get maxCompanions {
+    final maxPeople = visitPurposes
+        ?.where((p) => p.purpose == purpose)
+        .firstOrNull
+        ?.maxPeople;
+    return maxPeople == null ? null : maxPeople - 1;
+  }
 
   /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
   /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
@@ -106,6 +144,8 @@ class SignUpFormController extends ChangeNotifier {
     timeError = null;
     purpose = value;
     purposeError = null;
+    // 정원이 더 작은 시설로 바꿨다면 고른 인원을 지우지 않고 바로 알려줍니다.
+    companionError = _validateCompanions();
     // 이전 목적의 마감 시간 응답이 늦게 와도 버려지게 합니다.
     _reservedRequest++;
     reservedTimes = null;
@@ -175,11 +215,13 @@ class SignUpFormController extends ChangeNotifier {
 
   void setMaleCount(int value) {
     maleCount = value;
+    companionError = _validateCompanions();
     notifyListeners();
   }
 
   void setFemaleCount(int value) {
     femaleCount = value;
+    companionError = _validateCompanions();
     notifyListeners();
   }
 
@@ -226,8 +268,8 @@ class SignUpFormController extends ChangeNotifier {
   /// 모든 항목을 검사해 에러 문구를 채웁니다. 전부 통과하면 true.
   bool validate() {
     purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
-    // 시간 칸은 예약이 필요한 시설을 골랐을 때만 보이므로 그때만 검사합니다.
-    timeError = needsTime && time == null ? '몇 시에 이용할지 골라주세요' : null;
+    timeError = _validateTime();
+    companionError = _validateCompanions();
     nameError = nameController.text.trim().isEmpty ? '이름을 적어주세요' : null;
     phoneError = _validatePhone();
     genderError = gender == null ? '성별을 골라주세요' : null;
@@ -245,16 +287,37 @@ class SignUpFormController extends ChangeNotifier {
       birthError,
       residenceError,
       agreementError,
+      companionError,
     ].every((error) => error == null);
   }
 
-  /// 이용 예약 화면용 검사. 개인정보 칸이 없으므로 목적과 시간만 봅니다.
+  /// 이용 예약 화면용 검사. 개인정보 칸이 없으므로 목적·시간·인원만 봅니다.
   bool validateReservation() {
     purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
-    timeError = needsTime && time == null ? '몇 시에 이용할지 골라주세요' : null;
+    timeError = _validateTime();
+    companionError = _validateCompanions();
     notifyListeners();
 
-    return purposeError == null && timeError == null;
+    return purposeError == null && timeError == null && companionError == null;
+  }
+
+  /// 시간 칸은 예약이 필요한 시설을 골랐을 때만 보이므로 그때만 검사합니다.
+  /// 고른 뒤 폼을 쓰는 사이 시작 시간이 지났다면 고른 시간을 비웁니다.
+  String? _validateTime() {
+    if (!needsTime) return null;
+    final selected = time;
+    if (selected == null) return '몇 시에 이용할지 골라주세요';
+    if (pastTimes.contains(selected)) {
+      time = null;
+      return '이미 지난 시간이에요. 다른 시간을 골라주세요';
+    }
+    return null;
+  }
+
+  String? _validateCompanions() {
+    final max = maxCompanions;
+    if (max == null || maleCount + femaleCount <= max) return null;
+    return '이 시설은 본인 포함 최대 ${max + 1}명까지 쓸 수 있어요';
   }
 
   String? _validatePhone() {

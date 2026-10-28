@@ -7,8 +7,18 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 class Bottom extends StatelessWidget {
   final SignUpFormController form;
   final VoidCallback? onSubmit;
+  final bool isSubmitting;
 
-  const Bottom({super.key, required this.form, this.onSubmit});
+  /// 제출 요청이 실패했을 때 버튼 위에 띄울 문구.
+  final String? submitError;
+
+  const Bottom({
+    super.key,
+    required this.form,
+    this.onSubmit,
+    this.isSubmitting = false,
+    this.submitError,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +53,17 @@ class Bottom extends StatelessWidget {
               SignUpErrorText(agreementError),
             ],
             const SizedBox(height: GujeukSpacing.s40,),
+            if (submitError case final error?) ...[
+              SignUpErrorText(error),
+              const SizedBox(height: GujeukSpacing.s16),
+            ],
             Row(
               children: [
                 Expanded(
                   child: GujeukButton(
                     label: '다 했어요!',
                     icon: GujeukIcons.party,
+                    isLoading: isSubmitting,
                     onPressed: onSubmit,
                   ),
                 ),

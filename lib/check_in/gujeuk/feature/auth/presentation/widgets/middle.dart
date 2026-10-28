@@ -14,19 +14,6 @@ class Middle extends StatelessWidget {
 
   const Middle({super.key, required this.form, this.isSigned = false});
 
-  // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
-  static const _times = [
-    '09:30',
-    '10:30',
-    '11:30',
-    '12:30',
-    '13:30',
-    '14:30',
-    '15:30',
-    '16:30',
-    '17:30',
-  ];
-
   // 거주지 검색 API가 붙기 전까지 쓰는 임시 목록입니다.
   static const _residences = [
     '구즉동',
@@ -70,8 +57,9 @@ class Middle extends StatelessWidget {
             const SizedBox(height: GujeukSpacing.s60),
             // 마감 시간을 받기 전에는 고를 수 없게 막아둡니다.
             GujeukTimeSlotPicker(
-              times: _times,
+              times: SignUpFormController.times,
               reservedTimes: form.reservedTimes ?? const {},
+              pastTimes: form.pastTimes,
               selectedTime: form.time,
               onSelected: form.reservedTimes == null ? null : form.selectTime,
             ),
@@ -195,12 +183,15 @@ class Middle extends StatelessWidget {
           GujeukLabeledField(
             label: '친구들과 함께 왔니?',
             icon: GujeukIcons.friends,
+            errorText: form.companionError,
             child: Row(
               children: [
                 Expanded(
                   child: GujeukCompanionStepper(
                     gender: GujeukGender.male,
                     count: form.maleCount,
+                    // 남녀를 합쳐 정원을 넘지 않게, 한쪽 최대는 다른 쪽 수만큼 줄입니다.
+                    max: _companionMax(form.femaleCount),
                     onChanged: form.setMaleCount,
                   ),
                 ),
@@ -209,6 +200,7 @@ class Middle extends StatelessWidget {
                   child: GujeukCompanionStepper(
                     gender: GujeukGender.female,
                     count: form.femaleCount,
+                    max: _companionMax(form.maleCount),
                     onChanged: form.setFemaleCount,
                   ),
                 ),
@@ -265,6 +257,11 @@ class Middle extends StatelessWidget {
         );
       },
     );
+  }
+
+  int? _companionMax(int otherCount) {
+    final max = form.maxCompanions;
+    return max == null ? null : max - otherCount;
   }
 
   Widget _genderToggle(GujeukGender gender) {

@@ -37,6 +37,9 @@ class GujeukButton extends StatelessWidget {
   /// 안쪽 여백. 넘기지 않으면 variant의 기본 좌우 패딩을 씁니다.
   final EdgeInsetsGeometry? padding;
 
+  /// 요청 중이면 아이콘 자리에 스피너를 띄우고 눌러도 무시합니다.
+  final bool isLoading;
+
   const GujeukButton({
     super.key,
     required this.label,
@@ -46,6 +49,7 @@ class GujeukButton extends StatelessWidget {
     this.width,
     this.height,
     this.padding,
+    this.isLoading = false,
   });
 
   @override
@@ -53,7 +57,7 @@ class GujeukButton extends StatelessWidget {
     final spec = _ButtonSpec.of(variant);
 
     return GestureDetector(
-      onTap: onPressed,
+      onTap: isLoading ? null : onPressed,
       child: Container(
         width: width,
         height: height ?? spec.height,
@@ -71,7 +75,20 @@ class GujeukButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(label, style: spec.textStyle.copyWith(color: spec.textColor)),
-            if (icon != null) ...[SizedBox(width: spec.gap), GujeukIcon(icon!)],
+            if (isLoading) ...[
+              SizedBox(width: spec.gap),
+              // 아이콘과 같은 크기로 잡아 버튼 크기가 흔들리지 않게 합니다.
+              SizedBox.square(
+                dimension: icon?.size ?? 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: spec.textColor,
+                ),
+              ),
+            ] else if (icon != null) ...[
+              SizedBox(width: spec.gap),
+              GujeukIcon(icon!),
+            ],
           ],
         ),
       ),

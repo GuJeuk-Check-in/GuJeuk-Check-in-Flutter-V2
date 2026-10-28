@@ -5,10 +5,11 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 /// Figma `Time Slot` 섹션 · 라벨과 범례, 6열 [GujeukTimeSlot] 그리드, 안내문.
-/// [reservedTimes]에 든 시간은 회색으로 막고, 나머지를 누르면 [onSelected]로 알려줍니다.
+/// [reservedTimes]·[pastTimes]에 든 시간은 회색으로 막고, 나머지를 누르면 [onSelected]로 알려줍니다.
 class GujeukTimeSlotPicker extends StatelessWidget {
   final List<String> times;
   final Set<String> reservedTimes;
+  final Set<String> pastTimes;
   final String? selectedTime;
   final ValueChanged<String>? onSelected;
 
@@ -16,6 +17,7 @@ class GujeukTimeSlotPicker extends StatelessWidget {
     super.key,
     required this.times,
     this.reservedTimes = const {},
+    this.pastTimes = const {},
     this.selectedTime,
     this.onSelected,
   });
@@ -41,7 +43,7 @@ class GujeukTimeSlotPicker extends StatelessWidget {
         ],
         const SizedBox(height: GujeukSpacing.s20),
         Text(
-          '1시간 단위로 예약할 수 있어 · 회색 시간은 다른 친구가 이미 예약했어',
+          '1시간 단위로 예약할 수 있어 · 회색 시간은 이미 지났거나 다른 친구가 예약했어',
           style: GujeukTypography.bodySm.copyWith(
             color: GujeukColors.textTertiary,
           ),
@@ -71,6 +73,7 @@ class GujeukTimeSlotPicker extends StatelessWidget {
       time: time,
       selected: time == selectedTime,
       reserved: reservedTimes.contains(time),
+      passed: pastTimes.contains(time),
       onTap: onSelected == null ? null : () => onSelected!(time),
     );
   }

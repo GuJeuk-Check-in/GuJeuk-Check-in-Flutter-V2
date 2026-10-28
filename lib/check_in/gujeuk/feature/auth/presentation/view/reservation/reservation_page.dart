@@ -52,8 +52,10 @@ class _ReservationPageState extends State<ReservationPage> {
     if (_isSubmitting) return;
     if (!_form.validateReservation()) return;
 
-    _isSubmitting = true;
-    setState(() => _submitError = null);
+    setState(() {
+      _isSubmitting = true;
+      _submitError = null;
+    });
     try {
       if (_form.needsTime) {
         await _reserve();
@@ -62,7 +64,7 @@ class _ReservationPageState extends State<ReservationPage> {
         _goToEnd(null);
       }
     } finally {
-      _isSubmitting = false;
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -153,6 +155,7 @@ class _ReservationPageState extends State<ReservationPage> {
                     child: GujeukButton(
                       label: '다 했어요!',
                       icon: GujeukIcons.party,
+                      isLoading: _isSubmitting,
                       onPressed: _onSubmit,
                     ),
                   ),
