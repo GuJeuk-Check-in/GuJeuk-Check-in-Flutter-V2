@@ -11,6 +11,7 @@ abstract final class GujeukSpacing {
   static const double s26 = 26;
   static const double s28 = 28;
   static const double s32 = 32;
+  static const double s36 = 36;
   static const double s40 = 40;
   static const double s48 = 48;
   static const double s60 = 60;

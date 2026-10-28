@@ -47,8 +47,6 @@ class SignUpFormController extends ChangeNotifier {
   String? residenceError;
   String? agreementError;
 
-  static final _phonePattern = RegExp(r'^01[016789]\d{7,8}$');
-
   SignUpFormController(this._reservations) {
     // 에러가 떠 있을 때만 지우고 다시 그려, 타이핑마다 폼 전체가 다시 그려지지 않게 합니다.
     nameController.addListener(() {
@@ -141,6 +139,13 @@ class SignUpFormController extends ChangeNotifier {
       reservedLoadError = '예약 현황을 불러오지 못했어요';
     }
     if (!_disposed) notifyListeners();
+  }
+
+  /// 제출하는 사이 다른 친구가 고른 시간을 예약했을 때.
+  /// 현황을 다시 불러오면 그 칸이 마감으로 바뀌고 고른 시간도 비워집니다.
+  void rejectTakenTime() {
+    timeError = '그사이 다른 친구가 예약했어요. 다른 시간을 골라주세요';
+    loadReservedTimes();
   }
 
   void selectTime(String value) {
@@ -243,10 +248,19 @@ class SignUpFormController extends ChangeNotifier {
     ].every((error) => error == null);
   }
 
+  /// 이용 예약 화면용 검사. 개인정보 칸이 없으므로 목적과 시간만 봅니다.
+  bool validateReservation() {
+    purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
+    timeError = needsTime && time == null ? '몇 시에 이용할지 골라주세요' : null;
+    notifyListeners();
+
+    return purposeError == null && timeError == null;
+  }
+
   String? _validatePhone() {
-    final digits = PhoneNumberFormatter.digitsOf(phoneController.text);
-    if (digits.isEmpty) return '전화번호를 적어주세요';
-    if (!_phonePattern.hasMatch(digits)) return '전화번호를 다시 확인해주세요';
+    final text = phoneController.text;
+    if (PhoneNumberFormatter.digitsOf(text).isEmpty) return '전화번호를 적어주세요';
+    if (!PhoneNumberFormatter.isValid(text)) return '전화번호를 다시 확인해주세요';
     return null;
   }
 

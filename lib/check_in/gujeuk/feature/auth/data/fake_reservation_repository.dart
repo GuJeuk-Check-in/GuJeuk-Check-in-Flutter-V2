@@ -1,3 +1,4 @@
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reserved_slot.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
@@ -50,5 +51,31 @@ class FakeReservationRepository implements ReservationRepository {
   Future<List<ReservedSlot>> fetchReservedSlots() async {
     await Future<void>.delayed(delay);
     return _reservedSlots.map(ReservedSlot.fromJson).toList();
+  }
+
+  // 이 이름으로 전화번호 없이, 또는 다른 번호로 예약하면 동명이인 409를 돌려줍니다.
+  static const _duplicateNames = {'ff': '01012345678'};
+
+  @override
+  Future<void> reserve({
+    required String name,
+    String? phone,
+    required String purpose,
+    required String startTime,
+    required int maleCount,
+    required int femaleCount,
+  }) async {
+    await Future<void>.delayed(delay);
+    final memberPhone = _duplicateNames[name];
+    if (memberPhone != null &&
+        PhoneNumberFormatter.digitsOf(phone ?? '') != memberPhone) {
+      throw const DuplicateNameException();
+    }
+    // 서버는 `09:30:00`처럼 초까지 받습니다.
+    final taken = _reservedSlots.any(
+      (slot) =>
+          slot['purpose'] == purpose && slot['startTime'] == '$startTime:00',
+    );
+    if (taken) throw const SlotTakenException();
   }
 }

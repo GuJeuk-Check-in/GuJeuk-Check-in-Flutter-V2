@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/sign_up/sign_up_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/fake_visitor_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/domain/visitor_repository.dart';
 
 class InfoCheckPage extends StatefulWidget {
   const InfoCheckPage({super.key});
@@ -10,10 +14,13 @@ class InfoCheckPage extends StatefulWidget {
 }
 
 class _InfoCheckPageState extends State<InfoCheckPage> {
+  // 퍼블리싱용 가짜 응답입니다. 서버 연동 때 실제 구현으로 바꿉니다.
+  final VisitorRepository _visitors = const FakeVisitorRepository();
+
   final TextEditingController _nameController = TextEditingController();
   String? _nameError;
 
-  /// 다이얼로그가 떠 있는 동안 버튼을 다시 눌러도 무시합니다.
+  /// 조회하거나 다이얼로그가 떠 있는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isSubmitting = false;
 
   @override
@@ -36,13 +43,36 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
 
     _isSubmitting = true;
     try {
-      final isFirstVisit = await GujeukDialog.show(
-        context,
-        title: '시설에 혹시 처음 방문했니?',
-        description: '정보를 잘못 입력했다면 아니요를 눌러서 이름을 다시 입력 할 수 있어',
+      final bool isReturning;
+      try {
+        isReturning = await _visitors.exists(name);
+      } catch (_) {
+        if (mounted) setState(() => _nameError = '확인하지 못했어요. 다시 눌러주세요');
+        return;
+      }
+      if (!mounted) return;
+      // 처음이면 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
+      if (!isReturning) {
+        final isFirstVisit = await GujeukDialog.show(
+          context,
+          title: '시설에 혹시 처음 방문했니?',
+          description: '정보를 잘못 입력했다면 아니요를 눌러서 이름을 다시 입력 할 수 있어',
+        );
+        if (!mounted || isFirstVisit != true) return;
+      }
+      // 재방문이면 예약, 처음이면 회원가입으로 갑니다.
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              isReturning ? ReservationPage(name: name) : const SignUpPage(),
+        ),
       );
-      if (!mounted || isFirstVisit != true) return;
-      // TODO 다음 화면으로 이동
+      if (mounted) {
+        setState(() {
+          _nameController.clear();
+          _nameError = null;
+        });
+      }
     } finally {
       _isSubmitting = false;
     }
@@ -52,7 +82,6 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
   Widget build(BuildContext context) {
     final isNarrow = MediaQuery.sizeOf(context).width < 800;
     return BaseScaffold(
-      showBackButton: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s20),
         child: ConstrainedBox(

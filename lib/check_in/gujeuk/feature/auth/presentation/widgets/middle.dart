@@ -9,9 +9,10 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/residence_dialog.dart';
 
 class Middle extends StatelessWidget {
+  final bool isSigned;
   final SignUpFormController form;
 
-  const Middle({super.key, required this.form});
+  const Middle({super.key, required this.form, this.isSigned = false});
 
   // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
   static const _times = [
@@ -24,9 +25,6 @@ class Middle extends StatelessWidget {
     '15:30',
     '16:30',
     '17:30',
-    '18:30',
-    '19:30',
-    '20:30',
   ];
 
   // 거주지 검색 API가 붙기 전까지 쓰는 임시 목록입니다.
@@ -92,105 +90,107 @@ class Middle extends StatelessWidget {
               ),
             ],
           ],
+          if (isSigned == false) ...[
           const SizedBox(height: GujeukSpacing.s60),
-          GujeukLabeledField(
-            label: '이름이 뭐야?',
-            icon: GujeukIcons.user,
-            child: GujeukInput(
-              hintText: '친구의 이름을 알려줘',
-              controller: form.nameController,
-              errorText: form.nameError,
+            GujeukLabeledField(
+              label: '이름이 뭐야?',
+              icon: GujeukIcons.user,
+              child: GujeukInput(
+                hintText: '친구의 이름을 알려줘',
+                controller: form.nameController,
+                errorText: form.nameError,
+              ),
             ),
-          ),
-          const SizedBox(height: GujeukSpacing.s60),
-          GujeukLabeledField(
-            label: '전화번호가 뭐야?',
-            icon: GujeukIcons.phone,
-            child: GujeukInput(
-              hintText: '전화번호를 입력해주세요',
-              controller: form.phoneController,
-              keyboardType: TextInputType.phone,
-              inputFormatters: const [PhoneNumberFormatter()],
-              errorText: form.phoneError,
+            const SizedBox(height: GujeukSpacing.s60),
+            GujeukLabeledField(
+              label: '전화번호가 뭐야?',
+              icon: GujeukIcons.phone,
+              child: GujeukInput(
+                hintText: '전화번호를 입력해주세요',
+                controller: form.phoneController,
+                keyboardType: TextInputType.phone,
+                inputFormatters: const [PhoneNumberFormatter()],
+                errorText: form.phoneError,
+              ),
             ),
-          ),
-          const SizedBox(height: GujeukSpacing.s60),
-          GujeukLabeledField(
-            label: '성별이 뭐야?',
-            icon: GujeukIcons.gender,
-            errorText: form.genderError,
-            child: Row(
-              children: [
-                Expanded(child: _genderToggle(GujeukGender.male)),
-                const SizedBox(width: GujeukSpacing.s26),
-                Expanded(child: _genderToggle(GujeukGender.female)),
-              ],
+            const SizedBox(height: GujeukSpacing.s60),
+            GujeukLabeledField(
+              label: '성별이 뭐야?',
+              icon: GujeukIcons.gender,
+              errorText: form.genderError,
+              child: Row(
+                children: [
+                  Expanded(child: _genderToggle(GujeukGender.male)),
+                  const SizedBox(width: GujeukSpacing.s26),
+                  Expanded(child: _genderToggle(GujeukGender.female)),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: GujeukSpacing.s60),
-          GujeukLabeledField(
-            label: '언제 태어났어?',
-            icon: GujeukIcons.cake,
-            errorText: form.birthError,
-            child: Row(
-              children: [
-                Expanded(
-                  child: _birthInput(
-                    form.birthYearController,
-                    '년도',
-                    '2009',
-                    NumberRangeFormatter(
-                      min: 1900,
-                      max: DateTime.now().year,
-                      accepts: form.canBeBirthYear,
+            const SizedBox(height: GujeukSpacing.s60),
+            GujeukLabeledField(
+              label: '언제 태어났어?',
+              icon: GujeukIcons.cake,
+              errorText: form.birthError,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _birthInput(
+                      form.birthYearController,
+                      '년도',
+                      '2009',
+                      NumberRangeFormatter(
+                        min: 1900,
+                        max: DateTime.now().year,
+                        accepts: form.canBeBirthYear,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: GujeukSpacing.s26),
-                Expanded(
-                  child: _birthInput(
-                    form.birthMonthController,
-                    '월',
-                    '3',
-                    NumberRangeFormatter(
-                      min: 1,
-                      max: 12,
-                      accepts: form.canBeBirthMonth,
+                  const SizedBox(width: GujeukSpacing.s26),
+                  Expanded(
+                    child: _birthInput(
+                      form.birthMonthController,
+                      '월',
+                      '3',
+                      NumberRangeFormatter(
+                        min: 1,
+                        max: 12,
+                        accepts: form.canBeBirthMonth,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: GujeukSpacing.s26),
-                Expanded(
-                  child: _birthInput(
-                    form.birthDayController,
-                    '일',
-                    '5',
-                    NumberRangeFormatter(
-                      min: 1,
-                      max: 31,
-                      accepts: form.canBeBirthDay,
+                  const SizedBox(width: GujeukSpacing.s26),
+                  Expanded(
+                    child: _birthInput(
+                      form.birthDayController,
+                      '일',
+                      '5',
+                      NumberRangeFormatter(
+                        min: 1,
+                        max: 31,
+                        accepts: form.canBeBirthDay,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: GujeukSpacing.s60),
-          GujeukLabeledField(
-            label: '어디 살아?',
-            icon: GujeukIcons.home,
-            child: GestureDetector(
-              onTap: () => _pickResidence(context),
-              child: AbsorbPointer(
-                child: GujeukInput(
-                  hintText: '너가 살고 있는 동네를 알려줘',
-                  controller: form.residenceController,
-                  showTrailingIcon: true,
-                  errorText: form.residenceError,
+            const SizedBox(height: GujeukSpacing.s60),
+            GujeukLabeledField(
+              label: '어디 살아?',
+              icon: GujeukIcons.home,
+              child: GestureDetector(
+                onTap: () => _pickResidence(context),
+                child: AbsorbPointer(
+                  child: GujeukInput(
+                    hintText: '너가 살고 있는 동네를 알려줘',
+                    controller: form.residenceController,
+                    showTrailingIcon: true,
+                    errorText: form.residenceError,
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: GujeukSpacing.s60),
           GujeukLabeledField(
             label: '친구들과 함께 왔니?',

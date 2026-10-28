@@ -11,4 +11,25 @@ abstract interface class ReservationRepository {
 
   /// 오늘 예약된 칸 목록. 모든 시설의 예약이 함께 옵니다.
   Future<List<ReservedSlot>> fetchReservedSlots();
+
+  /// `POST /user/reservation`. [phone]은 같은 이름의 회원이 있을 때만 보냅니다.
+  /// 409는 [DuplicateNameException], [SlotTakenException]으로 나눠 던집니다.
+  Future<void> reserve({
+    required String name,
+    String? phone,
+    required String purpose,
+    required String startTime,
+    required int maleCount,
+    required int femaleCount,
+  });
+}
+
+/// 409 `같은 이름의 회원이 있습니다.` 전화번호를 받아 다시 요청해야 합니다.
+class DuplicateNameException implements Exception {
+  const DuplicateNameException();
+}
+
+/// 409 `이미 해당 시간의 예약 존재합니다.` 그사이 다른 친구가 같은 칸을 예약했습니다.
+class SlotTakenException implements Exception {
+  const SlotTakenException();
 }
