@@ -17,6 +17,7 @@ abstract final class BubdongPalette {
   static const gray100 = Color(0xFFCCCCCC);
 
   static const orange500 = Color(0xFFFF9200);
+  static const orange700 = Color(0xFFC27A2A);
   static const orange900 = Color(0xFF9B4D00);
   static const amber400 = Color(0xFFF5C343);
   static const orange50 = Color(0xFFFFF4E4);
@@ -54,6 +55,7 @@ abstract final class BubdongColors {
   static const bgInternet = BubdongPalette.orange50;
 
   //버튼
+  static const actionPrimaryPressed = BubdongPalette.orange700;
   static const actionPrimary = BubdongPalette.orange500;
 
   //텍스트
@@ -76,4 +78,10 @@ abstract final class BubdongColors {
   static const decorPinkLight = BubdongPalette.pink100;
   static const decorBlueLight = BubdongPalette.blue100;
   static const decorTealLight = BubdongPalette.teal200;
+
+  //인풋
+  static const borderError = BubdongPalette.red500;
+  static const textError = BubdongPalette.red500;
+  static const bgFieldDisabled = BubdongPalette.gray40;
+  static const textFieldDisabled = BubdongPalette.gray80;
 }
