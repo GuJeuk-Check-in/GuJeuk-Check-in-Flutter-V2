@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_facility_card.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_select_card.dart';
 
 class BubdongApp extends StatelessWidget {
   const BubdongApp({super.key});
@@ -14,33 +15,36 @@ class BubdongApp extends StatelessWidget {
       home: const Scaffold(
         body: Center(
           child: SizedBox(
-            width: 200,
+            width: 240,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              spacing: 16,
+              spacing: 12,
               children: [
-                BubdongFacilityCard(title: '인터넷', subtitle: '신청서 작성'),
-                BubdongFacilityCard(
-                  title: '탁구',
-                  subtitle: '신청서 작성',
+                BubdongSelectCard(
+                  label: '남자',
+                  icon: Icons.male,
                   color: BubdongCardColor.mint,
-                  status: BubdongCardStatus.selected,
                 ),
-                BubdongFacilityCard(
-                  title: '보드게임',
-                  detail: '남은 시간 : 00분',
-                  color: BubdongCardColor.blue,
-                  status: BubdongCardStatus.unavailable,
-                ),
-                BubdongFacilityCard(
-                  title: '휴식',
+                BubdongSelectCard(
+                  label: '여자',
+                  icon: Icons.female,
                   color: BubdongCardColor.pink,
-                  status: BubdongCardStatus.completed,
+                  selected: true,
                 ),
-                BubdongFacilityCard(
-                  title: '방카',
-                  detail: '2번 좌석 / 남은 시간 : 00분',
-                  status: BubdongCardStatus.inUse,
+                BubdongSelectCard(
+                  label: '친구가 데려와서',
+                  icon: Icons.people_outline,
+                ),
+                BubdongSelectCard(
+                  label: '부모님의 권유',
+                  icon: Icons.family_restroom,
+                  color: BubdongCardColor.mint,
+                  selected: true,
+                ),
+                BubdongSelectCard(
+                  label: '기타',
+                  icon: Icons.edit,
+                  color: BubdongCardColor.blue,
                 ),
               ],
             ),
