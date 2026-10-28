@@ -20,7 +20,7 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
   final TextEditingController _nameController = TextEditingController();
   String? _nameError;
 
-  /// 조회하는 동안 버튼을 다시 눌러도 무시합니다.
+  /// 조회하거나 다이얼로그가 떠 있는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isSubmitting = false;
 
   @override
@@ -51,13 +51,28 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
         return;
       }
       if (!mounted) return;
+      // 처음이면 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
+      if (!isReturning) {
+        final isFirstVisit = await GujeukDialog.show(
+          context,
+          title: '시설에 혹시 처음 방문했니?',
+          description: '정보를 잘못 입력했다면 아니요를 눌러서 이름을 다시 입력 할 수 있어',
+        );
+        if (!mounted || isFirstVisit != true) return;
+      }
       // 재방문이면 예약, 처음이면 회원가입으로 갑니다.
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
               isReturning ? ReservationPage(name: name) : const SignUpPage(),
         ),
       );
+      if (mounted) {
+        setState(() {
+          _nameController.clear();
+          _nameError = null;
+        });
+      }
     } finally {
       _isSubmitting = false;
     }
@@ -67,7 +82,6 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
   Widget build(BuildContext context) {
     final isNarrow = MediaQuery.sizeOf(context).width < 800;
     return BaseScaffold(
-      showBackButton: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s20),
         child: ConstrainedBox(
