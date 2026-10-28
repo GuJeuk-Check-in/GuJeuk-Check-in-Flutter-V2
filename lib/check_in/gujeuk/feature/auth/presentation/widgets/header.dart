@@ -3,7 +3,8 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 class Header extends StatelessWidget {
-  const Header({super.key});
+  final String title;
+  const Header({super.key,required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class Header extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  '구즉 청소년문화의 집에 온걸 환영해~!',
+                  title,
                   style: GujeukTypography.titleLg.copyWith(
                     color: GujeukColors.iconBrand,
                   ),

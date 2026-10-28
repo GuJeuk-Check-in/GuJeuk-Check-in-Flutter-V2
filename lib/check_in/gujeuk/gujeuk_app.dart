@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/sign_up_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/presentation/home_page.dart';
 
 class GujeukApp extends StatelessWidget {
   const GujeukApp({super.key});
@@ -11,7 +11,7 @@ class GujeukApp extends StatelessWidget {
       title: '구즉 체크인',
       theme: GujeukTheme.light,
       debugShowCheckedModeBanner: false,
-      home: const SignUpPage(),
+      home: const HomePage(),
     );
   }
 }

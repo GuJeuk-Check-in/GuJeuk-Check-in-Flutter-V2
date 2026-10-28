@@ -243,6 +243,15 @@ class SignUpFormController extends ChangeNotifier {
     ].every((error) => error == null);
   }
 
+  /// 이용 예약 화면용 검사. 개인정보 칸이 없으므로 목적과 시간만 봅니다.
+  bool validateReservation() {
+    purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
+    timeError = needsTime && time == null ? '몇 시에 이용할지 골라주세요' : null;
+    notifyListeners();
+
+    return purposeError == null && timeError == null;
+  }
+
   String? _validatePhone() {
     final digits = PhoneNumberFormatter.digitsOf(phoneController.text);
     if (digits.isEmpty) return '전화번호를 적어주세요';
