@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/done_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/fake_reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
@@ -77,9 +78,14 @@ class _SignUpPageState extends State<SignUpPage> {
       try {
         await send();
       } on DuplicateNameException {
-        await send(phone: _form.phoneController.text);
+        await send(
+          phone: PhoneNumberFormatter.digitsOf(_form.phoneController.text),
+        );
       }
       return true;
+    } on DuplicateNameException {
+      // 번호를 붙여 보냈는데도 409면 같은 이름의 회원과 번호가 다른 것입니다.
+      if (mounted) _form.rejectDuplicatePhone();
     } on SlotTakenException {
       if (mounted) _form.rejectTakenTime();
     } catch (_) {

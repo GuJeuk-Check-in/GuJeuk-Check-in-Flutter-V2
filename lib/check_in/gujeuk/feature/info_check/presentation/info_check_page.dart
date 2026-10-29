@@ -82,6 +82,7 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
   Widget build(BuildContext context) {
     final isNarrow = MediaQuery.sizeOf(context).width < 800;
     return BaseScaffold(
+      showBackButton: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s20),
         child: ConstrainedBox(

@@ -13,6 +13,7 @@ abstract interface class ReservationRepository {
   Future<List<ReservedSlot>> fetchReservedSlots();
 
   /// `POST /user/reservation`. [phone]은 같은 이름의 회원이 있을 때만 보냅니다.
+  /// [phone]은 하이픈 없이 숫자만(`01012345678`) 넘깁니다.
   /// 409는 [DuplicateNameException], [SlotTakenException]으로 나눠 던집니다.
   Future<void> reserve({
     required String name,

@@ -188,6 +188,13 @@ class SignUpFormController extends ChangeNotifier {
     loadReservedTimes();
   }
 
+  /// 같은 이름의 회원이 있어 전화번호를 붙여 보냈는데도 번호가 맞지 않을 때.
+  /// 번호를 고치면 phoneController 리스너가 에러를 지웁니다.
+  void rejectDuplicatePhone() {
+    phoneError = '같은 이름의 친구와 전화번호가 달라요. 전화번호를 다시 확인해주세요';
+    notifyListeners();
+  }
+
   void selectTime(String value) {
     time = value;
     timeError = null;

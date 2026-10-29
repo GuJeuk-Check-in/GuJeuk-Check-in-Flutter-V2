@@ -8,6 +8,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/radius.dar
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/shadow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/spacing.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/typography.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/fake_reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
@@ -75,7 +76,7 @@ class _ReservationPageState extends State<ReservationPage> {
     try {
       await _reservations.reserve(
         name: widget.name,
-        phone: phone,
+        phone: phone == null ? null : PhoneNumberFormatter.digitsOf(phone),
         purpose: _form.purpose!,
         startTime: _form.time!,
         maleCount: _form.maleCount,
