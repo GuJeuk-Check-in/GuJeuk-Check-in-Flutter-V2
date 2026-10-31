@@ -2,7 +2,15 @@ class VisitPurpose {
   final int id;
   final String purpose;
 
-  const VisitPurpose({required this.id, required this.purpose});
+  /// 지금 예약을 받는지. `GET /user/reservation/purpose`의 `reservationStatus`입니다.
+  /// 다른 목록에는 이 값이 없어 받는 것으로 봅니다.
+  final bool isReservationOpen;
+
+  const VisitPurpose({
+    required this.id,
+    required this.purpose,
+    this.isReservationOpen = true,
+  });
 
   static final _maxPeoplePattern = RegExp(r'최대\s*(\d+)명');
 
@@ -17,6 +25,7 @@ class VisitPurpose {
     return VisitPurpose(
       id: json['id'] as int,
       purpose: json['purpose'] as String,
+      isReservationOpen: json['reservationStatus'] as bool? ?? true,
     );
   }
 }

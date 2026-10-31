@@ -22,6 +22,9 @@ class FakeReservationRepository implements ReservationRepository {
   // 예약 없이 쓰는 경우도 볼 수 있게 친친마루는 뺐습니다.
   static const _reservablePurposeIds = {2, 3, 4, 5};
 
+  // 예약 불가 카드를 볼 수 있게 통통마루는 지금 예약을 받지 않습니다.
+  static const _closedPurposeIds = {5};
+
   static const _reservedSlots = [
     {'purpose': '난장마루(노래방 최대 4명)', 'startTime': '11:30:00'},
     {'purpose': '난장마루(노래방 최대 4명)', 'startTime': '14:30:00'},
@@ -42,7 +45,12 @@ class FakeReservationRepository implements ReservationRepository {
     await Future<void>.delayed(delay);
     return _visitPurposes
         .where((json) => _reservablePurposeIds.contains(json['id']))
-        .map(VisitPurpose.fromJson)
+        .map(
+          (json) => VisitPurpose.fromJson({
+            ...json,
+            'reservationStatus': !_closedPurposeIds.contains(json['id']),
+          }),
+        )
         .toList();
   }
 

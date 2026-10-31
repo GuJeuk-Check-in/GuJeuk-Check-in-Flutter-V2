@@ -251,6 +251,7 @@ class Middle extends StatelessWidget {
               accent: GujeukOptionAccent
                   .values[index % GujeukOptionAccent.values.length],
               selected: form.purpose == purpose.purpose,
+              disabled: form.closedPurposes.contains(purpose.purpose),
               onTap: () => form.selectPurpose(purpose.purpose),
             );
           },

@@ -38,6 +38,9 @@ class SignUpFormController extends ChangeNotifier {
 
   /// 예약이 필요한 목적 이름들. null이면 아직 못 불러왔습니다.
   Set<String>? reservablePurposes;
+
+  /// 예약이 필요한데 지금은 받지 않는 시설. 카드를 고를 수 없게 막습니다.
+  Set<String> closedPurposes = {};
   String? purposesLoadError;
 
   /// 고른 시설의 오늘 마감 시간. null이면 불러오는 중이거나 실패했습니다.
@@ -128,6 +131,15 @@ class SignUpFormController extends ChangeNotifier {
       ).wait;
       visitPurposes = all;
       reservablePurposes = {for (final p in reservable) p.purpose};
+      closedPurposes = {
+        for (final p in reservable)
+          if (!p.isReservationOpen) p.purpose,
+      };
+      // 다시 불러온 사이 고른 시설이 막혔다면 고른 것을 비웁니다.
+      if (closedPurposes.contains(purpose)) {
+        purpose = null;
+        time = null;
+      }
     } catch (_) {
       purposesLoadError = '방문 목적을 불러오지 못했어요';
     }
@@ -141,7 +153,7 @@ class SignUpFormController extends ChangeNotifier {
   }
 
   void selectPurpose(String value) {
-    if (purpose == value) return;
+    if (purpose == value || closedPurposes.contains(value)) return;
     // 시설마다 예약 상황이 다르므로 목적을 바꾸면 고른 시간은 비웁니다.
     time = null;
     timeError = null;
