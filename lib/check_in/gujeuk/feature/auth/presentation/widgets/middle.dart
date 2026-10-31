@@ -14,27 +14,16 @@ class Middle extends StatelessWidget {
 
   const Middle({super.key, required this.form, this.isSigned = false});
 
-  // 거주지 검색 API가 붙기 전까지 쓰는 임시 목록입니다.
-  static const _residences = [
-    '구즉동',
-    '관평동',
-    '신성동',
-    '전민동',
-    '노은1동',
-    '노은2동',
-    '노은3동',
-    '온천1동',
-    '온천2동',
-    '원신흥동',
-    '상대동',
-    '학하동',
-    '진잠동',
-  ];
-
   Future<void> _pickResidence(BuildContext context) async {
+    final residences = form.residences;
+    // 목록을 아직 못 받았으면 모달 대신 다시 불러옵니다.
+    if (residences == null) {
+      form.loadResidences();
+      return;
+    }
     final residence = await ResidenceDialog.show(
       context,
-      residences: _residences,
+      residences: residences,
       selected: form.residence,
     );
     if (residence == null) return;

@@ -3,11 +3,15 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/residence_repository.dart';
 
 /// 회원가입 폼의 입력값과 에러 문구를 한곳에서 관리합니다.
 /// [validate]로 전체를 검사하고, 값을 다시 고치면 그 항목의 에러는 지워집니다.
 class SignUpFormController extends ChangeNotifier {
   final ReservationRepository _reservations;
+
+  /// 거주지를 고르는 회원가입 화면에만 넘깁니다.
+  final ResidenceRepository? _residenceRepository;
 
   // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
   static const times = [
@@ -50,6 +54,9 @@ class SignUpFormController extends ChangeNotifier {
   var _disposed = false;
   GujeukGender? gender;
   String? residence;
+
+  /// 거주지 모달에 띄울 목록. null이면 아직 못 불러왔습니다.
+  List<String>? residences;
   bool agreed = false;
   int maleCount = 0;
   int femaleCount = 0;
@@ -64,7 +71,7 @@ class SignUpFormController extends ChangeNotifier {
   String? agreementError;
   String? companionError;
 
-  SignUpFormController(this._reservations) {
+  SignUpFormController(this._reservations, [this._residenceRepository]) {
     // 에러가 떠 있을 때만 지우고 다시 그려, 타이핑마다 폼 전체가 다시 그려지지 않게 합니다.
     nameController.addListener(() {
       if (nameError == null) return;
@@ -213,6 +220,19 @@ class SignUpFormController extends ChangeNotifier {
     gender = value;
     genderError = null;
     notifyListeners();
+  }
+
+  /// 실패하면 거주지 칸에 문구를 띄웁니다. 칸을 다시 누르면 다시 불러옵니다.
+  Future<void> loadResidences() async {
+    final repository = _residenceRepository;
+    if (repository == null) return;
+    try {
+      residences = await repository.fetchResidences();
+      residenceError = null;
+    } catch (_) {
+      residenceError = '동네 목록을 불러오지 못했어요. 다시 눌러주세요';
+    }
+    if (!_disposed) notifyListeners();
   }
 
   void selectResidence(String value) {

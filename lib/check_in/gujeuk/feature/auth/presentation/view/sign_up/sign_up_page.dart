@@ -5,6 +5,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_residence_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_sign_up_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/sign_up_repository.dart';
@@ -30,7 +31,10 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     reservationRepositoryProvider,
   );
   late final SignUpRepository _signUps = ref.read(signUpRepositoryProvider);
-  late final SignUpFormController _form = SignUpFormController(_reservations);
+  late final SignUpFormController _form = SignUpFormController(
+    _reservations,
+    ref.read(residenceRepositoryProvider),
+  );
 
   /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isSubmitting = false;
@@ -40,6 +44,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   void initState() {
     super.initState();
     _form.loadPurposes();
+    _form.loadResidences();
   }
 
   @override
