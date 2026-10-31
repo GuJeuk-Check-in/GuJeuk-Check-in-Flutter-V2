@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/base_scaffold.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/done_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_button.dart';
@@ -9,7 +10,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/shadow.dar
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/spacing.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/typography.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/fake_reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_end_page.dart';
@@ -17,7 +18,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/phone_check_dialog.dart';
 
-class ReservationPage extends StatefulWidget {
+class ReservationPage extends ConsumerStatefulWidget {
   final String name;
 
   const ReservationPage({super.key, required this.name});
@@ -25,12 +26,13 @@ class ReservationPage extends StatefulWidget {
   static const double _cardMaxWidth = 1232;
 
   @override
-  State<ReservationPage> createState() => _ReservationPageState();
+  ConsumerState<ReservationPage> createState() => _ReservationPageState();
 }
 
-class _ReservationPageState extends State<ReservationPage> {
-  // 퍼블리싱용 가짜 응답입니다. 서버 연동 때 실제 구현으로 바꿉니다.
-  final ReservationRepository _reservations = const FakeReservationRepository();
+class _ReservationPageState extends ConsumerState<ReservationPage> {
+  late final ReservationRepository _reservations = ref.read(
+    reservationRepositoryProvider,
+  );
   late final SignUpFormController _form = SignUpFormController(_reservations);
 
   /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
@@ -70,8 +72,7 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   /// 처음엔 전화번호 없이 보내고, 같은 이름의 회원이 있다는 409가 오면
-  /// 전화번호를 받아 같은 내용으로 한 번 더 보냅니다.
-  /// 번호를 보냈는데도 409면 서버에 있는 번호와 다른 것이라 에러와 함께 다시 묻습니다.
+  /// 예약 문자를 받을 번호를 받아 같은 내용으로 한 번 더 보냅니다.
   Future<void> _reserve({String? phone}) async {
     try {
       await _reservations.reserve(
@@ -84,10 +85,7 @@ class _ReservationPageState extends State<ReservationPage> {
       );
     } on DuplicateNameException {
       if (!mounted) return;
-      final entered = await PhoneCheckDialog.show(
-        context,
-        errorText: phone == null ? null : '전화번호가 달라요. 다시 확인해주세요',
-      );
+      final entered = await PhoneCheckDialog.show(context);
       // 취소하면 예약 화면에 그대로 남아 다시 누를 수 있습니다.
       if (entered == null || !mounted) return;
       return _reserve(phone: entered);

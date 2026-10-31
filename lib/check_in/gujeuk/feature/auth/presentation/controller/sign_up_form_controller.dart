@@ -115,13 +115,16 @@ class SignUpFormController extends ChangeNotifier {
 
   /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
   /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
+  /// 예약 시설 목록만 실패하면 카드는 그대로 띄우고 모든 목적을 예약 없이 받습니다.
   Future<void> loadPurposes() async {
     purposesLoadError = null;
     notifyListeners();
     try {
       final (all, reservable) = await (
         _reservations.fetchVisitPurposes(),
-        _reservations.fetchReservablePurposes(),
+        _reservations.fetchReservablePurposes().catchError(
+          (Object _) => <VisitPurpose>[],
+        ),
       ).wait;
       visitPurposes = all;
       reservablePurposes = {for (final p in reservable) p.purpose};

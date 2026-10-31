@@ -37,7 +37,7 @@ class PhoneNumberFormatter extends TextInputFormatter {
       if (digitsBeforeCursor > maxDigits) digitsBeforeCursor = maxDigits;
     }
 
-    final formatted = _format(digits);
+    final formatted = format(digits);
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(
@@ -46,7 +46,8 @@ class PhoneNumberFormatter extends TextInputFormatter {
     );
   }
 
-  static String _format(String digits) {
+  /// 숫자만 담긴 [digits]에 하이픈을 넣습니다. 서버로 보낼 때도 같은 모양을 씁니다.
+  static String format(String digits) {
     if (digits.length <= 3) return digits;
     if (digits.length <= 7) {
       return '${digits.substring(0, 3)}-${digits.substring(3)}';
