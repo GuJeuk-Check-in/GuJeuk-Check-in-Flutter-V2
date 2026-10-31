@@ -10,6 +10,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/shadow.dar
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/spacing.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/typography.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_check_in_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
@@ -66,12 +67,29 @@ class _ReservationPageState extends ConsumerState<ReservationPage> {
       if (_form.needsTime) {
         await _reserve();
       } else {
-        // TODO 예약이 필요 없는 목적은 방문 기록(check-in) 요청
-        _goToEnd(null);
+        await _checkIn();
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  /// 예약이 필요 없는 목적은 방문 기록만 남기고 완료 화면으로 갑니다.
+  Future<void> _checkIn() async {
+    try {
+      await ref
+          .read(checkInRepositoryProvider)
+          .checkIn(
+            userId: widget.userId,
+            purpose: _form.purpose!,
+            maleCount: _form.maleCount,
+            femaleCount: _form.femaleCount,
+          );
+    } catch (_) {
+      if (mounted) setState(() => _submitError = '기록하지 못했어요. 다시 눌러주세요');
+      return;
+    }
+    if (mounted) _goToEnd(null);
   }
 
   /// 처음엔 전화번호 없이 보내고, 같은 이름의 회원이 있다는 409가 오면
