@@ -21,7 +21,10 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 class ReservationPage extends ConsumerStatefulWidget {
   final String name;
 
-  const ReservationPage({super.key, required this.name});
+  /// 이름 확인에서 받은 회원 id. 방문 기록을 남길 때 씁니다.
+  final int userId;
+
+  const ReservationPage({super.key, required this.name, required this.userId});
 
   static const double _cardMaxWidth = 1232;
 

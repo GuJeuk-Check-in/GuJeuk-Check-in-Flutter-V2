@@ -8,11 +8,11 @@ class FakeVisitorRepository implements VisitorRepository {
   const FakeVisitorRepository({this.delay = const Duration(milliseconds: 500)});
 
   // 이 이름을 넣으면 재방문, 그 밖의 이름은 첫 방문으로 봅니다.
-  static const _registeredNames = {'ff', '김철수', '이영희'};
+  static const _registeredUserIds = {'ff': 1, '김철수': 2, '이영희': 3};
 
   @override
-  Future<bool> exists(String name) async {
+  Future<int?> findUserId(String name) async {
     await Future<void>.delayed(delay);
-    return _registeredNames.contains(name);
+    return _registeredUserIds[name];
   }
 }

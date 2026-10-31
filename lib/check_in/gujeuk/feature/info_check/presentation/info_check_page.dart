@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/sign_up/sign_up_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/fake_visitor_repository.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/domain/visitor_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/remote_visitor_repository.dart';
 
-class InfoCheckPage extends StatefulWidget {
+class InfoCheckPage extends ConsumerStatefulWidget {
   const InfoCheckPage({super.key});
 
   @override
-  State<InfoCheckPage> createState() => _InfoCheckPageState();
+  ConsumerState<InfoCheckPage> createState() => _InfoCheckPageState();
 }
 
-class _InfoCheckPageState extends State<InfoCheckPage> {
-  // 퍼블리싱용 가짜 응답입니다. 서버 연동 때 실제 구현으로 바꿉니다.
-  final VisitorRepository _visitors = const FakeVisitorRepository();
-
+class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
   final TextEditingController _nameController = TextEditingController();
   String? _nameError;
 
@@ -43,16 +40,16 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
 
     _isSubmitting = true;
     try {
-      final bool isReturning;
+      final int? userId;
       try {
-        isReturning = await _visitors.exists(name);
+        userId = await ref.read(visitorRepositoryProvider).findUserId(name);
       } catch (_) {
         if (mounted) setState(() => _nameError = '확인하지 못했어요. 다시 눌러주세요');
         return;
       }
       if (!mounted) return;
       // 처음이면 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
-      if (!isReturning) {
+      if (userId == null) {
         final isFirstVisit = await GujeukDialog.show(
           context,
           title: '시설에 혹시 처음 방문했니?',
@@ -61,12 +58,10 @@ class _InfoCheckPageState extends State<InfoCheckPage> {
         if (!mounted || isFirstVisit != true) return;
       }
       // 재방문이면 예약, 처음이면 회원가입으로 갑니다.
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              isReturning ? ReservationPage(name: name) : const SignUpPage(),
-        ),
-      );
+      final Widget next = userId == null
+          ? const SignUpPage()
+          : ReservationPage(name: name, userId: userId);
+      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => next));
       if (mounted) {
         setState(() {
           _nameController.clear();
