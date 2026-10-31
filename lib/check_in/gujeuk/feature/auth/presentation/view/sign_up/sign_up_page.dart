@@ -5,7 +5,9 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_sign_up_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/sign_up_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_end_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/bottom.dart';
@@ -27,6 +29,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   late final ReservationRepository _reservations = ref.read(
     reservationRepositoryProvider,
   );
+  late final SignUpRepository _signUps = ref.read(signUpRepositoryProvider);
   late final SignUpFormController _form = SignUpFormController(_reservations);
 
   /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
@@ -54,9 +57,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
       _submitError = null;
     });
     try {
-      // TODO 회원가입 요청. 붙일 때 회원가입은 됐는데 예약만 실패한 경우,
-      // 다시 눌렀을 때 회원가입을 또 보내지 않게 나눠야 합니다.
-      if (_form.needsTime && !await _reserve()) return;
+      if (!await _signUp()) return;
       if (!mounted) return;
       _goToEnd();
     } finally {
@@ -64,36 +65,32 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     }
   }
 
-  /// 예약에 성공하면 true, 실패하면 이유를 화면에 띄우고 false.
-  /// 같은 이름의 회원이 있다는 409가 오면 방금 적은 전화번호로 한 번 더 보냅니다.
-  Future<bool> _reserve() async {
-    Future<void> send({String? phone}) => _reservations.reserve(
-      name: _form.nameController.text.trim(),
-      phone: phone,
-      purpose: _form.purpose!,
-      startTime: _form.time!,
-      maleCount: _form.maleCount,
-      femaleCount: _form.femaleCount,
-    );
-
+  /// 가입에 성공하면 true, 실패하면 문구를 화면에 띄우고 false.
+  /// 예약이 필요한 시설이면 가입 요청에 시간을 실어 한 번에 예약합니다.
+  Future<bool> _signUp() async {
     try {
-      try {
-        await send();
-      } on DuplicateNameException {
-        await send(
-          phone: PhoneNumberFormatter.digitsOf(_form.phoneController.text),
-        );
-      }
+      await _signUps.signUp(
+        name: _form.nameController.text.trim(),
+        gender: switch (_form.gender!) {
+          GujeukGender.male => Gender.man,
+          GujeukGender.female => Gender.woman,
+        },
+        phone: PhoneNumberFormatter.digitsOf(_form.phoneController.text),
+        birthDate: _form.birthDate,
+        residence: _form.residence!,
+        purpose: _form.purpose!,
+        maleCount: _form.maleCount,
+        femaleCount: _form.femaleCount,
+        reservationTime: _form.needsTime ? _form.time : null,
+      );
       return true;
-    } on DuplicateNameException {
-      // 번호를 붙여 보냈는데도 409면 같은 이름의 회원과 번호가 다른 것입니다.
-      if (mounted) _form.rejectDuplicatePhone();
     } on SlotTakenException {
       if (mounted) _form.rejectTakenTime();
+      return false;
     } catch (_) {
-      if (mounted) setState(() => _submitError = '예약하지 못했어요. 다시 눌러주세요');
+      if (mounted) setState(() => _submitError = '가입하지 못했어요. 다시 눌러주세요');
+      return false;
     }
-    return false;
   }
 
   void _goToEnd() {

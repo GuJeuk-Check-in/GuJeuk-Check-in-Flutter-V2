@@ -203,13 +203,6 @@ class SignUpFormController extends ChangeNotifier {
     loadReservedTimes();
   }
 
-  /// 같은 이름의 회원이 있어 전화번호를 붙여 보냈는데도 번호가 맞지 않을 때.
-  /// 번호를 고치면 phoneController 리스너가 에러를 지웁니다.
-  void rejectDuplicatePhone() {
-    phoneError = '같은 이름의 친구와 전화번호가 달라요. 전화번호를 다시 확인해주세요';
-    notifyListeners();
-  }
-
   void selectTime(String value) {
     time = value;
     timeError = null;
@@ -277,6 +270,9 @@ class SignUpFormController extends ChangeNotifier {
     final text = birthYearController.text;
     return text.length == 4 ? int.parse(text) : null;
   }
+
+  /// 생년월일. [validate]를 통과한 뒤에만 부릅니다.
+  DateTime get birthDate => DateTime(_birthYear!, _birthMonth!, _birthDay!);
 
   int? get _birthMonth => _parseIn(birthMonthController.text, 1, 12);
 
