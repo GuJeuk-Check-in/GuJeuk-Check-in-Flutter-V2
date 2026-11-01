@@ -148,6 +148,7 @@ class _BubdongButtonState extends State<BubdongButton> {
           borderRadius: BubdongRadius.r9999All,
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             if (widget.icon != null) ...[
