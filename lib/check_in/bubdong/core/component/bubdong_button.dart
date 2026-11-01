@@ -17,7 +17,7 @@ class BubdongButton extends StatefulWidget {
   });
 
   final String label;
-  final VoidCallback? onPressed;
+  final VoidCallback? onPressed; // null이면 비활성
   final Widget? icon;
   final bool isLoading;
   final BubdongButtonVariant variant;
@@ -30,14 +30,14 @@ class BubdongButton extends StatefulWidget {
 class _BubdongButtonState extends State<BubdongButton> {
   bool _isPressed = false;
 
+  // 비활성이거나 로딩 중이면 못 누름 (로딩 중 중복 클릭 방지)
+  bool get _canPress => widget.onPressed != null && !widget.isLoading;
+
+  // 우선순위: 로딩 → 비활성 → 눌림 → 기본
   _ButtonState get _state {
-    if (widget.isLoading) {
-      return _ButtonState.loading;
-    } else if (widget.onPressed == null) {
-      return _ButtonState.disabled;
-    } else if (_isPressed) {
-      return _ButtonState.pressed;
-    }
+    if (widget.isLoading) return _ButtonState.loading;
+    if (widget.onPressed == null) return _ButtonState.disabled;
+    if (_isPressed) return _ButtonState.pressed;
     return _ButtonState.normal;
   }
 
@@ -69,6 +69,7 @@ class _BubdongButtonState extends State<BubdongButton> {
       case BubdongButtonVariant.tone:
         switch (_state) {
           case _ButtonState.normal:
+          case _ButtonState.loading:
             return const _ButtonColors(
               background: Colors.transparent,
               border: BubdongColors.brandPrimary,
@@ -86,35 +87,90 @@ class _BubdongButtonState extends State<BubdongButton> {
               border: BubdongColors.bgDisabled,
               text: BubdongColors.textDisabled,
             );
-          case _ButtonState.loading:
-            return const _ButtonColors(
-              background: Colors.transparent,
-              border: BubdongColors.brandPrimary,
-              text: BubdongColors.textAccentDark,
-            );
         }
     }
+  }
+
+  // 크기별 여백 (Figma 확인 후 조정)
+  EdgeInsets get _padding {
+    switch (widget.size) {
+      case BubdongButtonSize.large:
+        return const EdgeInsets.symmetric(
+          horizontal: BubdongSpacing.s32,
+          vertical: BubdongSpacing.s12,
+        );
+      case BubdongButtonSize.small:
+        return const EdgeInsets.symmetric(
+          horizontal: BubdongSpacing.s16,
+          vertical: BubdongSpacing.s4,
+        );
+    }
+  }
+
+  // 크기별 글자 스타일
+  TextStyle get _textStyle {
+    switch (widget.size) {
+      case BubdongButtonSize.large:
+        return BubdongTypography.button;
+      case BubdongButtonSize.small:
+        return BubdongTypography.label;
+    }
+  }
+
+  // 값이 바뀔 때만 다시 그림
+  void _setPressed(bool value) {
+    if (_isPressed != value) setState(() => _isPressed = value);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = _colors;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(width: 2, color: colors.border),
-        borderRadius: BubdongRadius.r9999All,
-        color: colors.background,
-      ),
-      padding: EdgeInsets.all(BubdongSpacing.s8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            widget.label,
-            style:BubdongTypography.button.copyWith(color: colors.text),
-          ),
 
-        ],
+    return GestureDetector(
+      // 누르는 순간: 눌림 색으로
+      onTapDown: _canPress ? (_) => _setPressed(true) : null,
+      // 손을 떼면: 원래 색으로 + 동작 실행
+      onTapUp: _canPress
+          ? (_) {
+        _setPressed(false);
+        widget.onPressed!();
+      }
+          : null,
+      // 누른 채로 밖으로 끌어내면: 원래 색으로 (동작은 실행 안 함)
+      onTapCancel: _canPress ? () => _setPressed(false) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100), // 색이 부드럽게 바뀌도록
+        padding: _padding,
+        decoration: BoxDecoration(
+          color: colors.background,
+          // 테두리 없는 상태도 투명 테두리로 두께를 유지 → 상태가 바뀌어도 크기 그대로
+          border: Border.all(width: 2, color: colors.border),
+          borderRadius: BubdongRadius.r9999All,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.icon != null) ...[
+              widget.icon!,
+              const SizedBox(width: BubdongSpacing.s8),
+            ],
+            Text(
+              widget.label,
+              style: _textStyle.copyWith(color: colors.text),
+            ),
+            if (widget.isLoading) ...[
+              const SizedBox(width: BubdongSpacing.s8),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colors.text,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
