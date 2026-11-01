@@ -4,12 +4,11 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/done_b
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_reservation_repository.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_residence_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_sign_up_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/sign_up_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_text_fields.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_end_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/bottom.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/header.dart';
@@ -27,35 +26,28 @@ class SignUpPage extends ConsumerStatefulWidget {
 }
 
 class _SignUpPageState extends ConsumerState<SignUpPage> {
-  late final ReservationRepository _reservations = ref.read(
-    reservationRepositoryProvider,
-  );
   late final SignUpRepository _signUps = ref.read(signUpRepositoryProvider);
-  late final SignUpFormController _form = SignUpFormController(
-    _reservations,
-    ref.read(residenceRepositoryProvider),
+
+  /// 칸을 고치면 그 칸에 떠 있던 에러를 지웁니다.
+  late final SignUpTextFields _fields = SignUpTextFields(
+    onEdited: (field) => _form.clearError(field),
   );
 
   /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isSubmitting = false;
   String? _submitError;
 
-  @override
-  void initState() {
-    super.initState();
-    _form.loadPurposes();
-    _form.loadResidences();
-  }
+  SignUpFormController get _form => ref.read(signUpFormProvider.notifier);
 
   @override
   void dispose() {
-    _form.dispose();
+    _fields.dispose();
     super.dispose();
   }
 
   Future<void> _onSubmit() async {
     if (_isSubmitting) return;
-    if (!_form.validate()) return;
+    if (!_form.validate(_fields.values)) return;
 
     setState(() {
       _isSubmitting = true;
@@ -73,20 +65,21 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   /// 가입에 성공하면 true, 실패하면 문구를 화면에 띄우고 false.
   /// 예약이 필요한 시설이면 가입 요청에 시간을 실어 한 번에 예약합니다.
   Future<bool> _signUp() async {
+    final form = ref.read(signUpFormProvider);
     try {
       await _signUps.signUp(
-        name: _form.nameController.text.trim(),
-        gender: switch (_form.gender!) {
+        name: _fields.name.text.trim(),
+        gender: switch (form.gender!) {
           GujeukGender.male => Gender.man,
           GujeukGender.female => Gender.woman,
         },
-        phone: PhoneNumberFormatter.digitsOf(_form.phoneController.text),
-        birthDate: _form.birthDate,
-        residence: _form.residence!,
-        purpose: _form.purpose!,
-        maleCount: _form.maleCount,
-        femaleCount: _form.femaleCount,
-        reservationTime: _form.needsTime ? _form.time : null,
+        phone: PhoneNumberFormatter.digitsOf(_fields.phone.text),
+        birthDate: _fields.birthDate,
+        residence: form.residence!,
+        purpose: form.purpose!,
+        maleCount: form.maleCount,
+        femaleCount: form.femaleCount,
+        reservationTime: _form.needsTime ? form.time : null,
       );
       return true;
     } on SlotTakenException {
@@ -99,19 +92,21 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   }
 
   void _goToEnd() {
+    final form = ref.read(signUpFormProvider);
+    final reservation = _form.needsTime
+        ? ReservationInfo(
+            name: _fields.name.text.trim(),
+            purpose: form.purpose!,
+            phone: _fields.phone.text.trim(),
+            startTime: form.time!,
+            maleCount: form.maleCount,
+            femaleCount: form.femaleCount,
+          )
+        : null;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => ReservationEndPage(
-          reservation: _form.needsTime
-              ? ReservationInfo(
-                  name: _form.nameController.text.trim(),
-                  purpose: _form.purpose!,
-                  phone: _form.phoneController.text.trim(),
-                  startTime: _form.time!,
-                  maleCount: _form.maleCount,
-                  femaleCount: _form.femaleCount,
-                )
-              : null,
+          reservation: reservation,
         ),
       ),
     );
@@ -136,10 +131,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             children: [
               Header(title: '구즉 청소년문화의 집에 온걸 환영해~!'),
               const SizedBox(height: GujeukSpacing.s40),
-              Middle(form: _form, isSigned: false),
+              Middle(fields: _fields),
               const SizedBox(height: GujeukSpacing.s100),
               Bottom(
-                form: _form,
                 onSubmit: _onSubmit,
                 isSubmitting: _isSubmitting,
                 submitError: _submitError,

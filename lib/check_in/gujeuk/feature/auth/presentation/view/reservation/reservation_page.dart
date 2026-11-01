@@ -37,23 +37,12 @@ class _ReservationPageState extends ConsumerState<ReservationPage> {
   late final ReservationRepository _reservations = ref.read(
     reservationRepositoryProvider,
   );
-  late final SignUpFormController _form = SignUpFormController(_reservations);
 
   /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isSubmitting = false;
   String? _submitError;
 
-  @override
-  void initState() {
-    super.initState();
-    _form.loadPurposes();
-  }
-
-  @override
-  void dispose() {
-    _form.dispose();
-    super.dispose();
-  }
+  SignUpFormController get _form => ref.read(signUpFormProvider.notifier);
 
   Future<void> _onSubmit() async {
     if (_isSubmitting) return;
@@ -76,14 +65,15 @@ class _ReservationPageState extends ConsumerState<ReservationPage> {
 
   /// 예약이 필요 없는 목적은 방문 기록만 남기고 완료 화면으로 갑니다.
   Future<void> _checkIn() async {
+    final form = ref.read(signUpFormProvider);
     try {
       await ref
           .read(checkInRepositoryProvider)
           .checkIn(
             userId: widget.userId,
-            purpose: _form.purpose!,
-            maleCount: _form.maleCount,
-            femaleCount: _form.femaleCount,
+            purpose: form.purpose!,
+            maleCount: form.maleCount,
+            femaleCount: form.femaleCount,
           );
     } catch (_) {
       if (mounted) setState(() => _submitError = '기록하지 못했어요. 다시 눌러주세요');
@@ -95,14 +85,15 @@ class _ReservationPageState extends ConsumerState<ReservationPage> {
   /// 처음엔 전화번호 없이 보내고, 같은 이름의 회원이 있다는 409가 오면
   /// 예약 문자를 받을 번호를 받아 같은 내용으로 한 번 더 보냅니다.
   Future<void> _reserve({String? phone}) async {
+    final form = ref.read(signUpFormProvider);
     try {
       await _reservations.reserve(
         name: widget.name,
         phone: phone == null ? null : PhoneNumberFormatter.digitsOf(phone),
-        purpose: _form.purpose!,
-        startTime: _form.time!,
-        maleCount: _form.maleCount,
-        femaleCount: _form.femaleCount,
+        purpose: form.purpose!,
+        startTime: form.time!,
+        maleCount: form.maleCount,
+        femaleCount: form.femaleCount,
       );
     } on DuplicateNameException {
       if (!mounted) return;
@@ -122,11 +113,11 @@ class _ReservationPageState extends ConsumerState<ReservationPage> {
     _goToEnd(
       ReservationInfo(
         name: widget.name,
-        purpose: _form.purpose!,
+        purpose: form.purpose!,
         phone: phone ?? '',
-        startTime: _form.time!,
-        maleCount: _form.maleCount,
-        femaleCount: _form.femaleCount,
+        startTime: form.time!,
+        maleCount: form.maleCount,
+        femaleCount: form.femaleCount,
       ),
     );
   }
@@ -158,7 +149,7 @@ class _ReservationPageState extends ConsumerState<ReservationPage> {
             children: [
               Header(title: '반가워! 청소년문화의집에 다시 와줘서 고마워'),
               const SizedBox(height: GujeukSpacing.s40),
-              Middle(form: _form, isSigned: true),
+              const Middle(),
               const SizedBox(height: GujeukSpacing.s100),
               if (_submitError case final error?) ...[
                 Text(
