@@ -205,20 +205,20 @@ class Middle extends ConsumerWidget {
     SignUpFormController controller,
   ) {
     final reserved = ref.watch(reservedTimesProvider(purpose));
-    // 마감 시간을 받기 전이나 다시 불러오는 동안에는 고를 수 없게 막아둡니다.
-    final taken = reserved.isLoading || reserved.hasError
-        ? null
-        : reserved.value;
+    // 불러오지 못하면 어떤 칸이 찼는지 모르므로 모든 칸을 회색으로 막습니다.
+    final failed = reserved.hasError && !reserved.isLoading;
     final timeError = form.errorOf(SignUpField.time);
     return [
+      // 불러오는 동안은 칸을 흐리게 막고, 다시 불러올 때는 지난 마감 시간을 그대로 보여줍니다.
       GujeukTimeSlotPicker(
         times: SignUpFormController.times,
-        reservedTimes: taken ?? const {},
+        reservedTimes: reserved.value ?? const {},
         pastTimes: SignUpFormController.pastTimes(),
         selectedTime: form.time,
-        onSelected: taken == null ? null : controller.selectTime,
+        isLoading: reserved.isLoading,
+        onSelected: failed ? null : controller.selectTime,
       ),
-      if (reserved.hasError && !reserved.isLoading) ...[
+      if (failed) ...[
         const SizedBox(height: GujeukSpacing.s16),
         _LoadError(
           message: '예약 현황을 불러오지 못했어요',
