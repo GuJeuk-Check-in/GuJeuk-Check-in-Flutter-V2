@@ -4,7 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/sign_up/sign_up_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/remote_visitor_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/presentation/controller/info_check_controller.dart';
 
 class InfoCheckPage extends ConsumerStatefulWidget {
   const InfoCheckPage({super.key});
@@ -15,10 +15,6 @@ class InfoCheckPage extends ConsumerStatefulWidget {
 
 class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
   final TextEditingController _nameController = TextEditingController();
-  String? _nameError;
-
-  /// 조회하거나 다이얼로그가 떠 있는 동안 버튼을 다시 눌러도 무시합니다.
-  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -26,55 +22,37 @@ class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
     super.dispose();
   }
 
-  void _onNameChanged(String _) {
-    if (_nameError != null) setState(() => _nameError = null);
-  }
-
   Future<void> _onNext() async {
-    if (_isSubmitting) return;
+    final result = await ref
+        .read(infoCheckProvider.notifier)
+        .check(_nameController.text);
+    if (!mounted) return;
 
-    final name = _nameController.text.trim();
-    final error = name.isEmpty ? '이름을 적어주세요' : null;
-    setState(() => _nameError = error);
-    if (error != null) return;
-
-    _isSubmitting = true;
-    try {
-      final int? userId;
-      try {
-        userId = await ref.read(visitorRepositoryProvider).findUserId(name);
-      } catch (_) {
-        if (mounted) setState(() => _nameError = '확인하지 못했어요. 다시 눌러주세요');
+    // 재방문이면 예약, 처음이면 회원가입으로 갑니다.
+    final Widget next;
+    switch (result) {
+      case VisitorCheckStopped():
         return;
-      }
-      if (!mounted) return;
-      // 처음이면 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
-      if (userId == null) {
+      case VisitorFound(:final name, :final userId):
+        next = ReservationPage(name: name, userId: userId);
+      case VisitorNotFound():
+        // 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
         final isFirstVisit = await GujeukDialog.show(
           context,
           title: '시설에 혹시 처음 방문했니?',
           description: '정보를 잘못 입력했다면 아니요를 눌러서 이름을 다시 입력 할 수 있어',
         );
         if (!mounted || isFirstVisit != true) return;
-      }
-      // 재방문이면 예약, 처음이면 회원가입으로 갑니다.
-      final Widget next = userId == null
-          ? const SignUpPage()
-          : ReservationPage(name: name, userId: userId);
-      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => next));
-      if (mounted) {
-        setState(() {
-          _nameController.clear();
-          _nameError = null;
-        });
-      }
-    } finally {
-      _isSubmitting = false;
+        next = const SignUpPage();
     }
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => next));
+    // 돌아오면 다음 친구가 쓸 수 있게 이름 칸을 비웁니다.
+    if (mounted) _nameController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
+    final nameError = ref.watch(infoCheckProvider);
     final isNarrow = MediaQuery.sizeOf(context).width < 800;
     return BaseScaffold(
       showBackButton: true,
@@ -121,8 +99,9 @@ class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
                 GujeukInput(
                   hintText: '친구의 이름을 알려줘',
                   controller: _nameController,
-                  onChanged: _onNameChanged,
-                  errorText: _nameError,
+                  onChanged: (_) =>
+                      ref.read(infoCheckProvider.notifier).clearError(),
+                  errorText: nameError,
                   maxLength: 30,
                 ),
                 const SizedBox(height: GujeukSpacing.s40),
