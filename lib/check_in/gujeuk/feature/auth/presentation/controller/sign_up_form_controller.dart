@@ -297,6 +297,13 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     return null;
   }
 
+  /// 생년월일. [validate]를 통과한 값에만 씁니다.
+  static DateTime birthDateOf(SignUpTexts texts) => DateTime(
+    int.parse(texts.birthYear),
+    int.parse(texts.birthMonth),
+    int.parse(texts.birthDay),
+  );
+
   static String? _birthError(SignUpTexts texts) {
     final (:birthYear, :birthMonth, :birthDay, name: _, phone: _) = texts;
     if (birthYear.isEmpty || birthMonth.isEmpty || birthDay.isEmpty) {

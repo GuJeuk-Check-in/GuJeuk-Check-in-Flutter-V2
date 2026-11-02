@@ -70,9 +70,6 @@ class SignUpTextFields {
     return value != null && value >= min && value <= max ? value : null;
   }
 
-  /// 생년월일. [SignUpFormController.validate]를 통과한 뒤에만 부릅니다.
-  DateTime get birthDate => DateTime(_birthYear!, _birthMonth!, _birthDay!);
-
   void dispose() {
     name.dispose();
     phone.dispose();
