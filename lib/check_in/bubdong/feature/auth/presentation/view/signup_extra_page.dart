@@ -19,12 +19,37 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SignupHeader(title: '처음 방문하셨나요?', currentStep: 2),
+          const SignupHeader(title: '처음 방문하셨나요?', currentStep: 2),
           const SizedBox(height: BubdongSpacing.s40),
-          const SignupCard(
+          SignupCard(
             width: 1080,
             padding: EdgeInsets.fromLTRB(60, 40, 60, 180),
-            child: Text(''),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  child: BubdongInput(
+                    label: '이름이 뭐야?',
+                    hintText: '친구의 이름을 알려줘',
+                  ),
+                ),
+                SizedBox(
+                  width: ,
+                  child: Column(
+                    children: [
+                    BubdongDropdown(
+                      label: '생년월일이 뭐야?',
+                      hintText: '연도',
+                      items: List.generate(100, (i) => '${2026 - i}'),
+                      onChanged: (value) {},
+                    ),
+                  ],
+                  ),
+                ),
+              ],
+
+            ),
           ),
           const SizedBox(height: 64),
           Row(

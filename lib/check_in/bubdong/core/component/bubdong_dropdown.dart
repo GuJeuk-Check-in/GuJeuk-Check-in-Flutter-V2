@@ -4,7 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_t
 class BubdongDropdown extends StatefulWidget {
   const BubdongDropdown({
     super.key,
-    required this.label,
+    this.label,
     required this.hintText,
     required this.items,
     this.value,
@@ -12,7 +12,7 @@ class BubdongDropdown extends StatefulWidget {
     this.enabled = true,
   });
 
-  final String label;
+  final String? label;
   final String hintText;
   final List<String> items;
   final String? value;
@@ -56,14 +56,15 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // 질문 글자
-        Text(
-          widget.label,
-          style: BubdongTypography.subtitle.copyWith(
-            color: BubdongColors.textPrimary,
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: BubdongTypography.subtitle.copyWith(
+              color: BubdongColors.textPrimary,
+            ),
           ),
-        ),
         const SizedBox(height: BubdongSpacing.s4),
-
+        ],
         // 박스 + 패널
         OverlayPortal(
           controller: _overlayController,
@@ -96,9 +97,11 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
                           widget.value ?? widget.hintText, // 고른 값이 없으면 안내 글자
                           style: BubdongTypography.placeHolder.copyWith(
                             color: !widget.enabled
-                                ? BubdongColors.textFieldDisabled // 비활성
+                                ? BubdongColors
+                                      .textFieldDisabled // 비활성
                                 : hasValue
-                                ? BubdongColors.textPrimary // 고른 값: 검정
+                                ? BubdongColors
+                                      .textPrimary // 고른 값: 검정
                                 : BubdongColors.textPlaceholder, // 안내 글자: 회색
                           ),
                         ),
