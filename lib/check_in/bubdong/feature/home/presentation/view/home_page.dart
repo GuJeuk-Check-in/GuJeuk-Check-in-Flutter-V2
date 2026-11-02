@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_basic_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -41,7 +42,11 @@ class HomePage extends StatelessWidget {
                 Expanded(
                   child: BubdongButton(
                     label: '방문 기록 남기기',
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SignupBasicPage(),
+                      ),
+                    ),
                     icon: SvgPicture.asset(
                       'assets/icons/bubdong/icon_visit.svg',
                       width: 36,

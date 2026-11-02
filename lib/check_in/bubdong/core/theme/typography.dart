@@ -2,6 +2,7 @@ import 'package:flutter/painting.dart';
 
 abstract final class BubdongTypography{
   static const pretendard = 'Pretendard';
+  static const jua = 'Jua';
   //제목
   static const h1 = TextStyle(
     fontFamily: pretendard,
@@ -99,5 +100,20 @@ abstract final class BubdongTypography{
     fontFamily: pretendard,
     fontSize: 20,
     fontWeight: FontWeight.w600,
+  );
+
+  static const titleLg = TextStyle(
+    fontFamily: jua,
+    fontSize: 52,
+    fontWeight: FontWeight.w400,
+    height: 64 / 52,
+  );
+
+  static const headingMd = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+    height: 36 / 32,
+    letterSpacing: -0.8,
   );
 }

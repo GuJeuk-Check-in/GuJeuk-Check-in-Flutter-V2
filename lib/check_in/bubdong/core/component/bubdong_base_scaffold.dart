@@ -17,7 +17,7 @@ class BubdongBaseScaffold extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/bubdong/background.png'),
             fit: BoxFit.cover,
@@ -46,11 +46,11 @@ class BubdongBaseScaffold extends StatelessWidget {
                             .popUntil((route) => route.isFirst),
                     behavior: HitTestBehavior.opaque,
                     child: Padding(
-                      padding: const EdgeInsetsGeometry.all(BubdongSpacing.s8),
+                      padding: const EdgeInsets.all(BubdongSpacing.s8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.chevron_left,
                             size: 16,
                             color: BubdongColors.textPlaceholder,

@@ -16,4 +16,10 @@ abstract final class BubdongShadow {
     blurRadius: 0,
     spreadRadius: 0,
   );
+
+  static final card = BoxShadow(
+    color: BubdongPalette.gray0.withValues(alpha: 0.1),
+    offset: const Offset(0, 25),
+    blurRadius: 50,
+  );
 }

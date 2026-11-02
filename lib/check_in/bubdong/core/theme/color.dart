@@ -36,6 +36,7 @@ abstract final class BubdongPalette {
   static const teal50 = Color(0xFFEFF9F8);
   static const blue50 = Color(0xFFE1E6F2);
   static const lavender50 = Color(0xFFFBFBFF);
+  static const gray150 = Color(0xFFEAEAF0);
 }
 
 abstract final class BubdongColors {
@@ -84,4 +85,6 @@ abstract final class BubdongColors {
   static const textError = BubdongPalette.red500;
   static const bgFieldDisabled = BubdongPalette.gray40;
   static const textFieldDisabled = BubdongPalette.gray80;
+
+  static const borderCard = BubdongPalette.gray150;
 }
