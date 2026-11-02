@@ -37,10 +37,12 @@ class RemoteReservationRepository implements ReservationRepository {
   }
 
   /// `GET /user/reservation`. 오늘 예약만 시설과 시작 시간으로 옵니다.
+  /// 오늘 예약이 없을 때 본문이 비어 와도(204, 빈 본문) 마감된 칸이 없는 것으로 봅니다.
+  /// 실패로 처리하면 아무도 예약하지 않은 날 시간을 고를 수 없게 되기 때문입니다.
   @override
   Future<List<ReservedSlot>> fetchReservedSlots() async {
     final response = await _client.dio.get<List<dynamic>>('/user/reservation');
-    return response.data!
+    return (response.data ?? const [])
         .map((json) => ReservedSlot.fromJson(json as Map<String, dynamic>))
         .toList();
   }
