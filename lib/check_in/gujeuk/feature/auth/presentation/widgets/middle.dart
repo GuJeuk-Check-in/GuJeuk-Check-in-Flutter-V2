@@ -292,7 +292,6 @@ class Middle extends ConsumerWidget {
               accent: GujeukOptionAccent
                   .values[index % GujeukOptionAccent.values.length],
               selected: form.purpose == purpose.purpose,
-              disabled: catalog.value!.isClosed(purpose.purpose),
               onTap: () => controller.selectPurpose(purpose.purpose),
             );
           },

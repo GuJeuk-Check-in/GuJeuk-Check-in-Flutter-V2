@@ -104,17 +104,7 @@ class SignUpFormController extends Notifier<SignUpFormState> {
   ProviderSubscription<AsyncValue<Set<String>>>? _reservedTimesSub;
 
   @override
-  SignUpFormState build() {
-    // 다시 불러온 사이 고른 시설이 막혔다면 고른 것을 비웁니다.
-    ref.listen(purposeCatalogProvider, (_, next) {
-      final catalog = next.value;
-      if (catalog == null || !catalog.isClosed(state.purpose)) return;
-      _reservedTimesSub?.close();
-      _reservedTimesSub = null;
-      state = state.copyWith(purpose: null, time: null);
-    });
-    return const SignUpFormState();
-  }
+  SignUpFormState build() => const SignUpFormState();
 
   PurposeCatalog? get _catalog => ref.read(purposeCatalogProvider).value;
 
@@ -137,7 +127,7 @@ class SignUpFormController extends Notifier<SignUpFormState> {
   }
 
   void selectPurpose(String value) {
-    if (state.purpose == value || (_catalog?.isClosed(value) ?? false)) return;
+    if (state.purpose == value) return;
     // 시설마다 예약 상황이 다르므로 목적을 바꾸면 고른 시간은 비웁니다.
     // 정원이 더 작은 시설로 바꿨다면 고른 인원을 지우지 않고 바로 알려줍니다.
     state = state.copyWith(

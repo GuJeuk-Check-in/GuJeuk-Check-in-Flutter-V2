@@ -22,14 +22,17 @@ class RemoteReservationRepository implements ReservationRepository {
   }
 
   /// `GET /user/reservation/purpose`. 목록은 `purposes` 안에 감싸져 옵니다.
-  /// `reservationStatus`가 false인 시설도 예약이 필요한 시설이라 함께 담습니다.
+  /// 모든 목적이 `reservationStatus`(예약이 필요한지)와 함께 오므로 true인 것만 담습니다.
+  /// false인 목적은 시간 없이 바로 이용합니다.
   @override
   Future<List<VisitPurpose>> fetchReservablePurposes() async {
     final response = await _client.dio.get<Map<String, dynamic>>(
       '/user/reservation/purpose',
     );
     return (response.data!['purposes'] as List<dynamic>)
-        .map((json) => VisitPurpose.fromJson(json as Map<String, dynamic>))
+        .cast<Map<String, dynamic>>()
+        .where((json) => json['reservationStatus'] as bool? ?? true)
+        .map(VisitPurpose.fromJson)
         .toList();
   }
 
