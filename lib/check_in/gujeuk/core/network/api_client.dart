@@ -24,10 +24,9 @@ class ApiClient {
       ),
     );
     // 디버그 빌드에서만 요청과 응답을 콘솔에 찍습니다.
+    // 요청 본문에는 이름, 전화번호, 생년월일이 들어 있어 찍지 않습니다.
     if (kDebugMode) {
-      dio.interceptors.add(
-        LogInterceptor(requestBody: true, responseBody: true),
-      );
+      dio.interceptors.add(LogInterceptor(responseBody: true));
     }
     return ApiClient(dio);
   }
