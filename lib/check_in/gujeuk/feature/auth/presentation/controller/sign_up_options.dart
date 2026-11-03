@@ -30,16 +30,14 @@ class PurposeCatalog {
 
 /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
 /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
-/// 예약 시설 목록만 실패하면 카드는 그대로 띄우고 모든 목적을 예약 없이 받습니다.
+/// 예약 시설을 모르면 예약 시설이 시간 없이 기록될 수 있어, 둘 중 하나만 실패해도 실패로 둡니다.
 final purposeCatalogProvider = FutureProvider.autoDispose<PurposeCatalog>((
   ref,
 ) async {
   final reservations = ref.watch(reservationRepositoryProvider);
   final (all, reservable) = await (
     reservations.fetchVisitPurposes(),
-    reservations.fetchReservablePurposes().catchError(
-      (Object _) => <VisitPurpose>[],
-    ),
+    reservations.fetchReservablePurposes(),
   ).wait;
   return PurposeCatalog(
     purposes: all,
