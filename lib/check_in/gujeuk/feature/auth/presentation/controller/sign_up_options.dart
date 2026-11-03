@@ -47,17 +47,14 @@ final purposeCatalogProvider = FutureProvider.autoDispose<PurposeCatalog>((
   );
 }, retry: _noRetry);
 
-/// 시설의 오늘 마감 시간(`HH:mm`). 오늘 예약 전체를 받아 그 시설 것만 남깁니다.
+/// 시설에서 아직 예약할 수 있는 시간(`HH:mm`).
 /// 시설마다 따로 두므로, 응답을 기다리는 사이 다른 시설을 골라도 늦게 온 응답이 섞이지 않습니다.
-final reservedTimesProvider = FutureProvider.autoDispose
+final availableTimesProvider = FutureProvider.autoDispose
     .family<Set<String>, String>((ref, purpose) async {
-      final slots = await ref
+      final times = await ref
           .watch(reservationRepositoryProvider)
-          .fetchReservedSlots();
-      return {
-        for (final slot in slots)
-          if (slot.purpose == purpose) slot.startTime,
-      };
+          .fetchAvailableTimes(purpose);
+      return times.toSet();
     }, retry: _noRetry);
 
 /// 거주지 모달에 띄울 동네 이름들.

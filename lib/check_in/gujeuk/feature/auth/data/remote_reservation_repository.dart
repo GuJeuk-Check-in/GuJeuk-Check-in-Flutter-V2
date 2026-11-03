@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reserved_slot.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
 
 /// 서버의 방문 목적과 시설 예약. 409 말고는 Dio가 던지는 [DioException] 그대로 올라갑니다.
@@ -36,15 +35,15 @@ class RemoteReservationRepository implements ReservationRepository {
         .toList();
   }
 
-  /// `GET /user/reservation`. 오늘 예약만 시설과 시작 시간으로 옵니다.
-  /// 오늘 예약이 없을 때 본문이 비어 와도(204, 빈 본문) 마감된 칸이 없는 것으로 봅니다.
-  /// 실패로 처리하면 아무도 예약하지 않은 날 시간을 고를 수 없게 되기 때문입니다.
+  /// `GET /user/reservation?purpose=`. 예약된 칸을 뺀 시간이 `times` 안에 감싸져 옵니다.
+  /// 이미 지난 시간도 들어 있으므로 지난 칸은 화면에서 따로 막습니다.
   @override
-  Future<List<ReservedSlot>> fetchReservedSlots() async {
-    final response = await _client.dio.get<List<dynamic>>('/user/reservation');
-    return (response.data ?? const [])
-        .map((json) => ReservedSlot.fromJson(json as Map<String, dynamic>))
-        .toList();
+  Future<List<String>> fetchAvailableTimes(String purpose) async {
+    final response = await _client.dio.get<Map<String, dynamic>>(
+      '/user/reservation',
+      queryParameters: {'purpose': purpose},
+    );
+    return (response.data!['times'] as List<dynamic>).cast<String>();
   }
 
   /// `POST /user/reservation`. 전화번호가 있으면 서버는 이름 대신 번호로 회원을 찾습니다.
