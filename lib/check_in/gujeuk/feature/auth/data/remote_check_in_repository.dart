@@ -9,13 +9,15 @@ class RemoteCheckInRepository implements CheckInRepository {
 
   const RemoteCheckInRepository(this._client);
 
-  /// `POST /user/check-in`. `visitTime`은 확인 버튼을 누른 지금 시각입니다.
+  /// `POST /user/check-in`.
   @override
   Future<void> checkIn({
     required int userId,
     required String purpose,
     required int maleCount,
     required int femaleCount,
+    required DateTime visitTime,
+    required String clientRecordId,
   }) async {
     await _client.dio.post<void>(
       '/user/check-in',
@@ -24,7 +26,8 @@ class RemoteCheckInRepository implements CheckInRepository {
         'maleCount': maleCount,
         'femaleCount': femaleCount,
         'purpose': purpose,
-        'visitTime': ServerDateFormat.dateTime(DateTime.now()),
+        'visitTime': ServerDateFormat.dateTime(visitTime),
+        'clientRecordId': clientRecordId,
       },
     );
   }

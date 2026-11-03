@@ -15,8 +15,17 @@ abstract interface class SignUpRepository {
     required String purpose,
     required int maleCount,
     required int femaleCount,
+    required DateTime visitTime,
     String? reservationTime,
   });
 }
 
-enum Gender { man, woman }
+enum Gender {
+  man('MAN'),
+  woman('WOMAN');
+
+  /// 서버가 받는 값.
+  final String serverValue;
+
+  const Gender(this.serverValue);
+}
