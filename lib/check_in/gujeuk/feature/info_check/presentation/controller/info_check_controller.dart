@@ -16,7 +16,9 @@ class VisitorFound extends VisitorCheckResult {
 
 /// 이 이름의 회원이 없습니다. 처음 왔는지 한 번 물은 뒤 회원가입으로 갑니다.
 class VisitorNotFound extends VisitorCheckResult {
-  const VisitorNotFound();
+  final String name;
+
+  const VisitorNotFound({required this.name});
 }
 
 /// 화면에 머뭅니다. 에러 문구는 이미 이름 칸 아래에 떠 있습니다.
@@ -57,7 +59,7 @@ class InfoCheckController extends Notifier<String?> {
     try {
       final userId = await ref.read(visitorRepositoryProvider).findUserId(name);
       return userId == null
-          ? const VisitorNotFound()
+          ? VisitorNotFound(name: name)
           : VisitorFound(name: name, userId: userId);
     } catch (_) {
       if (ref.mounted) state = '확인하지 못했어요. 다시 눌러주세요';

@@ -35,7 +35,7 @@ class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
         return;
       case VisitorFound(:final name, :final userId):
         next = ReservationPage(name: name, userId: userId);
-      case VisitorNotFound():
+      case VisitorNotFound(:final name):
         // 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
         final isFirstVisit = await GujeukDialog.show(
           context,
@@ -43,7 +43,7 @@ class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
           description: '정보를 잘못 입력했다면 아니요를 눌러서 이름을 다시 입력 할 수 있어',
         );
         if (!mounted || isFirstVisit != true) return;
-        next = const SignUpPage();
+        next = SignUpPage(name: name);
     }
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => next));
     // 돌아오면 다음 친구가 쓸 수 있게 이름 칸을 비웁니다.

@@ -4,7 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 /// 회원가입 화면에서 직접 타이핑하는 칸들의 컨트롤러. 화면이 만들고 dispose합니다.
 /// 값은 Notifier 상태에 두지 않아, 타이핑할 때마다 폼 전체가 다시 그려지지 않습니다.
 class SignUpTextFields {
-  final name = TextEditingController();
+  final TextEditingController name;
   final phone = TextEditingController();
   final birthYear = TextEditingController();
   final birthMonth = TextEditingController();
@@ -13,8 +13,12 @@ class SignUpTextFields {
   /// 모달에서 고른 동네를 보여주기만 하는 칸입니다.
   final residence = TextEditingController();
 
+  /// [initialName]은 이름 칸에 미리 채워 둘 값입니다.
   /// [onEdited]는 칸을 고칠 때마다 그 항목으로 불립니다. 떠 있는 에러를 지우는 데 씁니다.
-  SignUpTextFields({required void Function(SignUpField field) onEdited}) {
+  SignUpTextFields({
+    required String initialName,
+    required void Function(SignUpField field) onEdited,
+  }) : name = TextEditingController(text: initialName) {
     name.addListener(() => onEdited(SignUpField.name));
     phone.addListener(() => onEdited(SignUpField.phone));
     for (final controller in [birthYear, birthMonth, birthDay]) {

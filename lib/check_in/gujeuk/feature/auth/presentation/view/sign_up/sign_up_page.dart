@@ -12,7 +12,10 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
-  const SignUpPage({super.key});
+  /// 이름 확인 화면에서 적은 이름. 이름 칸에 미리 채워 둡니다.
+  final String name;
+
+  const SignUpPage({super.key, required this.name});
 
   /// 웹과 같은 카드 최대 너비. 1920 화면에서 좌우 448씩 여백이 생깁니다.
   /// 고정 여백 대신 최대 너비로 잡아 작은 화면에서도 깨지지 않게 합니다.
@@ -25,6 +28,7 @@ class SignUpPage extends ConsumerStatefulWidget {
 class _SignUpPageState extends ConsumerState<SignUpPage> {
   /// 칸을 고치면 그 칸에 떠 있던 에러를 지웁니다.
   late final SignUpTextFields _fields = SignUpTextFields(
+    initialName: widget.name,
     onEdited: (field) =>
         ref.read(signUpFormProvider.notifier).clearError(field),
   );
