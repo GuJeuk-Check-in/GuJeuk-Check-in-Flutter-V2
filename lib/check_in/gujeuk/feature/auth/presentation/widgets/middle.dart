@@ -252,11 +252,11 @@ class Middle extends ConsumerWidget {
     SignUpFormState form,
     SignUpFormController controller,
   ) {
-    final purposes = catalog.value?.purposes;
-    if (purposes == null) {
+    final loaded = catalog.value;
+    if (loaded == null) {
       if (catalog.hasError && !catalog.isLoading) {
         return _LoadError(
-          message: '방문 목적을 불러오지 못했어요',
+          message: '방문 목적을 불러오지 못했어요. 계속 안 되면 직원에게 말해줘',
           onRetry: () => ref.invalidate(purposeCatalogProvider),
         );
       }
@@ -265,6 +265,7 @@ class Middle extends ConsumerWidget {
         child: Center(child: CircularProgressIndicator()),
       );
     }
+    final purposes = loaded.purposes;
 
     // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그립니다.
     // 너비 0인 GridView는 assert로 렌더 트리를 깨뜨리므로 그릴 너비가 생길 때까지 비워둡니다.

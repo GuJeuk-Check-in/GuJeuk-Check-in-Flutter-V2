@@ -13,6 +13,8 @@ class VisitPurpose {
     return match == null ? null : int.parse(match.group(1)!);
   }
 
+  Map<String, Object> toJson() => {'id': id, 'purpose': purpose};
+
   factory VisitPurpose.fromJson(Map<String, dynamic> json) {
     return VisitPurpose(
       id: json['id'] as int,
