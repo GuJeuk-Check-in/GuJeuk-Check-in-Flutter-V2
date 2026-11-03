@@ -46,7 +46,7 @@ class Middle extends ConsumerWidget {
     final controller = ref.read(signUpFormProvider.notifier);
     final catalog = ref.watch(purposeCatalogProvider);
     final purpose = form.purpose;
-    final needsTime = catalog.value?.needsTime(purpose) ?? false;
+    final needsTime = controller.needsTime;
     final fields = this.fields;
 
     return Column(

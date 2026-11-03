@@ -35,6 +35,8 @@ class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
         return;
       case VisitorFound(:final name, :final userId):
         next = ReservationPage(name: name, userId: userId);
+      case VisitorCheckUnavailable(:final name):
+        next = SignUpPage(offline: true, initialName: name);
       case VisitorNotFound():
         // 이름을 잘못 적은 건 아닌지 한 번 묻고, 아니요면 이름을 다시 적게 둡니다.
         final isFirstVisit = await GujeukDialog.show(

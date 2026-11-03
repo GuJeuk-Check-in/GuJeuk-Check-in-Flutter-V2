@@ -12,7 +12,14 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
-  const SignUpPage({super.key});
+  /// 서버와 연결이 안 돼 회원인지 확인하지 못한 친구인지.
+  /// 정보를 모두 받아 기기에 저장하고, 예약 시설도 시간 없이 접수합니다.
+  final bool offline;
+
+  /// 이름 확인에서 이미 적은 이름.
+  final String initialName;
+
+  const SignUpPage({super.key, this.offline = false, this.initialName = ''});
 
   /// 웹과 같은 카드 최대 너비. 1920 화면에서 좌우 448씩 여백이 생깁니다.
   /// 고정 여백 대신 최대 너비로 잡아 작은 화면에서도 깨지지 않게 합니다.
@@ -27,7 +34,14 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   late final SignUpTextFields _fields = SignUpTextFields(
     onEdited: (field) =>
         ref.read(signUpFormProvider.notifier).clearError(field),
+    initialName: widget.initialName,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(signUpFormProvider.notifier).offline = widget.offline;
+  }
 
   @override
   void dispose() {
@@ -38,7 +52,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   Future<void> _onSubmit() async {
     final result = await ref
         .read(signUpSubmitProvider.notifier)
-        .submit(_fields.values);
+        .submit(_fields.values, offline: widget.offline);
     if (result is! SubmitDone || !mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -66,6 +80,15 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Header(title: '구즉 청소년문화의 집에 온걸 환영해~!'),
+              if (widget.offline) ...[
+                const SizedBox(height: GujeukSpacing.s16),
+                Text(
+                  '지금은 서버와 연결이 안 돼서 친구 정보를 확인하지 못했어. 아래 내용을 모두 적어줘!',
+                  style: GujeukTypography.bodyMd.copyWith(
+                    color: GujeukColors.textBrand,
+                  ),
+                ),
+              ],
               const SizedBox(height: GujeukSpacing.s40),
               Middle(fields: _fields),
               const SizedBox(height: GujeukSpacing.s100),
