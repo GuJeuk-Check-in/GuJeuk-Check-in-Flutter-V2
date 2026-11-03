@@ -47,7 +47,7 @@ class SignupBasicPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: BubdongButton(
-                    label: "다음으로 넘어가기",
+                    label: "다음",
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const SignupExtraPage()),
                     ),

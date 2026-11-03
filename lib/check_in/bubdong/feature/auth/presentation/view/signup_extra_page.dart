@@ -13,6 +13,9 @@ class SignupExtraPage extends StatefulWidget {
 
 class _SignupExtraPageState extends State<SignupExtraPage> {
   String? _gender;
+  String? _year;
+  String? _month;
+  String? _day;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +64,8 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
                                 child: BubdongDropdown(
                                   hintText: '연도',
                                   items: List.generate(100, (i) => '${2026 - i}'),
-                                  onChanged: (value) {},
+                                  value: _year,
+                                  onChanged: (value) => setState(() => _year = value),
                                 ),
                               ),
                               SizedBox(
@@ -69,7 +73,8 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
                                 child: BubdongDropdown(
                                   hintText: '월',
                                   items: List.generate(12, (i) => '${i + 1}'),
-                                  onChanged: (value) {},
+                                  value: _month,
+                                  onChanged: (value) => setState(() => _month = value),
                                 ),
                               ),
                               SizedBox(
@@ -77,7 +82,8 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
                                 child: BubdongDropdown(
                                   hintText: '일',
                                   items: List.generate(31, (i) => '${i + 1}'),
-                                  onChanged: (value) {},
+                                  value: _day,
+                                  onChanged: (value) => setState(() => _day = value),
                                 ),
                               ),
                             ],
