@@ -49,3 +49,6 @@ app.*.map.json
 
 # 구즉 환경 변수. .env.gujeuk.example을 복사해서 만듭니다.
 .env.gujeuk
+
+# 테스트는 저장소에 올리지 않습니다.
+/test/
