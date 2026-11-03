@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
@@ -45,7 +46,12 @@ class SignupBasicPage extends StatelessWidget {
                 const SizedBox(height: 100),
                 SizedBox(
                   width: double.infinity,
-                  child: BubdongButton(label: "다음으로 넘어가기", onPressed: () {}),
+                  child: BubdongButton(
+                    label: "다음으로 넘어가기",
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SignupExtraPage()),
+                    ),
+                  ),
                 ),
               ],
             ),
