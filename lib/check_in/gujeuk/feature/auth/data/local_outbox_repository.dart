@@ -80,7 +80,18 @@ class LocalOutboxRepository implements OutboxRepository {
   @override
   Future<List<OutboxRecord>> all() async {
     final box = await _opened();
-    return box.values.map(OutboxRecord.decode).toList();
+    final records = <OutboxRecord>[];
+    for (final entry in box.toMap().entries) {
+      try {
+        records.add(OutboxRecord.decode(entry.value));
+      } catch (error) {
+        // 한 건 때문에 나머지 재전송까지 막히지 않게 건너뜁니다. 값에는 개인정보가 있어 찍지 않습니다.
+        debugPrint(
+          'outbox: 읽을 수 없는 건을 건너뜀 ${entry.key} (${error.runtimeType})',
+        );
+      }
+    }
+    return records;
   }
 
   @override
