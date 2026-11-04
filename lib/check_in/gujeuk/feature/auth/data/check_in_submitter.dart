@@ -198,7 +198,7 @@ class CheckInSubmitter {
     } on Exception catch (error) {
       if (isDuplicateLog(error)) return;
       if (!isRetryableFailure(error)) rethrow;
-      // 첫 전송과 같은 ID로 다시 보내야 서버가 중복을 걸러 줍니다.
+      // 첫 전송과 같은 시각으로 다시 보내야 서버가 중복을 걸러 줍니다.
       await _outbox.save(record.markPending(_now().add(outboxFirstRetryDelay)));
     }
   }

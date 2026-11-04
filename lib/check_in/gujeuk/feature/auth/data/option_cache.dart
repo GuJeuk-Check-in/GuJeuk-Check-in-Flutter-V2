@@ -77,7 +77,7 @@ class OptionsLoader {
   );
 
   /// 아무도 화면을 열지 않아도 장애에 대비해 목록을 받아 둡니다.
-  /// 실패해도 예외를 던지지 않고, 모두 받았을 때만 true를 돌려줍니다.
+  /// 실패해도 예외를 던지지 않고, 모두 받아 저장했을 때만 true를 돌려줍니다.
   Future<bool> refresh() async {
     final (purposesDone, residencesDone) = await (
       _refresh(_purposesKey, _fetchPurposeLists, _encodePurposeLists),
@@ -100,8 +100,7 @@ class OptionsLoader {
     String Function(T) encode,
   ) async {
     try {
-      await _write(key, encode(await fetch()));
-      return true;
+      return await _write(key, encode(await fetch()));
     } catch (error) {
       debugPrint('options: $key 미리 받기 실패 (${error.runtimeType})');
       return false;
@@ -135,11 +134,14 @@ class OptionsLoader {
     }
   }
 
-  Future<void> _write(String key, String value) async {
+  /// 저장에 실패해도 받은 목록은 쓸 수 있으니 던지지 않고 false를 돌려줍니다.
+  Future<bool> _write(String key, String value) async {
     try {
       await _store.write(key, value);
+      return true;
     } catch (error) {
       debugPrint('options: $key 저장 실패 (${error.runtimeType})');
+      return false;
     }
   }
 
