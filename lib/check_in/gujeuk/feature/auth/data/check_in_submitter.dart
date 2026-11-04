@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -16,9 +15,9 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/o
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/sign_up_repository.dart';
 import 'package:uuid/uuid.dart';
 
-/// 예약 없는 접수를 기기에 먼저 저장하고 서버로 보냅니다.
-/// 끝나면 접수가 완료된 것이고, 서버 연결 문제면 저장해 둔 채로 나중에 다시 보냅니다.
-/// 저장에 실패하거나 서버가 내용을 거절하면 예외를 던집니다.
+/// 예약 없는 접수를 서버로 보내고, 서버 연결 문제일 때만 기기에 저장해 나중에 다시 보냅니다.
+/// 끝나면 접수가 완료된 것입니다.
+/// 서버가 내용을 거절하거나, 서버 연결 문제인데 저장도 실패했으면 예외를 던집니다.
 class CheckInSubmitter {
   /// 키오스크 앞에서 기다리는 최대 시간. 넘으면 저장해 둔 채 완료 화면으로 넘어갑니다.
   static const _firstSendLimit = Duration(seconds: 5);
@@ -61,8 +60,7 @@ class CheckInSubmitter {
         'visitTime': ServerDateFormat.dateTime(visitTime),
       },
     );
-    await _outbox.save(record);
-    await _sendFirst(
+    await _sendOrQueue(
       record,
       () => _checkIns.checkIn(
         userId: userId,
@@ -99,8 +97,7 @@ class CheckInSubmitter {
       visitTime: visitTime,
       status: OutboxStatus.sending,
     );
-    await _outbox.save(record);
-    await _sendFirst(
+    await _sendOrQueue(
       record,
       () => _signUps.signUp(
         name: name,
@@ -192,34 +189,17 @@ class CheckInSubmitter {
     );
   }
 
-  Future<void> _sendFirst(
+  Future<void> _sendOrQueue(
     OutboxRecord record,
     Future<void> Function() send,
   ) async {
     try {
       await send().timeout(_firstSendLimit);
     } on Exception catch (error) {
-      if (isDuplicateLog(error)) {
-        await _settle(() => _outbox.delete(record.clientRecordId));
-      } else if (isRetryableFailure(error)) {
-        final retryAt = _now().add(outboxFirstRetryDelay);
-        await _settle(() => _outbox.save(record.markPending(retryAt)));
-      } else {
-        await _settle(() => _outbox.delete(record.clientRecordId));
-        rethrow;
-      }
-      return;
-    }
-    await _settle(() => _outbox.delete(record.clientRecordId));
-  }
-
-  /// 접수 결과는 이미 정해졌으니 뒷정리 실패로 뒤집지 않습니다.
-  /// 남은 건은 앱을 다시 시작할 때 재전송되고, 서버가 중복을 걸러 줍니다.
-  Future<void> _settle(Future<void> Function() cleanup) async {
-    try {
-      await cleanup();
-    } catch (error) {
-      debugPrint('outbox: 전송 후 큐 정리 실패 (${error.runtimeType})');
+      if (isDuplicateLog(error)) return;
+      if (!isRetryableFailure(error)) rethrow;
+      // 첫 전송과 같은 ID로 다시 보내야 서버가 중복을 걸러 줍니다.
+      await _outbox.save(record.markPending(_now().add(outboxFirstRetryDelay)));
     }
   }
 

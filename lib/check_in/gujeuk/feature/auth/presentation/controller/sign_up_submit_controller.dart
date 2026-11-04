@@ -17,7 +17,7 @@ final signUpSubmitProvider =
 class SignUpSubmitController extends SubmitController {
   /// 전체를 검사하고 가입합니다.
   /// 예약이 필요한 시설이면 가입 요청에 시간을 실어 한 번에 예약합니다.
-  /// 예약 없는 가입은 기기에 먼저 저장하고, [offline]이면 서버 대신 저장만 합니다.
+  /// 예약 없는 가입은 서버 연결 문제일 때만 기기에 저장하고, [offline]이면 서버 대신 저장만 합니다.
   Future<SubmitResult> submit(SignUpTexts texts, {bool offline = false}) async {
     if (isSubmitting) return const SubmitStopped();
     final formController = ref.read(signUpFormProvider.notifier);
