@@ -22,6 +22,10 @@ class OutboxSyncController {
   bool _wasReady = false;
   bool _isDisposed = false;
   bool _isServerDown = false;
+  bool _isRefreshingOptions = false;
+
+  /// 지난번에 못 받은 목록이 있는지. 서버가 계속 정상이어도 다음 확인 때 다시 받습니다.
+  bool _optionsStale = false;
 
   /// 마지막 확인에서 서버가 준비되지 않았는지. 아직 확인 전이면 false입니다.
   bool get isServerDown => _isServerDown;
@@ -41,13 +45,24 @@ class OutboxSyncController {
     _timer?.cancel();
   }
 
+  /// 목록을 받는 동안 큐 전송과 다음 확인이 밀리지 않게 기다리지 않고 부릅니다.
+  Future<void> _refreshOptions() async {
+    if (_isRefreshingOptions) return;
+    _isRefreshingOptions = true;
+    try {
+      _optionsStale = !await _options.refresh();
+    } finally {
+      _isRefreshingOptions = false;
+    }
+  }
+
   Future<void> _check() async {
     var isReady = false;
     try {
       isReady = await _ha.isReady();
       _isServerDown = !isReady;
       if (isReady) {
-        if (!_wasReady) await _options.refresh();
+        if (!_wasReady || _optionsStale) unawaited(_refreshOptions());
         await _sync.run();
       }
     } catch (error) {

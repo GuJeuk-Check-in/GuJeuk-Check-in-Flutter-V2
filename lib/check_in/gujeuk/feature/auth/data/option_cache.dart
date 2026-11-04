@@ -41,13 +41,18 @@ class HiveOptionStore implements OptionStore {
   }
 }
 
+/// 전체 방문 목적과 그중 예약 시설. 같은 때 받은 한 묶음입니다.
+typedef PurposeLists = ({
+  List<VisitPurpose> all,
+  List<VisitPurpose> reservable,
+});
+
 /// 방문 목적, 예약 시설, 거주지를 받아 저장하고, 서버에서 못 받으면 저장본을 돌려줍니다.
 /// 저장본도 없으면 예외를 던집니다.
 class OptionsLoader {
   /// 화면을 오래 막지 않게 짧게 기다립니다. 미리 받아 둘 때는 쓰지 않습니다.
   static const _screenLimit = Duration(seconds: 3);
   static const _purposesKey = 'purposes';
-  static const _reservableKey = 'reservablePurposes';
   static const _residencesKey = 'residences';
 
   final ReservationRepository _reservations;
@@ -56,18 +61,12 @@ class OptionsLoader {
 
   const OptionsLoader(this._reservations, this._residences, this._store);
 
-  Future<List<VisitPurpose>> purposes() => _load(
+  /// 하나만 새 목록이면 새 예약 시설이 시간 없이 기록될 수 있어, 하나라도 못 받으면 둘 다 저장본을 씁니다.
+  Future<PurposeLists> purposeLists() => _load(
     _purposesKey,
-    _reservations.fetchVisitPurposes().timeout(_screenLimit),
-    _encodePurposes,
-    _decodePurposes,
-  );
-
-  Future<List<VisitPurpose>> reservablePurposes() => _load(
-    _reservableKey,
-    _reservations.fetchReservablePurposes().timeout(_screenLimit),
-    _encodePurposes,
-    _decodePurposes,
+    _fetchPurposeLists().timeout(_screenLimit),
+    _encodePurposeLists,
+    _decodePurposeLists,
   );
 
   Future<List<String>> residences() => _load(
@@ -77,28 +76,35 @@ class OptionsLoader {
     (source) => (jsonDecode(source) as List<dynamic>).cast<String>(),
   );
 
-  /// 아무도 화면을 열지 않아도 장애에 대비해 목록을 받아 둡니다. 실패해도 그대로 둡니다.
-  Future<void> refresh() async {
-    await (
-      _refresh(_purposesKey, _reservations.fetchVisitPurposes, _encodePurposes),
-      _refresh(
-        _reservableKey,
-        _reservations.fetchReservablePurposes,
-        _encodePurposes,
-      ),
+  /// 아무도 화면을 열지 않아도 장애에 대비해 목록을 받아 둡니다.
+  /// 실패해도 예외를 던지지 않고, 모두 받았을 때만 true를 돌려줍니다.
+  Future<bool> refresh() async {
+    final (purposesDone, residencesDone) = await (
+      _refresh(_purposesKey, _fetchPurposeLists, _encodePurposeLists),
       _refresh(_residencesKey, _residences.fetchResidences, jsonEncode),
     ).wait;
+    return purposesDone && residencesDone;
   }
 
-  Future<void> _refresh<T>(
+  Future<PurposeLists> _fetchPurposeLists() async {
+    final (all, reservable) = await (
+      _reservations.fetchVisitPurposes(),
+      _reservations.fetchReservablePurposes(),
+    ).wait;
+    return (all: all, reservable: reservable);
+  }
+
+  Future<bool> _refresh<T>(
     String key,
     Future<T> Function() fetch,
     String Function(T) encode,
   ) async {
     try {
       await _write(key, encode(await fetch()));
+      return true;
     } catch (error) {
       debugPrint('options: $key 미리 받기 실패 (${error.runtimeType})');
+      return false;
     }
   }
 
@@ -137,14 +143,21 @@ class OptionsLoader {
     }
   }
 
-  static String _encodePurposes(List<VisitPurpose> purposes) =>
-      jsonEncode([for (final purpose in purposes) purpose.toJson()]);
+  static String _encodePurposeLists(PurposeLists lists) => jsonEncode({
+    'all': [for (final purpose in lists.all) purpose.toJson()],
+    'reservable': [for (final purpose in lists.reservable) purpose.toJson()],
+  });
 
-  static List<VisitPurpose> _decodePurposes(String source) =>
-      (jsonDecode(source) as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map(VisitPurpose.fromJson)
-          .toList();
+  static PurposeLists _decodePurposeLists(String source) {
+    final json = jsonDecode(source) as Map<String, dynamic>;
+    return (
+      all: _decodePurposes(json['all'] as List<dynamic>),
+      reservable: _decodePurposes(json['reservable'] as List<dynamic>),
+    );
+  }
+
+  static List<VisitPurpose> _decodePurposes(List<dynamic> json) =>
+      json.cast<Map<String, dynamic>>().map(VisitPurpose.fromJson).toList();
 }
 
 final optionStoreProvider = Provider<OptionStore>((ref) => HiveOptionStore());
