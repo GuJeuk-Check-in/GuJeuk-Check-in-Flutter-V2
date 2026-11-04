@@ -1,4 +1,3 @@
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reserved_slot.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
 
 /// 방문 목적과 시설 예약 조회. 실패하면 예외를 던집니다.
@@ -9,8 +8,9 @@ abstract interface class ReservationRepository {
   /// 예약이 필요한 시설만. 이 목적을 고르면 시간도 골라야 합니다.
   Future<List<VisitPurpose>> fetchReservablePurposes();
 
-  /// 오늘 예약된 칸 목록. 모든 시설의 예약이 함께 옵니다.
-  Future<List<ReservedSlot>> fetchReservedSlots();
+  /// [purpose] 시설에서 아직 예약할 수 있는 시간(`HH:mm`).
+  /// 예약이 필요 없는 시설을 넘기면 서버가 400으로 거절합니다.
+  Future<List<String>> fetchAvailableTimes(String purpose);
 
   /// `POST /user/reservation`. 이미 가입한 친구만 씁니다. 새 친구는 가입하면서 예약합니다.
   /// [phone]은 같은 이름의 회원이 있을 때만, 하이픈 없이 숫자만(`01012345678`) 넘깁니다.

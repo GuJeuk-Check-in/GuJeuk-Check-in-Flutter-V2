@@ -13,11 +13,11 @@ class SignUpTextFields {
   /// 모달에서 고른 동네를 보여주기만 하는 칸입니다.
   final residence = TextEditingController();
 
+  /// [initialName]은 이름 칸에 미리 채워 둘 값입니다.
   /// [onEdited]는 칸을 고칠 때마다 그 항목으로 불립니다. 떠 있는 에러를 지우는 데 씁니다.
-  /// [initialName]은 이름 확인에서 이미 적은 이름입니다.
   SignUpTextFields({
+    required String initialName,
     required void Function(SignUpField field) onEdited,
-    String initialName = '',
   }) : name = TextEditingController(text: initialName) {
     name.addListener(() => onEdited(SignUpField.name));
     phone.addListener(() => onEdited(SignUpField.phone));

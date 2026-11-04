@@ -19,7 +19,9 @@ class VisitorFound extends VisitorCheckResult {
 
 /// 이 이름의 회원이 없습니다. 처음 왔는지 한 번 물은 뒤 회원가입으로 갑니다.
 class VisitorNotFound extends VisitorCheckResult {
-  const VisitorNotFound();
+  final String name;
+
+  const VisitorNotFound({required this.name});
 }
 
 /// 서버와 연결이 안 돼 회원인지 모릅니다. 정보를 모두 받아 기기에 저장합니다.
@@ -73,7 +75,7 @@ class InfoCheckController extends Notifier<String?> {
           .findUserId(name)
           .timeout(_lookupLimit);
       return userId == null
-          ? const VisitorNotFound()
+          ? VisitorNotFound(name: name)
           : VisitorFound(name: name, userId: userId);
     } catch (error) {
       if (isRetryableFailure(error)) {

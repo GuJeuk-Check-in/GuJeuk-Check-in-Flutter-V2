@@ -87,7 +87,7 @@ final signUpFormProvider =
 /// 고른 값과 에러 문구를 한곳에서 관리합니다.
 /// [validate]로 전체를 검사하고, 값을 다시 고치면 그 항목의 에러는 지워집니다.
 class SignUpFormController extends Notifier<SignUpFormState> {
-  // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
+  // 예약 API는 예약 가능한 시간만 주므로 화면에 보여줄 칸 전체는 앱에서 정합니다.
   static const times = [
     '09:30',
     '10:30',
@@ -100,8 +100,8 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     '17:30',
   ];
 
-  /// 고른 시설의 마감 시간을 지켜봅니다. 시설을 바꾸면 이전 것은 닫습니다.
-  ProviderSubscription<AsyncValue<Set<String>>>? _reservedTimesSub;
+  /// 고른 시설의 예약 가능한 시간을 지켜봅니다. 시설을 바꾸면 이전 것은 닫습니다.
+  ProviderSubscription<AsyncValue<Set<String>>>? _availableTimesSub;
 
   /// 서버와 연결이 안 되는 동안인지. 예약을 확정할 수 없어 예약 시설도 시간 없이 접수합니다.
   bool offline = false;
@@ -146,18 +146,19 @@ class SignUpFormController extends Notifier<SignUpFormState> {
         ),
       }),
     );
-    _watchReservedTimes();
+    _watchAvailableTimes();
   }
 
-  /// 마감 시간을 받았는데 고른 시간이 마감됐으면 고른 시간을 비웁니다.
-  void _watchReservedTimes() {
-    _reservedTimesSub?.close();
-    _reservedTimesSub = null;
+  /// 예약 가능한 시간을 받았는데 고른 시간이 없으면 고른 시간을 비웁니다.
+  void _watchAvailableTimes() {
+    _availableTimesSub?.close();
+    _availableTimesSub = null;
     final purpose = state.purpose;
     if (purpose == null || !needsTime) return;
-    _reservedTimesSub = ref.listen(reservedTimesProvider(purpose), (_, next) {
-      final taken = next.value;
-      if (taken != null && taken.contains(state.time)) {
+    _availableTimesSub = ref.listen(availableTimesProvider(purpose), (_, next) {
+      final available = next.value;
+      final time = state.time;
+      if (available != null && time != null && !available.contains(time)) {
         state = state.copyWith(time: null);
       }
     });
@@ -170,7 +171,7 @@ class SignUpFormController extends Notifier<SignUpFormState> {
       errors: _withErrors({SignUpField.time: '그사이 다른 친구가 예약했어요. 다른 시간을 골라주세요'}),
     );
     final purpose = state.purpose;
-    if (purpose != null) ref.invalidate(reservedTimesProvider(purpose));
+    if (purpose != null) ref.invalidate(availableTimesProvider(purpose));
   }
 
   void selectTime(String value) {

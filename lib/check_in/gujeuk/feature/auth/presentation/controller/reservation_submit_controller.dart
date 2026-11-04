@@ -45,6 +45,9 @@ class ReservationSubmitController extends SubmitController {
     required String phone,
   }) async {
     if (isSubmitting) return const SubmitStopped();
+    // 번호를 적는 사이 고른 시간이 지났을 수 있어 다시 검사합니다.
+    final formController = ref.read(signUpFormProvider.notifier);
+    if (!formController.validateReservation()) return const SubmitStopped();
     return _reserve(name: name, phone: phone);
   }
 

@@ -26,7 +26,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => isServerDown
-            ? const SignUpPage(offline: true)
+            ? const SignUpPage(name: '', offline: true)
             : const InfoCheckPage(),
       ),
     );
