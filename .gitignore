@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# 구즉 환경 변수. .env.gujeuk.example을 복사해서 만듭니다.
+.env.gujeuk

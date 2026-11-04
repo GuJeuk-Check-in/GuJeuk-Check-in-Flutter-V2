@@ -1,15 +1,93 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_options.dart';
 
-/// 회원가입 폼의 입력값과 에러 문구를 한곳에서 관리합니다.
+/// 에러 문구를 띄우는 폼 항목.
+enum SignUpField {
+  purpose,
+  time,
+  companion,
+  name,
+  phone,
+  gender,
+  birth,
+  residence,
+  agreement,
+}
+
+/// 회원가입 화면에서 직접 타이핑하는 칸들의 값. 제출할 때 [SignUpFormController.validate]에 넘깁니다.
+typedef SignUpTexts = ({
+  String name,
+  String phone,
+  String birthYear,
+  String birthMonth,
+  String birthDay,
+});
+
+/// 고른 값과 에러 문구. 타이핑하는 칸의 값은 화면의 TextEditingController가 들고 있습니다.
+@immutable
+class SignUpFormState {
+  /// 고른 방문 목적. API와 같은 `친친마루(게임, 독서 등)` 모양입니다.
+  final String? purpose;
+  final String? time;
+  final GujeukGender? gender;
+  final String? residence;
+  final bool agreed;
+  final int maleCount;
+  final int femaleCount;
+  final Map<SignUpField, String> errors;
+
+  const SignUpFormState({
+    this.purpose,
+    this.time,
+    this.gender,
+    this.residence,
+    this.agreed = false,
+    this.maleCount = 0,
+    this.femaleCount = 0,
+    this.errors = const {},
+  });
+
+  String? errorOf(SignUpField field) => errors[field];
+
+  static const _keep = Object();
+
+  /// [purpose]와 [time]은 null로 비울 수 있어, 넘기지 않은 것과 구분하려고 [_keep]을 씁니다.
+  SignUpFormState copyWith({
+    Object? purpose = _keep,
+    Object? time = _keep,
+    GujeukGender? gender,
+    String? residence,
+    bool? agreed,
+    int? maleCount,
+    int? femaleCount,
+    Map<SignUpField, String>? errors,
+  }) {
+    return SignUpFormState(
+      purpose: identical(purpose, _keep) ? this.purpose : purpose as String?,
+      time: identical(time, _keep) ? this.time : time as String?,
+      gender: gender ?? this.gender,
+      residence: residence ?? this.residence,
+      agreed: agreed ?? this.agreed,
+      maleCount: maleCount ?? this.maleCount,
+      femaleCount: femaleCount ?? this.femaleCount,
+      errors: errors ?? this.errors,
+    );
+  }
+}
+
+/// 회원가입·이용 예약 화면이 함께 쓰는 폼. 화면을 떠나면 비워집니다.
+final signUpFormProvider =
+    NotifierProvider.autoDispose<SignUpFormController, SignUpFormState>(
+      SignUpFormController.new,
+    );
+
+/// 고른 값과 에러 문구를 한곳에서 관리합니다.
 /// [validate]로 전체를 검사하고, 값을 다시 고치면 그 항목의 에러는 지워집니다.
-class SignUpFormController extends ChangeNotifier {
-  final ReservationRepository _reservations;
-
-  // 예약 API는 마감된 시간만 주므로 고를 수 있는 시간 전체는 앱에서 정합니다.
+class SignUpFormController extends Notifier<SignUpFormState> {
+  // 예약 API는 예약 가능한 시간만 주므로 화면에 보여줄 칸 전체는 앱에서 정합니다.
   static const times = [
     '09:30',
     '10:30',
@@ -22,75 +100,19 @@ class SignUpFormController extends ChangeNotifier {
     '17:30',
   ];
 
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final birthYearController = TextEditingController();
-  final birthMonthController = TextEditingController();
-  final birthDayController = TextEditingController();
-  final residenceController = TextEditingController();
+  /// 고른 시설의 예약 가능한 시간을 지켜봅니다. 시설을 바꾸면 이전 것은 닫습니다.
+  ProviderSubscription<AsyncValue<Set<String>>>? _availableTimesSub;
 
-  /// 고른 방문 목적. API와 같은 `친친마루(게임, 독서 등)` 모양입니다.
-  String? purpose;
-  String? time;
+  @override
+  SignUpFormState build() => const SignUpFormState();
 
-  /// 카드로 보여줄 전체 방문 목적. null이면 아직 못 불러왔습니다.
-  List<VisitPurpose>? visitPurposes;
-
-  /// 예약이 필요한 목적 이름들. null이면 아직 못 불러왔습니다.
-  Set<String>? reservablePurposes;
-  String? purposesLoadError;
-
-  /// 고른 시설의 오늘 마감 시간. null이면 불러오는 중이거나 실패했습니다.
-  Set<String>? reservedTimes;
-  String? reservedLoadError;
-  var _reservedRequest = 0;
-  var _disposed = false;
-  GujeukGender? gender;
-  String? residence;
-  bool agreed = false;
-  int maleCount = 0;
-  int femaleCount = 0;
-
-  String? purposeError;
-  String? timeError;
-  String? nameError;
-  String? phoneError;
-  String? genderError;
-  String? birthError;
-  String? residenceError;
-  String? agreementError;
-  String? companionError;
-
-  SignUpFormController(this._reservations) {
-    // 에러가 떠 있을 때만 지우고 다시 그려, 타이핑마다 폼 전체가 다시 그려지지 않게 합니다.
-    nameController.addListener(() {
-      if (nameError == null) return;
-      nameError = null;
-      notifyListeners();
-    });
-    phoneController.addListener(() {
-      if (phoneError == null) return;
-      phoneError = null;
-      notifyListeners();
-    });
-    for (final controller in [
-      birthYearController,
-      birthMonthController,
-      birthDayController,
-    ]) {
-      controller.addListener(() {
-        if (birthError == null) return;
-        birthError = null;
-        notifyListeners();
-      });
-    }
-  }
+  PurposeCatalog? get _catalog => ref.read(purposeCatalogProvider).value;
 
   /// 고른 목적이 예약이 필요한 시설이라 시간도 골라야 하는지.
-  bool get needsTime => reservablePurposes?.contains(purpose) ?? false;
+  bool get needsTime => _catalog?.needsTime(state.purpose) ?? false;
 
   /// 오늘 시작 시간이 이미 지난 칸. 화면을 띄워둔 사이에도 지나가므로 부를 때마다 다시 셉니다.
-  Set<String> get pastTimes {
+  static Set<String> pastTimes() {
     final now = DateTime.now();
     return {
       for (final t in times)
@@ -104,247 +126,184 @@ class SignUpFormController extends ChangeNotifier {
     return DateTime(now.year, now.month, now.day, hour, minute);
   }
 
-  /// 본인을 뺀 동행 최대 인원. 정원이 없는 시설이면 null입니다.
-  int? get maxCompanions {
-    final maxPeople = visitPurposes
-        ?.where((p) => p.purpose == purpose)
-        .firstOrNull
-        ?.maxPeople;
-    return maxPeople == null ? null : maxPeople - 1;
-  }
-
-  /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
-  /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
-  Future<void> loadPurposes() async {
-    purposesLoadError = null;
-    notifyListeners();
-    try {
-      final (all, reservable) = await (
-        _reservations.fetchVisitPurposes(),
-        _reservations.fetchReservablePurposes(),
-      ).wait;
-      visitPurposes = all;
-      reservablePurposes = {for (final p in reservable) p.purpose};
-    } catch (_) {
-      purposesLoadError = '방문 목적을 불러오지 못했어요';
-    }
-    if (_disposed) return;
-    // 목록이 오기 전에 이미 목적을 골랐다면 이제 마감 시간을 불러옵니다.
-    if (needsTime) {
-      loadReservedTimes();
-    } else {
-      notifyListeners();
-    }
-  }
-
   void selectPurpose(String value) {
-    if (purpose == value) return;
+    if (state.purpose == value) return;
     // 시설마다 예약 상황이 다르므로 목적을 바꾸면 고른 시간은 비웁니다.
-    time = null;
-    timeError = null;
-    purpose = value;
-    purposeError = null;
     // 정원이 더 작은 시설로 바꿨다면 고른 인원을 지우지 않고 바로 알려줍니다.
-    companionError = _validateCompanions();
-    // 이전 목적의 마감 시간 응답이 늦게 와도 버려지게 합니다.
-    _reservedRequest++;
-    reservedTimes = null;
-    reservedLoadError = null;
-    if (needsTime) {
-      loadReservedTimes();
-    } else {
-      notifyListeners();
-    }
+    state = state.copyWith(
+      purpose: value,
+      time: null,
+      errors: _withErrors({
+        SignUpField.purpose: null,
+        SignUpField.time: null,
+        SignUpField.companion: _companionError(
+          value,
+          state.maleCount + state.femaleCount,
+        ),
+      }),
+    );
+    _watchAvailableTimes();
   }
 
-  /// 오늘 예약 전체를 받아 고른 시설 것만 남깁니다.
-  Future<void> loadReservedTimes() async {
-    final selected = purpose;
-    if (selected == null) return;
-    // 응답을 기다리는 사이 다른 시설을 고르면 늦게 온 이전 응답은 버립니다.
-    final request = ++_reservedRequest;
-    reservedTimes = null;
-    reservedLoadError = null;
-    notifyListeners();
-    try {
-      final slots = await _reservations.fetchReservedSlots();
-      if (request != _reservedRequest) return;
-      reservedTimes = {
-        for (final slot in slots)
-          if (slot.purpose == selected) slot.startTime,
-      };
-      if (reservedTimes!.contains(time)) time = null;
-    } catch (_) {
-      if (request != _reservedRequest) return;
-      reservedLoadError = '예약 현황을 불러오지 못했어요';
-    }
-    if (!_disposed) notifyListeners();
+  /// 예약 가능한 시간을 받았는데 고른 시간이 없으면 고른 시간을 비웁니다.
+  void _watchAvailableTimes() {
+    _availableTimesSub?.close();
+    _availableTimesSub = null;
+    final purpose = state.purpose;
+    if (purpose == null || !needsTime) return;
+    _availableTimesSub = ref.listen(availableTimesProvider(purpose), (_, next) {
+      final available = next.value;
+      final time = state.time;
+      if (available != null && time != null && !available.contains(time)) {
+        state = state.copyWith(time: null);
+      }
+    });
   }
 
   /// 제출하는 사이 다른 친구가 고른 시간을 예약했을 때.
   /// 현황을 다시 불러오면 그 칸이 마감으로 바뀌고 고른 시간도 비워집니다.
   void rejectTakenTime() {
-    timeError = '그사이 다른 친구가 예약했어요. 다른 시간을 골라주세요';
-    loadReservedTimes();
-  }
-
-  /// 같은 이름의 회원이 있어 전화번호를 붙여 보냈는데도 번호가 맞지 않을 때.
-  /// 번호를 고치면 phoneController 리스너가 에러를 지웁니다.
-  void rejectDuplicatePhone() {
-    phoneError = '같은 이름의 친구와 전화번호가 달라요. 전화번호를 다시 확인해주세요';
-    notifyListeners();
+    state = state.copyWith(
+      errors: _withErrors({SignUpField.time: '그사이 다른 친구가 예약했어요. 다른 시간을 골라주세요'}),
+    );
+    final purpose = state.purpose;
+    if (purpose != null) ref.invalidate(availableTimesProvider(purpose));
   }
 
   void selectTime(String value) {
-    time = value;
-    timeError = null;
-    notifyListeners();
+    state = state.copyWith(
+      time: value,
+      errors: _withErrors({SignUpField.time: null}),
+    );
   }
 
   void selectGender(GujeukGender value) {
-    gender = value;
-    genderError = null;
-    notifyListeners();
+    state = state.copyWith(
+      gender: value,
+      errors: _withErrors({SignUpField.gender: null}),
+    );
   }
 
   void selectResidence(String value) {
-    residence = value;
-    residenceController.text = value;
-    residenceError = null;
-    notifyListeners();
+    state = state.copyWith(
+      residence: value,
+      errors: _withErrors({SignUpField.residence: null}),
+    );
   }
 
   void setAgreed(bool value) {
-    agreed = value;
-    if (value) agreementError = null;
-    notifyListeners();
+    state = state.copyWith(
+      agreed: value,
+      errors: value ? _withErrors({SignUpField.agreement: null}) : null,
+    );
   }
 
   void setMaleCount(int value) {
-    maleCount = value;
-    companionError = _validateCompanions();
-    notifyListeners();
+    state = state.copyWith(
+      maleCount: value,
+      errors: _withErrors({
+        SignUpField.companion: _companionError(
+          state.purpose,
+          value + state.femaleCount,
+        ),
+      }),
+    );
   }
 
   void setFemaleCount(int value) {
-    femaleCount = value;
-    companionError = _validateCompanions();
-    notifyListeners();
+    state = state.copyWith(
+      femaleCount: value,
+      errors: _withErrors({
+        SignUpField.companion: _companionError(
+          state.purpose,
+          state.maleCount + value,
+        ),
+      }),
+    );
   }
 
-  /// 생년월일 칸에 이 값을 넣어도 되는지. 다른 두 칸에 이미 친 값과 합쳐
-  /// 오늘 이후 날짜나 없는 날짜(4월 31일, 평년 2월 29일 등)가 되면 막습니다.
-  /// 어느 칸부터 치든 같은 규칙이 걸리도록 세 칸 모두 같은 검사를 씁니다.
-  bool canBeBirthYear(int year) =>
-      _isPossibleBirth(year, _birthMonth, _birthDay);
-
-  bool canBeBirthMonth(int month) =>
-      _isPossibleBirth(_birthYear, month, _birthDay);
-
-  bool canBeBirthDay(int day) => _isPossibleBirth(_birthYear, _birthMonth, day);
-
-  /// 아직 안 친 칸(null)은 어떤 값이든 될 수 있다고 봅니다.
-  bool _isPossibleBirth(int? year, int? month, int? day) {
-    if (month != null && day != null) {
-      // 년도를 모르면 2월 29일도 받도록 윤년(2000)으로 셉니다.
-      final daysInMonth = DateTime(year ?? 2000, month + 1, 0).day;
-      if (day > daysInMonth) return false;
-    }
-    if (year == null) return true;
-    // 안 친 월·일은 가장 이른 1월·1일로 놓고 오늘 이후인지 봅니다.
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    return !DateTime(year, month ?? 1, day ?? 1).isAfter(today);
-  }
-
-  /// 4자리를 다 쳤을 때만 년도로 봅니다.
-  int? get _birthYear {
-    final text = birthYearController.text;
-    return text.length == 4 ? int.parse(text) : null;
-  }
-
-  int? get _birthMonth => _parseIn(birthMonthController.text, 1, 12);
-
-  int? get _birthDay => _parseIn(birthDayController.text, 1, 31);
-
-  static int? _parseIn(String text, int min, int max) {
-    final value = int.tryParse(text);
-    return value != null && value >= min && value <= max ? value : null;
+  /// 타이핑하는 칸을 고쳤을 때. 에러가 떠 있을 때만 지우고 다시 그려,
+  /// 타이핑마다 폼 전체가 다시 그려지지 않게 합니다.
+  void clearError(SignUpField field) {
+    if (!state.errors.containsKey(field)) return;
+    state = state.copyWith(errors: _withErrors({field: null}));
   }
 
   /// 모든 항목을 검사해 에러 문구를 채웁니다. 전부 통과하면 true.
-  bool validate() {
-    purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
-    timeError = _validateTime();
-    companionError = _validateCompanions();
-    nameError = nameController.text.trim().isEmpty ? '이름을 적어주세요' : null;
-    phoneError = _validatePhone();
-    genderError = gender == null ? '성별을 골라주세요' : null;
-    birthError = _validateBirth();
-    residenceError = residence == null ? '사는 동네를 골라주세요' : null;
-    agreementError = agreed ? null : '개인정보 수집 및 이용에 동의해주세요';
-    notifyListeners();
-
-    return [
-      purposeError,
-      timeError,
-      nameError,
-      phoneError,
-      genderError,
-      birthError,
-      residenceError,
-      agreementError,
-      companionError,
-    ].every((error) => error == null);
+  bool validate(SignUpTexts texts) {
+    final s = state;
+    return _applyErrors({
+      ..._visitErrors(),
+      if (texts.name.trim().isEmpty) SignUpField.name: '이름을 적어주세요',
+      SignUpField.phone: ?_phoneError(texts.phone),
+      if (s.gender == null) SignUpField.gender: '성별을 골라주세요',
+      SignUpField.birth: ?_birthError(texts),
+      if (s.residence == null) SignUpField.residence: '사는 동네를 골라주세요',
+      if (!s.agreed) SignUpField.agreement: '개인정보 수집 및 이용에 동의해주세요',
+    });
   }
 
   /// 이용 예약 화면용 검사. 개인정보 칸이 없으므로 목적·시간·인원만 봅니다.
-  bool validateReservation() {
-    purposeError = purpose == null ? '무엇을 하러 왔는지 골라주세요' : null;
-    timeError = _validateTime();
-    companionError = _validateCompanions();
-    notifyListeners();
+  bool validateReservation() => _applyErrors(_visitErrors());
 
-    return purposeError == null && timeError == null && companionError == null;
+  bool _applyErrors(Map<SignUpField, String> errors) {
+    // 고른 뒤 폼을 쓰는 사이 시작 시간이 지났다면 고른 시간을 비웁니다.
+    final time = state.time;
+    final passed = time != null && pastTimes().contains(time);
+    state = state.copyWith(time: passed ? null : time, errors: errors);
+    return errors.isEmpty;
+  }
+
+  /// 목적·시간·인원 검사. 두 화면 모두 씁니다.
+  Map<SignUpField, String> _visitErrors() {
+    final s = state;
+    return {
+      if (s.purpose == null) SignUpField.purpose: '무엇을 하러 왔는지 골라주세요',
+      SignUpField.time: ?_timeError(),
+      SignUpField.companion: ?_companionError(
+        s.purpose,
+        s.maleCount + s.femaleCount,
+      ),
+    };
   }
 
   /// 시간 칸은 예약이 필요한 시설을 골랐을 때만 보이므로 그때만 검사합니다.
-  /// 고른 뒤 폼을 쓰는 사이 시작 시간이 지났다면 고른 시간을 비웁니다.
-  String? _validateTime() {
+  String? _timeError() {
     if (!needsTime) return null;
-    final selected = time;
-    if (selected == null) return '몇 시에 이용할지 골라주세요';
-    if (pastTimes.contains(selected)) {
-      time = null;
-      return '이미 지난 시간이에요. 다른 시간을 골라주세요';
-    }
+    final time = state.time;
+    if (time == null) return '몇 시에 이용할지 골라주세요';
+    if (pastTimes().contains(time)) return '이미 지난 시간이에요. 다른 시간을 골라주세요';
     return null;
   }
 
-  String? _validateCompanions() {
-    final max = maxCompanions;
-    if (max == null || maleCount + femaleCount <= max) return null;
+  String? _companionError(String? purpose, int companions) {
+    final max = _catalog?.maxCompanions(purpose);
+    if (max == null || companions <= max) return null;
     return '이 시설은 본인 포함 최대 ${max + 1}명까지 쓸 수 있어요';
   }
 
-  String? _validatePhone() {
-    final text = phoneController.text;
+  static String? _phoneError(String text) {
     if (PhoneNumberFormatter.digitsOf(text).isEmpty) return '전화번호를 적어주세요';
     if (!PhoneNumberFormatter.isValid(text)) return '전화번호를 다시 확인해주세요';
     return null;
   }
 
-  String? _validateBirth() {
-    final yearText = birthYearController.text;
-    final monthText = birthMonthController.text;
-    final dayText = birthDayController.text;
-    if (yearText.isEmpty || monthText.isEmpty || dayText.isEmpty) {
+  /// 생년월일. [validate]를 통과한 값에만 씁니다.
+  static DateTime birthDateOf(SignUpTexts texts) => DateTime(
+    int.parse(texts.birthYear),
+    int.parse(texts.birthMonth),
+    int.parse(texts.birthDay),
+  );
+
+  static String? _birthError(SignUpTexts texts) {
+    final (:birthYear, :birthMonth, :birthDay, name: _, phone: _) = texts;
+    if (birthYear.isEmpty || birthMonth.isEmpty || birthDay.isEmpty) {
       return '생년월일을 적어주세요';
     }
 
-    final year = int.parse(yearText);
-    final month = int.parse(monthText);
-    final day = int.parse(dayText);
+    final year = int.parse(birthYear);
+    final month = int.parse(birthMonth);
+    final day = int.parse(birthDay);
     // DateTime은 2월 30일을 3월 2일로 넘겨버리므로, 만든 뒤 값이 그대로인지 봅니다.
     final birth = DateTime(year, month, day);
     final isRealDate =
@@ -355,15 +314,16 @@ class SignUpFormController extends ChangeNotifier {
     return null;
   }
 
-  @override
-  void dispose() {
-    _disposed = true;
-    nameController.dispose();
-    phoneController.dispose();
-    birthYearController.dispose();
-    birthMonthController.dispose();
-    birthDayController.dispose();
-    residenceController.dispose();
-    super.dispose();
+  /// 지금 에러에 [changes]를 덮어씁니다. 값이 null이면 그 항목의 에러를 지웁니다.
+  Map<SignUpField, String> _withErrors(Map<SignUpField, String?> changes) {
+    final errors = {...state.errors};
+    for (final MapEntry(:key, :value) in changes.entries) {
+      if (value == null) {
+        errors.remove(key);
+      } else {
+        errors[key] = value;
+      }
+    }
+    return errors;
   }
 }
