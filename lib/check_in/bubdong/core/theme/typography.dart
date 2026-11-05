@@ -1,4 +1,5 @@
 import 'package:flutter/painting.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
 abstract final class BubdongTypography{
   static const pretendard = 'Pretendard';
@@ -116,4 +117,6 @@ abstract final class BubdongTypography{
     height: 36 / 32,
     letterSpacing: -0.8,
   );
+
+  static final fieldLabel = subtitle.copyWith(color: BubdongColors.textPrimary);
 }

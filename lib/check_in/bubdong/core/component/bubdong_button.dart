@@ -14,9 +14,11 @@ class BubdongButton extends StatefulWidget {
     this.icon,
     this.variant = BubdongButtonVariant.main,
     this.size = BubdongButtonSize.large,
+    this.width,
   });
 
   final String label;
+  final double? width;
   final VoidCallback? onPressed; // null이면 비활성
   final Widget? icon;
   final bool isLoading;

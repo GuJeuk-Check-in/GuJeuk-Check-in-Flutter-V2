@@ -87,4 +87,10 @@ abstract final class BubdongColors {
   static const textFieldDisabled = BubdongPalette.gray80;
 
   static const borderCard = BubdongPalette.gray150;
+
+  static final overlay = BubdongPalette.gray0.withValues(alpha: 0.3);
+
+  //팝업창
+  static const bgSurface = BubdongPalette.white;
+  static const brandSubtle = BubdongPalette.orange50;
 }
