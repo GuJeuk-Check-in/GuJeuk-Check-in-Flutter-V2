@@ -28,7 +28,8 @@ class OutboxSyncService {
 
   bool _isRunning = false;
 
-  /// 앱이 전송 중에 꺼졌던 건을 다시 보낼 수 있게 되돌립니다. 앱을 시작할 때 부릅니다.
+  /// 앱이 꺼지거나 저장에 실패해 전송 중으로 남은 건을 다시 보낼 수 있게 되돌립니다.
+  /// 회차는 겹치지 않으므로 회차를 시작할 때 전송 중인 건은 모두 이렇게 남은 건입니다.
   Future<void> recover() async {
     final retryAt = _now().add(outboxFirstRetryDelay);
     for (final record in await _outbox.all()) {
@@ -43,6 +44,7 @@ class OutboxSyncService {
     if (_isRunning) return;
     _isRunning = true;
     try {
+      await recover();
       await _deleteExpired();
       final now = _now();
       final due = (await _outbox.all()).where((r) => _isDue(r, now)).toList()

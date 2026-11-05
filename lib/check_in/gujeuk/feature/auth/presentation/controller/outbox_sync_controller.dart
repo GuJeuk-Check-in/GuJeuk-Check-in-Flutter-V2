@@ -31,14 +31,7 @@ class OutboxSyncController {
   bool get isServerDown => _isServerDown;
 
   /// 앱을 시작할 때 한 번 부릅니다.
-  Future<void> start() async {
-    try {
-      await _sync.recover();
-    } catch (error) {
-      debugPrint('outbox: 복구 실패 (${error.runtimeType})');
-    }
-    await _check();
-  }
+  Future<void> start() => _check();
 
   void dispose() {
     _isDisposed = true;

@@ -40,5 +40,7 @@ String? conflictMessageOf(DioException e) {
   final response = e.response;
   if (response?.statusCode != 409) return null;
   final data = response!.data;
-  return data is Map<String, dynamic> ? data['message'] as String? : null;
+  if (data is! Map<String, dynamic>) return null;
+  final message = data['message'];
+  return message is String ? message : null;
 }
