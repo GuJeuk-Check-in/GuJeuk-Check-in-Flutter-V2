@@ -6,10 +6,15 @@ class SignupHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.currentStep,
+    this.subtitle,
   });
 
   final String title;
   final int currentStep;
+
+  /// 제목 아래 작은 설명 (없으면 안 보임)
+  final String? subtitle;
+
   static const _steps = ['기본 정보', '추가 정보', '개인정보 동의'];
 
   @override
@@ -18,7 +23,7 @@ class SignupHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          "법동 청소년 문화센터",
+          '법동 청소년 문화센터',
           style: BubdongTypography.bodyMd.copyWith(
             color: BubdongColors.textPlaceholder,
           ),
@@ -30,7 +35,16 @@ class SignupHeader extends StatelessWidget {
             color: BubdongColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 26),
+        if (subtitle != null) ...[
+          const SizedBox(height: BubdongSpacing.s8),
+          Text(
+            subtitle!,
+            style: BubdongTypography.bodyLg.copyWith(
+              color: BubdongColors.textPlaceholder,
+            ),
+          ),
+        ],
+        const SizedBox(height: BubdongSpacing.s26),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -55,14 +69,12 @@ class SignupHeader extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isCurrent
-                ? BubdongColors.brandPrimary
-                : BubdongPalette.gray100,
+            color: isCurrent ? BubdongColors.brandPrimary : BubdongColors.stepInactive,
           ),
           child: Text(
             '${i + 1}',
             style: BubdongTypography.subtitle.copyWith(
-              color: BubdongPalette.white,
+              color: BubdongColors.textOnPrimary,
             ),
           ),
         ),
@@ -70,9 +82,7 @@ class SignupHeader extends StatelessWidget {
         Text(
           _steps[i],
           style: BubdongTypography.subtitle.copyWith(
-            color: isCurrent
-                ? BubdongColors.textAccentDark
-                : BubdongColors.textPlaceholder,
+            color: isCurrent ? BubdongColors.textAccentDark : BubdongColors.textPlaceholder,
           ),
         ),
       ],

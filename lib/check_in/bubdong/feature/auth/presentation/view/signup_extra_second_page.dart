@@ -5,6 +5,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_t
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/visit_route.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_consent_page.dart';
 
 class SignupExtraSecondPage extends StatefulWidget {
   const SignupExtraSecondPage({super.key});
@@ -82,7 +83,8 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                         icon: Icons.people_outline,
                         color: BubdongCardColor.orange,
                         selected: _visitRoute == VisitRoute.friend,
-                        onTap: () => setState(() => _visitRoute = VisitRoute.friend),
+                        onTap: () =>
+                            setState(() => _visitRoute = VisitRoute.friend),
                       ),
                     ),
                     const SizedBox(width: BubdongSpacing.s20),
@@ -92,7 +94,8 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                         icon: Icons.family_restroom,
                         color: BubdongCardColor.mint,
                         selected: _visitRoute == VisitRoute.parent,
-                        onTap: () => setState(() => _visitRoute = VisitRoute.parent),
+                        onTap: () =>
+                            setState(() => _visitRoute = VisitRoute.parent),
                       ),
                     ),
                     const SizedBox(width: BubdongSpacing.s20),
@@ -102,7 +105,8 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                         icon: Icons.edit,
                         color: BubdongCardColor.blue,
                         selected: _visitRoute == VisitRoute.other,
-                        onTap: () => setState(() => _visitRoute = VisitRoute.other),
+                        onTap: () =>
+                            setState(() => _visitRoute = VisitRoute.other),
                       ),
                     ),
                   ],
@@ -111,10 +115,7 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                 // 기타를 골랐을 때만 보이는 입력칸
                 if (_visitRoute == VisitRoute.other) ...[
                   const SizedBox(height: BubdongSpacing.s40),
-                  const BubdongInput(
-                    label: '기타 (어떻게 알게 됐어?)',
-                    hintText: '기타',
-                  ),
+                  const BubdongInput(label: '기타 (어떻게 알게 됐어?)', hintText: '기타'),
                 ],
               ],
             ),
@@ -130,7 +131,13 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                 variant: BubdongButtonVariant.tone,
               ),
               const SizedBox(width: BubdongSpacing.s40),
-              BubdongButton(width: 320, label: '다음', onPressed: () {}),
+              BubdongButton(
+                width: 320,
+                label: '다음',
+                onPressed: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => SignupConsentPage())),
+              ),
             ],
           ),
         ],

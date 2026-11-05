@@ -93,4 +93,10 @@ abstract final class BubdongColors {
   //팝업창
   static const bgSurface = BubdongPalette.white;
   static const brandSubtle = BubdongPalette.orange50;
+
+  // 지금 단계가 아닌 단계 동그라미
+  static const stepInactive = BubdongPalette.gray100;
+
+  // 주황 등 진한 배경 위의 흰 글자
+  static const textOnPrimary = BubdongPalette.white;
 }
