@@ -15,6 +15,15 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/o
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/sign_up_repository.dart';
 import 'package:uuid/uuid.dart';
 
+/// 접수 한 건을 구분하는 값. 같은 값으로 다시 보내면 서버가 중복을 걸러 줍니다.
+class _Attempt {
+  final String input;
+  final String clientRecordId;
+  final DateTime visitTime;
+
+  const _Attempt(this.input, this.clientRecordId, this.visitTime);
+}
+
 /// 예약 없는 접수를 서버로 보내고, 서버 연결 문제일 때만 기기에 저장해 나중에 다시 보냅니다.
 /// 끝나면 접수가 완료된 것입니다.
 /// 서버가 내용을 거절하거나, 서버 연결 문제인데 저장도 실패했으면 예외를 던집니다.
@@ -22,11 +31,19 @@ class CheckInSubmitter {
   /// 키오스크 앞에서 기다리는 최대 시간. 넘으면 저장해 둔 채 완료 화면으로 넘어갑니다.
   static const _firstSendLimit = Duration(seconds: 5);
 
+  /// 이 안에 같은 내용으로 다시 누르면 오류를 보고 다시 시도한 것으로 봅니다.
+  /// 더 지나면 같은 친구가 새로 방문한 것일 수 있습니다.
+  static const _sameAttemptWindow = Duration(minutes: 5);
+
   final OutboxRepository _outbox;
   final CheckInRepository _checkIns;
   final SignUpRepository _signUps;
   final DateTime Function() _now;
   final String Function() _newId;
+
+  /// 서버에 닿았는지 모르는데 저장도 실패한 접수.
+  /// 방문자가 다시 눌렀을 때 새 접수로 보내면 서버에 기록이 두 번 남습니다.
+  _Attempt? _unsaved;
 
   CheckInSubmitter(
     this._outbox,
@@ -44,8 +61,11 @@ class CheckInSubmitter {
     required int maleCount,
     required int femaleCount,
   }) async {
-    final visitTime = _now();
-    final clientRecordId = _newId();
+    final attempt = _attemptFor(
+      'checkIn|$userId|$purpose|$maleCount|$femaleCount',
+    );
+    final clientRecordId = attempt.clientRecordId;
+    final visitTime = attempt.visitTime;
     final record = _newRecord(
       clientRecordId,
       OutboxKind.checkIn,
@@ -62,6 +82,7 @@ class CheckInSubmitter {
     );
     await _sendOrQueue(
       record,
+      attempt,
       () => _checkIns.checkIn(
         userId: userId,
         purpose: purpose,
@@ -84,8 +105,13 @@ class CheckInSubmitter {
     required int maleCount,
     required int femaleCount,
   }) async {
-    final visitTime = _now();
+    final attempt = _attemptFor(
+      'signUp|$name|${gender.serverValue}|$phone|$birthDate|$residence|'
+      '$purpose|$maleCount|$femaleCount',
+    );
+    final visitTime = attempt.visitTime;
     final record = _signUpRecord(
+      clientRecordId: attempt.clientRecordId,
       name: name,
       gender: gender,
       phone: phone,
@@ -99,6 +125,7 @@ class CheckInSubmitter {
     );
     await _sendOrQueue(
       record,
+      attempt,
       () => _signUps.signUp(
         name: name,
         gender: gender,
@@ -127,6 +154,7 @@ class CheckInSubmitter {
   }) {
     return _outbox.save(
       _signUpRecord(
+        clientRecordId: _newId(),
         name: name,
         gender: gender,
         phone: phone,
@@ -141,7 +169,20 @@ class CheckInSubmitter {
     );
   }
 
+  _Attempt _attemptFor(String input) {
+    final unsaved = _unsaved;
+    _unsaved = null;
+    final now = _now();
+    if (unsaved != null &&
+        unsaved.input == input &&
+        now.difference(unsaved.visitTime) < _sameAttemptWindow) {
+      return unsaved;
+    }
+    return _Attempt(input, _newId(), now);
+  }
+
   OutboxRecord _signUpRecord({
+    required String clientRecordId,
     required String name,
     required Gender gender,
     required String phone,
@@ -153,7 +194,6 @@ class CheckInSubmitter {
     required DateTime visitTime,
     required OutboxStatus status,
   }) {
-    final clientRecordId = _newId();
     return _newRecord(clientRecordId, OutboxKind.signUp, visitTime, status, {
       'clientRecordId': clientRecordId,
       'name': name,
@@ -191,6 +231,7 @@ class CheckInSubmitter {
 
   Future<void> _sendOrQueue(
     OutboxRecord record,
+    _Attempt attempt,
     Future<void> Function() send,
   ) async {
     try {
@@ -198,8 +239,10 @@ class CheckInSubmitter {
     } on Exception catch (error) {
       if (isDuplicateLog(error)) return;
       if (!isRetryableFailure(error)) rethrow;
+      _unsaved = attempt;
       // 첫 전송과 같은 시각으로 다시 보내야 서버가 중복을 걸러 줍니다.
       await _outbox.save(record.markPending(_now().add(outboxFirstRetryDelay)));
+      _unsaved = null;
     }
   }
 
