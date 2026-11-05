@@ -19,7 +19,27 @@ void ensureBaseUrl() => baseUrl;
 class ApiClient {
   final Dio dio;
 
-  ApiClient(this.dio);
+  ApiClient(this.dio) {
+    dio.interceptors.add(_rejectHtmlResponse);
+  }
+
+  /// 서버는 HTML로 답하지 않으므로 2xx HTML은 캡티브 포털이나 프록시가 대신 답한 것입니다.
+  /// 응답 없는 실패로 만들어 서버에 닿지 못한 요청과 똑같이 다룹니다.
+  static final _rejectHtmlResponse = InterceptorsWrapper(
+    onResponse: (response, handler) {
+      final contentType = response.headers.value(Headers.contentTypeHeader);
+      if (contentType?.toLowerCase().startsWith('text/html') ?? false) {
+        handler.reject(
+          DioException(
+            requestOptions: response.requestOptions,
+            message: '서버가 아닌 곳에서 온 HTML 응답입니다',
+          ),
+        );
+        return;
+      }
+      handler.next(response);
+    },
+  );
 
   static const Duration _timeout = Duration(seconds: 10);
 
