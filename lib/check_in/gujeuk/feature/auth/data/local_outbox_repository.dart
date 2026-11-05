@@ -100,6 +100,28 @@ class LocalOutboxRepository implements OutboxRepository {
     await box.delete(clientRecordId);
     await box.flush();
   }
+
+  @override
+  Future<void> deleteUnreadable() async {
+    final box = await _opened();
+    final unreadable = [
+      for (final entry in box.toMap().entries)
+        if (!_isReadable(entry.value)) entry.key,
+    ];
+    if (unreadable.isEmpty) return;
+    debugPrint('outbox: 읽을 수 없는 건을 삭제 $unreadable');
+    await box.deleteAll(unreadable);
+    await box.flush();
+  }
+
+  bool _isReadable(String value) {
+    try {
+      OutboxRecord.decode(value);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 final outboxRepositoryProvider = Provider<OutboxRepository>((ref) {

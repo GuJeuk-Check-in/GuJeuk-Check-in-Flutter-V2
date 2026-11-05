@@ -107,6 +107,7 @@ class OutboxSyncService {
   /// 개인정보가 기기에 계속 남지 않게 정해진 기간이 지난 건을 지웁니다.
   /// 실패 건은 실패한 때부터, 재시도 중인 건은 접수한 때부터 셉니다.
   Future<void> _deleteExpired() async {
+    await _outbox.deleteUnreadable();
     final limit = _now().subtract(_retention);
     for (final record in await _outbox.all()) {
       if (record.status == OutboxStatus.sending) continue;

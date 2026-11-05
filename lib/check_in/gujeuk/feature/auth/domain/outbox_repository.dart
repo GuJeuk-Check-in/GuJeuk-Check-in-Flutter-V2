@@ -8,4 +8,7 @@ abstract interface class OutboxRepository {
   Future<List<OutboxRecord>> all();
 
   Future<void> delete(String clientRecordId);
+
+  /// 읽을 수 없어 보낼 수도 없는 건을 지웁니다. 저장 형식을 바꾸면 기존 건을 먼저 옮겨야 합니다.
+  Future<void> deleteUnreadable();
 }
