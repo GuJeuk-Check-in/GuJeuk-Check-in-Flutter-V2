@@ -48,7 +48,7 @@ class OutboxSyncService {
       final due = (await _outbox.all()).where((r) => _isDue(r, now)).toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
       for (final record in due) {
-        // 서버가 응답하지 않으면 다음 건도 실패할 테니 이번 회차는 멈춥니다.
+        // 내용 문제가 아니면 다음 건도 실패할 테니 이번 회차는 멈춥니다.
         if (!await _send(record)) break;
       }
     } finally {
@@ -76,16 +76,18 @@ class OutboxSyncService {
         return true;
       }
       final now = _now();
-      if (isRetryableFailure(error)) {
-        final attempts = record.attempts + 1;
-        await _outbox.save(
-          record.markRetry(now.add(retryDelayOf(attempts)), now),
-        );
-        return false;
+      // 앞선 요청이 아직 처리 중이어도 400이 오므로 첫 400은 한 번 더 확인합니다.
+      final mayBeInFlight = isBadRequest(error) && record.attempts == 0;
+      if (isContentRejection(error) && !mayBeInFlight) {
+        await _outbox.save(record.markPermanentlyFailed(now));
+        _logFailed(record, error);
+        return true;
       }
-      await _outbox.save(record.markPermanentlyFailed(now));
-      _logFailed(record, error);
-      return true;
+      final attempts = record.attempts + 1;
+      await _outbox.save(
+        record.markRetry(now.add(retryDelayOf(attempts)), now),
+      );
+      return mayBeInFlight;
     }
     await _outbox.delete(record.clientRecordId);
     return true;
