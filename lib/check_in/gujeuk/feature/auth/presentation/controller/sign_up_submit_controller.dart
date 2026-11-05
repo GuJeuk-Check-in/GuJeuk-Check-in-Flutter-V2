@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/done_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/server_clock.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/check_in_submitter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_sign_up_repository.dart';
@@ -45,7 +46,7 @@ class SignUpSubmitController extends SubmitController {
               purpose: form.purpose!,
               maleCount: form.maleCount,
               femaleCount: form.femaleCount,
-              visitTime: DateTime.now(),
+              visitTime: ref.read(serverClockProvider).now(),
               reservationTime: time,
             );
       } else if (offline) {

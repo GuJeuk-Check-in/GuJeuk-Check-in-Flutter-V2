@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_failure.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/server_clock.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/local_outbox_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_ha_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/ha_repository.dart';
@@ -137,5 +138,6 @@ final outboxSyncServiceProvider = Provider<OutboxSyncService>((ref) {
   return OutboxSyncService(
     ref.watch(outboxRepositoryProvider),
     ref.watch(haRepositoryProvider),
+    now: ref.watch(serverClockProvider).now,
   );
 });
