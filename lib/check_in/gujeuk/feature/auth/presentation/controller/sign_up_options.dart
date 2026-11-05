@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/option_cache.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_reservation_repository.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/remote_residence_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
 
 /// 실패하면 화면에 문구와 다시 시도 버튼을 띄우므로 Riverpod의 자동 재시도는 끕니다.
@@ -30,18 +30,15 @@ class PurposeCatalog {
 
 /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
 /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
-/// 예약 시설을 모르면 예약 시설이 시간 없이 기록될 수 있어, 둘 중 하나만 실패해도 실패로 둡니다.
+/// 서버에서 못 받으면 마지막으로 저장한 묶음을 씁니다.
+/// 예약 시설을 모르면 예약 시설이 시간 없이 기록될 수 있어, 저장본도 없으면 실패로 둡니다.
 final purposeCatalogProvider = FutureProvider.autoDispose<PurposeCatalog>((
   ref,
 ) async {
-  final reservations = ref.watch(reservationRepositoryProvider);
-  final (all, reservable) = await (
-    reservations.fetchVisitPurposes(),
-    reservations.fetchReservablePurposes(),
-  ).wait;
+  final lists = await ref.watch(optionsLoaderProvider).purposeLists();
   return PurposeCatalog(
-    purposes: all,
-    reservable: {for (final p in reservable) p.purpose},
+    purposes: lists.all,
+    reservable: {for (final p in lists.reservable) p.purpose},
   );
 }, retry: _noRetry);
 
@@ -57,6 +54,6 @@ final availableTimesProvider = FutureProvider.autoDispose
 
 /// 거주지 모달에 띄울 동네 이름들.
 final residencesProvider = FutureProvider.autoDispose<List<String>>(
-  (ref) => ref.watch(residenceRepositoryProvider).fetchResidences(),
+  (ref) => ref.watch(optionsLoaderProvider).residences(),
   retry: _noRetry,
 );

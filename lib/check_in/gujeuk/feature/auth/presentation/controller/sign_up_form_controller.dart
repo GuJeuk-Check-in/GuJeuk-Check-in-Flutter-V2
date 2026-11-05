@@ -103,13 +103,17 @@ class SignUpFormController extends Notifier<SignUpFormState> {
   /// 고른 시설의 예약 가능한 시간을 지켜봅니다. 시설을 바꾸면 이전 것은 닫습니다.
   ProviderSubscription<AsyncValue<Set<String>>>? _availableTimesSub;
 
+  /// 서버와 연결이 안 되는 동안인지. 예약을 확정할 수 없어 예약 시설도 시간 없이 접수합니다.
+  bool offline = false;
+
   @override
   SignUpFormState build() => const SignUpFormState();
 
   PurposeCatalog? get _catalog => ref.read(purposeCatalogProvider).value;
 
   /// 고른 목적이 예약이 필요한 시설이라 시간도 골라야 하는지.
-  bool get needsTime => _catalog?.needsTime(state.purpose) ?? false;
+  bool get needsTime =>
+      !offline && (_catalog?.needsTime(state.purpose) ?? false);
 
   /// 오늘 시작 시간이 이미 지난 칸. 화면을 띄워둔 사이에도 지나가므로 부를 때마다 다시 셉니다.
   static Set<String> pastTimes() {

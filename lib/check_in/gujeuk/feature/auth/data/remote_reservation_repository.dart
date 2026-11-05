@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_failure.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/visit_purpose.dart';
@@ -70,7 +71,7 @@ class RemoteReservationRepository implements ReservationRepository {
       );
     } on DioException catch (e) {
       if (isSlotTaken(e)) throw const SlotTakenException();
-      if (_conflictMessage(e) == '같은 이름의 회원이 있습니다.') {
+      if (conflictMessageOf(e) == '같은 이름의 회원이 있습니다.') {
         throw const DuplicateNameException();
       }
       rethrow;
@@ -79,15 +80,7 @@ class RemoteReservationRepository implements ReservationRepository {
 
   /// 예약 칸이 찼다는 409. 가입하면서 예약할 때도 같은 응답이 옵니다.
   static bool isSlotTaken(DioException e) =>
-      _conflictMessage(e) == '이미 예약된 시간입니다.';
-
-  /// 409는 여러 이유가 같은 상태 코드로 오므로 `message`로 나눕니다.
-  static String? _conflictMessage(DioException e) {
-    final response = e.response;
-    if (response?.statusCode != 409) return null;
-    final data = response!.data;
-    return data is Map<String, dynamic> ? data['message'] as String? : null;
-  }
+      conflictMessageOf(e) == '이미 예약된 시간입니다.';
 }
 
 final reservationRepositoryProvider = Provider<ReservationRepository>((ref) {

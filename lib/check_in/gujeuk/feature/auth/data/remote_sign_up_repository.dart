@@ -13,7 +13,7 @@ class RemoteSignUpRepository implements SignUpRepository {
 
   const RemoteSignUpRepository(this._client);
 
-  /// `POST /user/sign-up`. `visitTime`은 가입 버튼을 누른 지금 시각입니다.
+  /// `POST /user/sign-up`.
   @override
   Future<void> signUp({
     required String name,
@@ -24,6 +24,7 @@ class RemoteSignUpRepository implements SignUpRepository {
     required String purpose,
     required int maleCount,
     required int femaleCount,
+    required DateTime visitTime,
     String? reservationTime,
   }) async {
     try {
@@ -31,10 +32,7 @@ class RemoteSignUpRepository implements SignUpRepository {
         '/user/sign-up',
         data: {
           'name': name,
-          'gender': switch (gender) {
-            Gender.man => 'MAN',
-            Gender.woman => 'WOMAN',
-          },
+          'gender': gender.serverValue,
           'phone': PhoneNumberFormatter.format(phone),
           'maleCount': maleCount,
           'femaleCount': femaleCount,
@@ -43,7 +41,7 @@ class RemoteSignUpRepository implements SignUpRepository {
           // 동의하지 않으면 폼 검사에서 막히므로 여기까지 오면 항상 동의한 것입니다.
           'privacyAgreed': true,
           'purpose': purpose,
-          'visitTime': ServerDateFormat.dateTime(DateTime.now()),
+          'visitTime': ServerDateFormat.dateTime(visitTime),
           'reservationTime': ?reservationTime,
         },
       );

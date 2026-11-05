@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_failure.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/remote_visitor_repository.dart';
 
 /// 이름 확인 결과. 다이얼로그와 화면 이동은 화면이 맡습니다.
@@ -21,6 +24,13 @@ class VisitorNotFound extends VisitorCheckResult {
   const VisitorNotFound({required this.name});
 }
 
+/// 서버와 연결이 안 돼 회원인지 모릅니다. 정보를 모두 받아 기기에 저장합니다.
+class VisitorCheckUnavailable extends VisitorCheckResult {
+  final String name;
+
+  const VisitorCheckUnavailable({required this.name});
+}
+
 /// 화면에 머뭅니다. 에러 문구는 이미 이름 칸 아래에 떠 있습니다.
 class VisitorCheckStopped extends VisitorCheckResult {
   const VisitorCheckStopped();
@@ -33,6 +43,9 @@ final infoCheckProvider =
     );
 
 class InfoCheckController extends Notifier<String?> {
+  /// 서버가 응답하지 않을 때 키오스크 앞에서 기다리는 최대 시간.
+  static const _lookupLimit = Duration(seconds: 5);
+
   /// 조회하는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isChecking = false;
 
@@ -57,11 +70,17 @@ class InfoCheckController extends Notifier<String?> {
 
     _isChecking = true;
     try {
-      final userId = await ref.read(visitorRepositoryProvider).findUserId(name);
+      final userId = await ref
+          .read(visitorRepositoryProvider)
+          .findUserId(name)
+          .timeout(_lookupLimit);
       return userId == null
           ? VisitorNotFound(name: name)
           : VisitorFound(name: name, userId: userId);
-    } catch (_) {
+    } catch (error) {
+      if (isRetryableFailure(error)) {
+        return VisitorCheckUnavailable(name: name);
+      }
       if (ref.mounted) state = '확인하지 못했어요. 다시 눌러주세요';
       return const VisitorCheckStopped();
     } finally {
