@@ -47,6 +47,9 @@ typedef PurposeLists = ({
   List<VisitPurpose> reservable,
 });
 
+/// 서버가 빈 목록을 줬을 때. 예약 시설과 달리 방문 목적과 거주지는 비면 접수할 수 없어 받기 실패로 봅니다.
+class _EmptyOptionsException implements Exception {}
+
 /// 방문 목적, 예약 시설, 거주지를 받아 저장하고, 서버에서 못 받으면 저장본을 돌려줍니다.
 /// 저장본도 없으면 예외를 던집니다.
 class OptionsLoader {
@@ -71,7 +74,7 @@ class OptionsLoader {
 
   Future<List<String>> residences() => _load(
     _residencesKey,
-    _residences.fetchResidences().timeout(_screenLimit),
+    _fetchResidences().timeout(_screenLimit),
     jsonEncode,
     (source) => (jsonDecode(source) as List<dynamic>).cast<String>(),
   );
@@ -81,7 +84,7 @@ class OptionsLoader {
   Future<bool> refresh() async {
     final (purposesDone, residencesDone) = await (
       _refresh(_purposesKey, _fetchPurposeLists, _encodePurposeLists),
-      _refresh(_residencesKey, _residences.fetchResidences, jsonEncode),
+      _refresh(_residencesKey, _fetchResidences, jsonEncode),
     ).wait;
     return purposesDone && residencesDone;
   }
@@ -91,7 +94,14 @@ class OptionsLoader {
       _reservations.fetchVisitPurposes(),
       _reservations.fetchReservablePurposes(),
     ).wait;
+    if (all.isEmpty) throw _EmptyOptionsException();
     return (all: all, reservable: reservable);
+  }
+
+  Future<List<String>> _fetchResidences() async {
+    final residences = await _residences.fetchResidences();
+    if (residences.isEmpty) throw _EmptyOptionsException();
+    return residences;
   }
 
   Future<bool> _refresh<T>(
