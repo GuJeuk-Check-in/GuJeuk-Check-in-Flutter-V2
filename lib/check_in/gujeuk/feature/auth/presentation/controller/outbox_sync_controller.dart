@@ -57,6 +57,8 @@ class OutboxSyncController {
       if (isReady) {
         if (!_wasReady || _optionsStale) unawaited(_refreshOptions());
         await _sync.run();
+      } else {
+        await _sync.cleanUp();
       }
     } catch (error) {
       debugPrint('outbox: 재전송 실패 (${error.runtimeType})');

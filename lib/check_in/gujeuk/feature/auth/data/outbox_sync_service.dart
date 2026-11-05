@@ -20,14 +20,26 @@ class OutboxSyncService {
   static const _maxRetryDelay = Duration(minutes: 10);
   static const _retention = Duration(days: 7);
 
+  /// 기기 시각이 잠깐 튄 것일 수 있어 만료된 뒤 이만큼 계속 만료 상태일 때만 지웁니다.
+  static const _expiryGrace = Duration(hours: 1);
+
   final OutboxRepository _outbox;
   final HaRepository _ha;
   final DateTime Function() _now;
+  final Duration Function() _uptime;
 
-  OutboxSyncService(this._outbox, this._ha, {DateTime Function()? now})
-    : _now = now ?? DateTime.now;
+  OutboxSyncService(
+    this._outbox,
+    this._ha, {
+    DateTime Function()? now,
+    Duration Function()? uptime,
+  }) : _now = now ?? DateTime.now,
+       _uptime = uptime ?? monotonicUptime();
 
   bool _isRunning = false;
+
+  /// 건별로 처음 만료 상태를 본 때. 앱을 재시작하면 처음부터 다시 셉니다.
+  final _expiredSince = <String, Duration>{};
 
   /// 앱이 꺼지거나 저장에 실패해 전송 중으로 남은 건을 다시 보낼 수 있게 되돌립니다.
   /// 회차는 겹치지 않으므로 회차를 시작할 때 전송 중인 건은 모두 이렇게 남은 건입니다.
@@ -41,28 +53,50 @@ class OutboxSyncService {
   }
 
   /// 보낼 때가 된 건을 큐가 빌 때까지 보냅니다. 이미 돌고 있으면 그대로 둡니다.
-  Future<void> run() async {
+  Future<void> run() => _exclusive(() async {
+    await _cleanUp();
+    final now = _now();
+    final due = (await _outbox.all()).where((r) => _isDue(r, now)).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    for (final record in due) {
+      // 내용 문제가 아니면 다음 건도 실패할 테니 이번 회차는 멈춥니다.
+      if (!await _send(record)) break;
+    }
+  });
+
+  /// 서버가 내려가 있어도 개인정보가 보관 기간을 넘기지 않게 정리합니다.
+  Future<void> cleanUp() => _exclusive(_cleanUp);
+
+  Future<void> _exclusive(Future<void> Function() work) async {
     if (_isRunning) return;
     _isRunning = true;
     try {
-      await recover();
-      await _deleteExpired();
-      final now = _now();
-      final due = (await _outbox.all()).where((r) => _isDue(r, now)).toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      for (final record in due) {
-        // 내용 문제가 아니면 다음 건도 실패할 테니 이번 회차는 멈춥니다.
-        if (!await _send(record)) break;
-      }
+      await work();
     } finally {
       _isRunning = false;
     }
   }
 
+  Future<void> _cleanUp() async {
+    await recover();
+    await _deleteExpired();
+  }
+
   bool _isDue(OutboxRecord record, DateTime now) {
     if (record.status == OutboxStatus.sending) return false;
+    if (_isExpired(record, now)) return false;
     final retryAt = record.nextRetryAt;
-    return retryAt != null && !retryAt.isAfter(now);
+    if (retryAt == null) return false;
+    // 최대 대기 시간보다 멀면 기기 시각이 과거로 돌아간 것이므로 기다리지 않습니다.
+    return !retryAt.isAfter(now) || retryAt.difference(now) > _maxRetryDelay;
+  }
+
+  /// 실패 건은 실패한 때부터, 재시도 중인 건은 접수한 때부터 셉니다.
+  bool _isExpired(OutboxRecord record, DateTime now) {
+    final since = record.isPermanentlyFailed
+        ? record.failedAt ?? record.createdAt
+        : record.createdAt;
+    return !since.isAfter(now.subtract(_retention));
   }
 
   /// 한 건을 보냅니다. 다음 건으로 넘어가도 되면 true입니다.
@@ -106,20 +140,24 @@ class OutboxSyncService {
   }
 
   /// 개인정보가 기기에 계속 남지 않게 정해진 기간이 지난 건을 지웁니다.
-  /// 실패 건은 실패한 때부터, 재시도 중인 건은 접수한 때부터 셉니다.
   Future<void> _deleteExpired() async {
     await _outbox.deleteUnreadable();
-    final limit = _now().subtract(_retention);
+    final now = _now();
+    final uptime = _uptime();
     for (final record in await _outbox.all()) {
       if (record.status == OutboxStatus.sending) continue;
-      final since = record.isPermanentlyFailed
-          ? record.failedAt ?? record.createdAt
-          : record.createdAt;
-      if (since.isAfter(limit)) continue;
+      final id = record.clientRecordId;
+      if (!_isExpired(record, now)) {
+        _expiredSince.remove(id);
+        continue;
+      }
+      final expiredSince = _expiredSince.putIfAbsent(id, () => uptime);
+      if (uptime - expiredSince < _expiryGrace) continue;
       debugPrint(
         'outbox: 보관 기간이 지나 삭제 ${record.clientRecordId} (${record.kind.name})',
       );
-      await _outbox.delete(record.clientRecordId);
+      await _outbox.delete(id);
+      _expiredSince.remove(id);
     }
   }
 
