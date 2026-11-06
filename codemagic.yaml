@@ -1,0 +1,21 @@
+workflows:
+  gujeuk-android:
+    name: 구즉 Android
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+      groups:
+        # Codemagic Teams > Environment variables 에서 만든 그룹. API_BASE_URL 을 담는다.
+        - gujeuk
+    scripts:
+      - name: .env.gujeuk 만들기
+        script: |
+          # .env.gujeuk 은 gitignore 대상이라 저장소에 없으므로 환경 변수로 만든다.
+          echo "API_BASE_URL=$API_BASE_URL" > .env.gujeuk
+      - name: 패키지 받기
+        script: flutter pub get
+      - name: 구즉 App Bundle 빌드
+        script: flutter build appbundle --debug --flavor gujeuk -t lib/main_gujeuk.dart
+    artifacts:
+      - build/app/outputs/bundle/**/*.aab
