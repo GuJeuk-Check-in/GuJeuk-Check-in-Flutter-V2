@@ -18,15 +18,37 @@ class GujeukApp extends ConsumerStatefulWidget {
 }
 
 class _GujeukAppState extends ConsumerState<GujeukApp> {
+  /// 첫 화면에 크게 깔리는 이미지. 읽기 전에 첫 프레임을 그리면 이미지가 한 박자 늦게 나타납니다.
+  static const _firstScreenImages = [
+    AssetImage('assets/images/gujeuk/background.png'),
+    AssetImage('assets/images/gujeuk/title.png'),
+  ];
+
   final _navigatorKey = GlobalKey<NavigatorState>();
   Timer? _idleTimer;
+  bool _isPrecacheStarted = false;
 
   @override
   void initState() {
     super.initState();
+    // 이미지를 다 읽을 때까지 스플래시를 띄워 두어, 첫 화면이 완성된 채로 나타나게 합니다.
+    WidgetsBinding.instance.deferFirstFrame();
     _resetIdleTimer();
     // 어느 화면에 있든 쌓인 접수를 보낼 수 있게 앱과 함께 시작합니다.
     unawaited(ref.read(outboxSyncControllerProvider).start());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isPrecacheStarted) return;
+    _isPrecacheStarted = true;
+    // precacheImage는 읽기에 실패해도 끝나므로 스플래시에 갇히지 않습니다.
+    unawaited(
+      Future.wait([
+        for (final image in _firstScreenImages) precacheImage(image, context),
+      ]).whenComplete(WidgetsBinding.instance.allowFirstFrame),
+    );
   }
 
   @override
