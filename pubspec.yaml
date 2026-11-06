@@ -72,8 +72,10 @@ flutter:
   assets:
     - path: .env.gujeuk
       flavors: [gujeuk]
-    - assets/images/gujeuk/
-    - assets/icons/gujeuk/
+    - path: assets/images/gujeuk/
+      flavors: [gujeuk]
+    - path: assets/icons/gujeuk/
+      flavors: [gujeuk]
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
