@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_failure.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/remote_visitor_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/data/repository_providers.dart';
 
 /// 이름 확인 결과. 다이얼로그와 화면 이동은 화면이 맡습니다.
 sealed class VisitorCheckResult {

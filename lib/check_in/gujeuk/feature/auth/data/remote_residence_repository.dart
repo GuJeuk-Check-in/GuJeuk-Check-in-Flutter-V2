@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/residence_repository.dart';
 
@@ -18,7 +17,3 @@ class RemoteResidenceRepository implements ResidenceRepository {
         .toList();
   }
 }
-
-final residenceRepositoryProvider = Provider<ResidenceRepository>((ref) {
-  return RemoteResidenceRepository(ref.watch(apiClientProvider));
-});

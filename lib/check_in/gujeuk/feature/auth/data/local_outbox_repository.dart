@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/storage/hive_setup.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/outbox_record.dart';
@@ -215,7 +214,3 @@ class LocalOutboxRepository implements OutboxRepository {
     }
   }
 }
-
-final outboxRepositoryProvider = Provider<OutboxRepository>((ref) {
-  return LocalOutboxRepository();
-});

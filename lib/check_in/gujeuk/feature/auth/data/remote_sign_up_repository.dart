@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/server_date_format.dart';
@@ -53,7 +52,3 @@ class RemoteSignUpRepository implements SignUpRepository {
     }
   }
 }
-
-final signUpRepositoryProvider = Provider<SignUpRepository>((ref) {
-  return RemoteSignUpRepository(ref.watch(apiClientProvider));
-});

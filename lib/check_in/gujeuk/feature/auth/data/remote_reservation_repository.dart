@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_failure.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
@@ -82,7 +81,3 @@ class RemoteReservationRepository implements ReservationRepository {
   static bool isSlotTaken(DioException e) =>
       conflictMessageOf(e) == '이미 예약된 시간입니다.';
 }
-
-final reservationRepositoryProvider = Provider<ReservationRepository>((ref) {
-  return RemoteReservationRepository(ref.watch(apiClientProvider));
-});

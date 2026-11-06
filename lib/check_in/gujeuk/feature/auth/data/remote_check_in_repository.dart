@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/server_date_format.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/check_in_repository.dart';
@@ -32,7 +31,3 @@ class RemoteCheckInRepository implements CheckInRepository {
     );
   }
 }
-
-final checkInRepositoryProvider = Provider<CheckInRepository>((ref) {
-  return RemoteCheckInRepository(ref.watch(apiClientProvider));
-});

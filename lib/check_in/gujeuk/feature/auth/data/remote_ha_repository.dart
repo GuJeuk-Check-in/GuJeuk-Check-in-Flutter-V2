@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/ha_repository.dart';
 
@@ -35,7 +34,3 @@ class RemoteHaRepository implements HaRepository {
     await _client.dio.post<void>('/user/ha-sign-up', data: body);
   }
 }
-
-final haRepositoryProvider = Provider<HaRepository>((ref) {
-  return RemoteHaRepository(ref.watch(apiClientProvider));
-});
