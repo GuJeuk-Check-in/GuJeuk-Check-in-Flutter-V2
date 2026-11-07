@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
 /// Figma `Time Slot` · 시설 예약 시간. [reserved]나 [passed]면 선택할 수 없습니다.
+/// [onTap]이 null이어도 같은 회색으로 막습니다. 이때는 아래 문구를 띄우지 않습니다.
 class GujeukTimeSlot extends StatelessWidget {
   final String time;
   final bool selected;
@@ -26,7 +27,8 @@ class GujeukTimeSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final disabled = reserved || passed;
+    final unavailable = reserved || passed;
+    final disabled = unavailable || onTap == null;
     final (background, shadow, timeColor) = disabled
         ? (GujeukColors.bgDisabled, null, GujeukColors.textDisabled)
         : selected
@@ -58,7 +60,7 @@ class GujeukTimeSlot extends StatelessWidget {
               time,
               style: GujeukTypography.bodyLg.copyWith(color: timeColor),
             ),
-            if (disabled) ...[
+            if (unavailable) ...[
               const SizedBox(height: GujeukSpacing.s2),
               Text(
                 passed ? '지난 시간' : '예약 마감',

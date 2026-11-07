@@ -14,6 +14,10 @@ class GujeukOptionCard extends StatelessWidget {
   final GujeukIcons? icon;
   final VoidCallback? onTap;
 
+  /// 지금 고를 수 없는 카드. 회색으로 그리고 [disabledLabel]을 아래에 띄웁니다.
+  final bool disabled;
+  final String disabledLabel;
+
   /// 기본은 부모 너비를 채웁니다. 고정하려면 값을 넘기세요.
   final double width;
 
@@ -27,6 +31,8 @@ class GujeukOptionCard extends StatelessWidget {
     this.selected = false,
     this.icon,
     this.onTap,
+    this.disabled = false,
+    this.disabledLabel = '예약 불가',
     this.width = double.infinity,
     this.height,
   });
@@ -55,7 +61,7 @@ class GujeukOptionCard extends StatelessWidget {
     };
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: disabled ? null : onTap,
       child: Container(
         width: width,
         height: height ?? 168,
@@ -65,10 +71,20 @@ class GujeukOptionCard extends StatelessWidget {
           vertical: GujeukSpacing.s16,
         ),
         decoration: BoxDecoration(
-          color: selected ? selectedBg : GujeukColors.bgField,
+          color: disabled
+              ? GujeukColors.bgDisabled
+              : selected
+              ? selectedBg
+              : GujeukColors.bgField,
           borderRadius: GujeukRadius.xlAll,
-          border: selected ? Border.all(color: borderColor, width: 4) : null,
-          boxShadow: selected ? shadowStrong : shadow,
+          border: selected && !disabled
+              ? Border.all(color: borderColor, width: 4)
+              : null,
+          boxShadow: disabled
+              ? null
+              : selected
+              ? shadowStrong
+              : shadow,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -81,9 +97,20 @@ class GujeukOptionCard extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: GujeukTypography.bodySm.copyWith(
-                color: GujeukColors.textPrimary,
+                color: disabled
+                    ? GujeukColors.textDisabled
+                    : GujeukColors.textPrimary,
               ),
             ),
+            if (disabled) ...[
+              const SizedBox(height: GujeukSpacing.s2),
+              Text(
+                disabledLabel,
+                style: GujeukTypography.caption.copyWith(
+                  color: GujeukColors.textMuted,
+                ),
+              ),
+            ],
           ],
         ),
       ),

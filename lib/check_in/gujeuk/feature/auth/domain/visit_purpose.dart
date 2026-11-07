@@ -1,7 +1,5 @@
 class VisitPurpose {
   final int id;
-
-  /// 예) `친친마루(게임, 독서 등)`
   final String purpose;
 
   const VisitPurpose({required this.id, required this.purpose});
@@ -14,6 +12,8 @@ class VisitPurpose {
     final match = _maxPeoplePattern.firstMatch(purpose);
     return match == null ? null : int.parse(match.group(1)!);
   }
+
+  Map<String, Object> toJson() => {'id': id, 'purpose': purpose};
 
   factory VisitPurpose.fromJson(Map<String, dynamic> json) {
     return VisitPurpose(

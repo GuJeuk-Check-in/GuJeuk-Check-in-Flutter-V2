@@ -1,120 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/done_box.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/data/fake_reservation_repository.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_submit_controller.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_text_fields.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/submit_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_end_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/bottom.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class SignUpPage extends ConsumerStatefulWidget {
+  /// 이름 확인 화면에서 적은 이름. 이름 칸에 미리 채워 둡니다.
+  /// 이름 확인을 건너뛴 장애 중 접수면 빈 값입니다.
+  final String name;
+
+  /// 서버와 연결이 안 돼 회원인지 확인하지 못한 친구인지.
+  /// 정보를 모두 받아 기기에 저장하고, 예약 시설도 시간 없이 접수합니다.
+  final bool offline;
+
+  const SignUpPage({super.key, required this.name, this.offline = false});
 
   /// 웹과 같은 카드 최대 너비. 1920 화면에서 좌우 448씩 여백이 생깁니다.
   /// 고정 여백 대신 최대 너비로 잡아 작은 화면에서도 깨지지 않게 합니다.
   static const double _cardMaxWidth = 1232;
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  ConsumerState<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
-  // 퍼블리싱용 가짜 응답입니다. 서버 연동 때 실제 구현으로 바꿉니다.
-  final ReservationRepository _reservations = const FakeReservationRepository();
-  late final SignUpFormController _form = SignUpFormController(_reservations);
-
-  /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
-  bool _isSubmitting = false;
-  String? _submitError;
+class _SignUpPageState extends ConsumerState<SignUpPage> {
+  /// 칸을 고치면 그 칸에 떠 있던 에러를 지웁니다.
+  late final SignUpTextFields _fields = SignUpTextFields(
+    initialName: widget.name,
+    onEdited: (field) =>
+        ref.read(signUpFormProvider.notifier).clearError(field),
+  );
 
   @override
   void initState() {
     super.initState();
-    _form.loadPurposes();
+    ref.read(signUpFormProvider.notifier).offline = widget.offline;
   }
 
   @override
   void dispose() {
-    _form.dispose();
+    _fields.dispose();
     super.dispose();
   }
 
   Future<void> _onSubmit() async {
-    if (_isSubmitting) return;
-    if (!_form.validate()) return;
-
-    setState(() {
-      _isSubmitting = true;
-      _submitError = null;
-    });
-    try {
-      // TODO 회원가입 요청. 붙일 때 회원가입은 됐는데 예약만 실패한 경우,
-      // 다시 눌렀을 때 회원가입을 또 보내지 않게 나눠야 합니다.
-      if (_form.needsTime && !await _reserve()) return;
-      if (!mounted) return;
-      _goToEnd();
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  /// 예약에 성공하면 true, 실패하면 이유를 화면에 띄우고 false.
-  /// 같은 이름의 회원이 있다는 409가 오면 방금 적은 전화번호로 한 번 더 보냅니다.
-  Future<bool> _reserve() async {
-    Future<void> send({String? phone}) => _reservations.reserve(
-      name: _form.nameController.text.trim(),
-      phone: phone,
-      purpose: _form.purpose!,
-      startTime: _form.time!,
-      maleCount: _form.maleCount,
-      femaleCount: _form.femaleCount,
-    );
-
-    try {
-      try {
-        await send();
-      } on DuplicateNameException {
-        await send(
-          phone: PhoneNumberFormatter.digitsOf(_form.phoneController.text),
-        );
-      }
-      return true;
-    } on DuplicateNameException {
-      // 번호를 붙여 보냈는데도 409면 같은 이름의 회원과 번호가 다른 것입니다.
-      if (mounted) _form.rejectDuplicatePhone();
-    } on SlotTakenException {
-      if (mounted) _form.rejectTakenTime();
-    } catch (_) {
-      if (mounted) setState(() => _submitError = '예약하지 못했어요. 다시 눌러주세요');
-    }
-    return false;
-  }
-
-  void _goToEnd() {
+    final result = await ref
+        .read(signUpSubmitProvider.notifier)
+        .submit(_fields.values, offline: widget.offline);
+    if (result is! SubmitDone || !mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => ReservationEndPage(
-          reservation: _form.needsTime
-              ? ReservationInfo(
-                  name: _form.nameController.text.trim(),
-                  purpose: _form.purpose!,
-                  phone: _form.phoneController.text.trim(),
-                  startTime: _form.time!,
-                  maleCount: _form.maleCount,
-                  femaleCount: _form.femaleCount,
-                )
-              : null,
-        ),
+        builder: (_) => ReservationEndPage(reservation: result.reservation),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final submit = ref.watch(signUpSubmitProvider);
     return BaseScaffold(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s100),
@@ -131,14 +81,22 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Header(title: '구즉 청소년문화의 집에 온걸 환영해~!'),
+              if (widget.offline) ...[
+                const SizedBox(height: GujeukSpacing.s16),
+                Text(
+                  '지금은 서버와 연결이 안 돼서 친구 정보를 확인하지 못했어. 아래 내용을 모두 적어줘!',
+                  style: GujeukTypography.bodyMd.copyWith(
+                    color: GujeukColors.textBrand,
+                  ),
+                ),
+              ],
               const SizedBox(height: GujeukSpacing.s40),
-              Middle(form: _form, isSigned: false),
+              Middle(fields: _fields),
               const SizedBox(height: GujeukSpacing.s100),
               Bottom(
-                form: _form,
                 onSubmit: _onSubmit,
-                isSubmitting: _isSubmitting,
-                submitError: _submitError,
+                isSubmitting: submit.isLoading,
+                submitError: submit.submitError,
               ),
             ],
           ),
