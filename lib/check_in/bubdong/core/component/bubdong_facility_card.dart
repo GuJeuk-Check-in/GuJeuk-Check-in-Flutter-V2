@@ -1,177 +1,248 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
+/// 카드 색 (Figma: 주황 인터넷·방카·근로장학생 / 민트 탁구·노래방 / 파랑 보드게임·청운위·기타 / 분홍 휴식·동아리)
 enum BubdongCardColor { orange, mint, blue, pink }
-enum BubdongCardStatus { normal, selected, unavailable, completed, inUse }
+
+/// 시설 카드 상태 (Figma Property 1 이름)
+enum BubdongCardStatus {
+  normal, // Default
+  selected, // Touched
+  unavailable, // Disabled: 자리 없음 + 남은 시간
+  completed, // Complete: 민트 고정 + 체크 그림
+  inUse, // inUse: 주황 고정 + 손 그림 + 파란 뱃지
+}
+
+/// 카드 색 묶음 (시설 카드·선택 카드가 같이 씀)
+extension BubdongCardColorX on BubdongCardColor {
+  // 기본 배경
+  Color get tint => switch (this) {
+        BubdongCardColor.orange => BubdongColors.cardOrangeBg,
+        BubdongCardColor.mint => BubdongColors.cardMintBg,
+        BubdongCardColor.blue => BubdongColors.cardBlueBg,
+        BubdongCardColor.pink => BubdongColors.cardPinkBg,
+      };
+
+  // 아래 그림자
+  Color get shadow => switch (this) {
+        BubdongCardColor.orange => BubdongColors.cardOrangeShadow,
+        BubdongCardColor.mint => BubdongColors.cardMintShadow,
+        BubdongCardColor.blue => BubdongColors.cardBlueShadow,
+        BubdongCardColor.pink => BubdongColors.cardPinkShadow,
+      };
+
+  // 선택됐을 때 테두리
+  Color get border => switch (this) {
+        BubdongCardColor.orange => BubdongColors.cardOrangeBorder,
+        BubdongCardColor.mint => BubdongColors.cardMintBorder,
+        BubdongCardColor.blue => BubdongColors.cardBlueBorder,
+        BubdongCardColor.pink => BubdongColors.cardPinkBorder,
+      };
+
+  // 선택 카드 아이콘·테두리
+  Color get accent => switch (this) {
+        BubdongCardColor.orange => BubdongColors.cardOrangeAccent,
+        BubdongCardColor.mint => BubdongColors.cardMintAccent,
+        BubdongCardColor.blue => BubdongColors.cardBlueAccent,
+        BubdongCardColor.pink => BubdongColors.cardPinkAccent,
+      };
+}
 
 class BubdongFacilityCard extends StatelessWidget {
   const BubdongFacilityCard({
     super.key,
     required this.title,
     this.subtitle,
-    this.detail,
+    this.remainingMinutes,
     this.color = BubdongCardColor.orange,
     this.status = BubdongCardStatus.normal,
     this.onTap,
   });
 
-  final String title;
-  final String? subtitle;
-  final String? detail;
+  final String title; // 시설 이름
+  final String? subtitle; // 예: 신청서 작성 (기본·선택됨에서만 보임)
+  final int? remainingMinutes; // 자리 없음일 때 남은 시간(분)
   final BubdongCardColor color;
   final BubdongCardStatus status;
-  final VoidCallback? onTap;
-
-  Color get _tint {
-    switch (color) {
-      case BubdongCardColor.orange:
-        return BubdongPalette.orange50;
-      case BubdongCardColor.mint:
-        return BubdongPalette.teal50;
-      case BubdongCardColor.blue:
-        return BubdongPalette.blue50;
-      case BubdongCardColor.pink:
-        return BubdongPalette.pink100;
-    }
-  }
-
-  Color get _accent {
-    switch (color) {
-      case BubdongCardColor.orange:
-        return BubdongPalette.orange500;
-      case BubdongCardColor.mint:
-        return BubdongPalette.teal500;
-      case BubdongCardColor.blue:
-        return BubdongPalette.blue500;
-      case BubdongCardColor.pink:
-        return BubdongPalette.pink500;
-    }
-  }
-
-  _CardColors get _colors {
-    switch (status) {
-      case BubdongCardStatus.normal:
-        return _CardColors(background: _tint, border: Colors.transparent);
-      case BubdongCardStatus.selected:
-        return _CardColors(
-          background: BubdongColors.bgFieldSelected,
-          border: _accent,
-        );
-      case BubdongCardStatus.unavailable:
-        return const _CardColors(
-          background: BubdongPalette.gray100,
-          border: Colors.transparent,
-        );
-      case BubdongCardStatus.completed:
-        return const _CardColors(
-          background: BubdongPalette.teal200,
-          border: BubdongPalette.teal500,
-        );
-      case BubdongCardStatus.inUse:
-        return _CardColors(
-          background: _tint,
-          border: BubdongPalette.orange900,
-        );
-    }
-  }
+  final VoidCallback? onTap; // 자리 없음이면 눌리지 않음
 
   @override
   Widget build(BuildContext context) {
-    final colors = _colors;
-    final isUnavailable = status == BubdongCardStatus.unavailable;
-    final shadowColor =
-    status == BubdongCardStatus.normal ? _accent : colors.border;
-    final smallText = BubdongTypography.label.copyWith(
-      color: BubdongColors.textPlaceholder,
-    );
+    final spec = _CardSpec.of(color, status);
 
     return GestureDetector(
-      onTap: isUnavailable ? null : onTap,
+      onTap: status == BubdongCardStatus.unavailable ? null : onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: BubdongSpacing.s12,
-          vertical: BubdongSpacing.s24,
-        ),
+        height: BubdongLayout.facilityCardHeight,
+        clipBehavior: Clip.antiAlias, // Figma: 넘친 콘텐츠 숨기기
         decoration: BoxDecoration(
-          color: colors.background,
-          borderRadius: BubdongRadius.r15All,
-          border: Border.all(color: colors.border, width: 2),
-          boxShadow: isUnavailable
-              ? []
-              : [
-            BoxShadow(
-              color: shadowColor.withValues(alpha: 0.3),
-              offset: const Offset(0, 6),
-            ),
+          color: spec.background,
+          borderRadius: BubdongRadius.r30All,
+          border: spec.border == null
+              ? null
+              : Border.all(color: spec.border!, width: 4),
+          boxShadow: [
+            if (spec.shadow != null)
+              BoxShadow(color: spec.shadow!, offset: const Offset(0, 6)),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: BubdongTypography.h5.copyWith(
-                color: isUnavailable
-                    ? BubdongColors.textPlaceholder
-                    : BubdongColors.textPrimary,
+            if (spec.iconAsset != null)
+              SvgPicture.asset(
+                spec.iconAsset!, // 투명도는 SVG 파일 안에 들어 있음
+                width: BubdongLayout.facilityCardIconSize,
+                height: BubdongLayout.facilityCardIconSize,
               ),
-            ),
-            if (subtitle != null &&
-                (status == BubdongCardStatus.normal ||
-                    status == BubdongCardStatus.selected)) ...[
-              const SizedBox(height: BubdongSpacing.s4),
-              Text(subtitle!, style: smallText),
-            ],
-            if (isUnavailable) ...[
-              const SizedBox(height: BubdongSpacing.s4),
-              if (detail != null) Text(detail!, style: smallText),
-              Text('자리 없음', style: smallText),
-            ],
-            if (status == BubdongCardStatus.completed) ...[
-              const SizedBox(height: BubdongSpacing.s4),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: BubdongSpacing.s8,
-                  vertical: BubdongSpacing.s2,
-                ),
-                decoration: BoxDecoration(
-                  color: BubdongPalette.teal500.withValues(alpha: 0.25),
-                  borderRadius: BubdongRadius.r9999All,
-                ),
-                child: Text(
-                  '이용 완료',
-                  style: BubdongTypography.label.copyWith(
-                    color: BubdongPalette.teal500,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: BubdongSpacing.s6, // 이름과 아래 내용 사이
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: BubdongTypography.cardTitle.copyWith(
+                    color: spec.titleColor,
                   ),
                 ),
-              ),
-            ],
-            if (status == BubdongCardStatus.inUse) ...[
-              const SizedBox(height: BubdongSpacing.s4),
-              if (detail != null) Text(detail!, style: smallText),
-              const SizedBox(height: BubdongSpacing.s2),
-              Text(
-                '이용 중',
-                style: BubdongTypography.label.copyWith(
-                  color: BubdongColors.textAccent,
-                ),
-              ),
-            ],
+                ..._buildBottom(),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
+
+  // 이름 아래에 오는 글자·뱃지 (상태마다 다름)
+  List<Widget> _buildBottom() {
+    switch (status) {
+      case BubdongCardStatus.normal:
+      case BubdongCardStatus.selected:
+        if (subtitle == null) return [];
+        return [
+          Text(
+            subtitle!,
+            style: BubdongTypography.bodyMd.copyWith(
+              color: BubdongColors.textCardSubtitle,
+            ),
+          ),
+        ];
+      case BubdongCardStatus.unavailable:
+        final unavailableStyle = BubdongTypography.bodyMd.copyWith(
+          color: BubdongColors.textCardUnavailable,
+        );
+        return [
+          Column(
+            children: [
+              if (remainingMinutes != null)
+                Text(
+                  '남은 시간 : ${remainingMinutes!.toString().padLeft(2, '0')}분',
+                  style: unavailableStyle,
+                ),
+              Text('자리 없음', style: unavailableStyle),
+            ],
+          ),
+        ];
+      case BubdongCardStatus.completed:
+        return [
+          const _CardBadge(
+            label: '이용 완료',
+            background: BubdongColors.cardCompletedBadgeBg,
+            textColor: BubdongColors.cardCompletedBadgeText,
+          ),
+        ];
+      case BubdongCardStatus.inUse:
+        return [
+          const _CardBadge(
+            label: '이용 중',
+            background: BubdongColors.cardInUseBadgeBg,
+            textColor: BubdongColors.cardInUseBadgeText,
+          ),
+        ];
+    }
+  }
 }
 
-class _CardColors {
-  const _CardColors({
+/// 이용 완료·이용 중 뱃지
+class _CardBadge extends StatelessWidget {
+  const _CardBadge({
+    required this.label,
     required this.background,
-    required this.border,
+    required this.textColor,
+  });
+
+  final String label;
+  final Color background;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: BubdongSpacing.s12),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BubdongRadius.r30All,
+      ),
+      child: Text(
+        label,
+        style: BubdongTypography.bodyMd.copyWith(color: textColor),
+      ),
+    );
+  }
+}
+
+/// 상태별 카드 모양 값
+class _CardSpec {
+  const _CardSpec({
+    required this.background,
+    this.border,
+    this.shadow,
+    this.titleColor = BubdongColors.textCardTitle,
+    this.iconAsset,
   });
 
   final Color background;
-  final Color border;
+  final Color? border; // 없으면 테두리 없음
+  final Color? shadow; // 없으면 그림자 없음
+  final Color titleColor;
+  final String? iconAsset; // 가운데 뒤에 깔리는 그림
+
+  static _CardSpec of(BubdongCardColor color, BubdongCardStatus status) {
+    switch (status) {
+      // Figma Default: 연한 배경 + 아래 그림자
+      case BubdongCardStatus.normal:
+        return _CardSpec(background: color.tint, shadow: color.shadow);
+      // Figma Touched: 흰 배경 + 색 테두리 + 아래 그림자
+      case BubdongCardStatus.selected:
+        return _CardSpec(
+          background: BubdongColors.cardSelectedBg,
+          border: color.border,
+          shadow: color.shadow,
+        );
+      // Figma Disabled: 회색 배경, 그림자 없음
+      case BubdongCardStatus.unavailable:
+        return const _CardSpec(
+          background: BubdongColors.cardUnavailableBg,
+          titleColor: BubdongColors.textDisabled,
+        );
+      // Figma Complete: 카드 색과 상관없이 민트
+      case BubdongCardStatus.completed:
+        return const _CardSpec(
+          background: BubdongColors.cardCompletedBg,
+          border: BubdongColors.cardCompletedBorder,
+          iconAsset: 'assets/icons/bubdong/icon_card_check.svg',
+        );
+      // Figma inUse: 카드 색과 상관없이 주황
+      case BubdongCardStatus.inUse:
+        return const _CardSpec(
+          background: BubdongColors.cardInUseBg,
+          border: BubdongColors.cardInUseBorder,
+          iconAsset: 'assets/icons/bubdong/icon_card_hand.svg',
+        );
+    }
+  }
 }
