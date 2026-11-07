@@ -118,7 +118,7 @@ class _ArticleContentState extends State<_ArticleContent> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200, // Figma 확인 후 조정
+      height: BubdongLayout.consentContentHeight, // 펼친 조항 내용 높이
       child: Scrollbar(
         controller: _scrollController,
         thumbVisibility: true, // 스크롤 막대 항상 보이게

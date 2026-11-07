@@ -73,7 +73,7 @@ class _SignupConsentPageState extends State<SignupConsentPage> {
           const SizedBox(height: BubdongSpacing.s40),
           SignupCard(
             width: 1080,
-            padding: const EdgeInsets.fromLTRB(60, 40, 60, 80),
+            padding: BubdongLayout.signupConsentCardPadding,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,

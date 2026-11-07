@@ -18,8 +18,8 @@ class SignupCard extends StatelessWidget {
       width: width,
       padding: padding,
       decoration: BoxDecoration(
-        color: BubdongPalette.white,
-        borderRadius: BorderRadius.circular(32),
+        color: BubdongColors.bgSurface,
+        borderRadius: BubdongRadius.r32All,
         border: Border.all(color: BubdongColors.borderCard, width: 4),
         boxShadow: [BubdongShadow.card],
       ),

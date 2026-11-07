@@ -100,7 +100,7 @@ class _BubdongInputState extends State<BubdongInput> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: BubdongSpacing.s32,
-                    vertical: 22,
+                    vertical: BubdongSpacing.s22,
                   ),
                   enabledBorder: _border(
                     hasError
@@ -119,7 +119,7 @@ class _BubdongInputState extends State<BubdongInput> {
 
             // 에러 글자 (에러일 때만)
             if (hasError) ...[
-              const SizedBox(height: BubdongSpacing.s8), // Figma 간격 확인 후 조정
+              const SizedBox(height: BubdongSpacing.s10), // 입력칸과 에러 글자 사이 (Figma 입력/Wrong)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: BubdongSpacing.s4,

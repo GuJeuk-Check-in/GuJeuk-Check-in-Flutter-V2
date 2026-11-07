@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Image.asset('assets/images/bubdong/bubdong_logo.png', height: 144),
-          const SizedBox(height: 109),
+          const SizedBox(height: BubdongLayout.homeLogoGap),
           Text(
             '시설을 이용하려면 아래 버튼을 눌러줘',
             style: BubdongTypography.h2.copyWith(color: BubdongColors.textAccent),

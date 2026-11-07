@@ -32,7 +32,7 @@ class AgreeAllBox extends StatelessWidget {
                   height: 22,
                   decoration: BoxDecoration(
                     color: checked ? BubdongColors.brandPrimary : BubdongColors.bgSurface,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BubdongRadius.r4All,
                     border: Border.all(
                       color: checked ? BubdongColors.brandPrimary : BubdongColors.borderCard,
                       width: 2,

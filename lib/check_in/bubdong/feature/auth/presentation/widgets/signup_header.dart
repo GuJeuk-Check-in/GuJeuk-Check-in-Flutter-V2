@@ -50,7 +50,7 @@ class SignupHeader extends StatelessWidget {
           children: [
             for (var i = 0; i < _steps.length; i++) ...[
               _buildStep(i),
-              if (i < _steps.length - 1) const SizedBox(width: 111),
+              if (i < _steps.length - 1) const SizedBox(width: BubdongLayout.signupStepGap),
             ],
           ],
         ),
@@ -78,7 +78,7 @@ class SignupHeader extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 13),
+        const SizedBox(width: BubdongLayout.signupStepLabelGap),
         Text(
           _steps[i],
           style: BubdongTypography.subtitle.copyWith(

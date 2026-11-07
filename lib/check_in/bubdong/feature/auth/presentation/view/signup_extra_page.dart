@@ -47,7 +47,7 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
           const SizedBox(height: BubdongSpacing.s40),
           SignupCard(
             width: 1080,
-            padding: const EdgeInsets.fromLTRB(60, 40, 60, 180),
+            padding: BubdongLayout.signupCardPadding,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

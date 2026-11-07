@@ -124,5 +124,13 @@ abstract final class BubdongTypography{
     letterSpacing: -0.8,
   );
 
+  // 시설 카드 이름 (Figma Heading/H3: 32 SemiBold 1.4)
+  static const cardTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+  );
+
   static final fieldLabel = subtitle.copyWith(color: BubdongColors.textPrimary);
 }

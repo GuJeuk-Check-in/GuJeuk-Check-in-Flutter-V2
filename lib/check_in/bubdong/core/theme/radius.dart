@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
 abstract final class BubdongRadius{
+  static const double r4 = 4;
   static const double r15 = 15;
   static const double r24 = 24;
   static const double r30 = 30;
@@ -8,6 +9,7 @@ abstract final class BubdongRadius{
   static const double r40 = 40;
   static const double r9999 = 9999;
 
+  static const r4All = BorderRadius.all(Radius.circular(r4));
   static const r15All = BorderRadius.all(Radius.circular(r15));
   static const r24All = BorderRadius.all(Radius.circular(r24));
   static const r30All = BorderRadius.all(Radius.circular(r30));

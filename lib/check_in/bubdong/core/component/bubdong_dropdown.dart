@@ -79,7 +79,7 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: BubdongSpacing.s20,
-                    vertical: 22,
+                    vertical: BubdongSpacing.s22,
                   ),
                   decoration: BoxDecoration(
                     color: widget.enabled
@@ -130,7 +130,7 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
       child: CompositedTransformFollower(
         link: _link,
         targetAnchor: Alignment.bottomLeft, // 박스 왼쪽 아래에 붙이기
-        offset: const Offset(0, 16), // 박스보다 16 아래 (Figma 확인 후 조정)
+        offset: const Offset(0, BubdongSpacing.s32), // 박스보다 32 아래 (Figma 프레임 4)
         child: TapRegion(
           groupId: _tapGroup, // 박스와 같은 영역으로 취급 → 패널 안을 눌러도 안 닫힘
           child: Material(
@@ -139,7 +139,7 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
               constraints: const BoxConstraints(maxHeight: 300), // 항목이 많으면 스크롤
               padding: const EdgeInsets.symmetric(
                 horizontal: BubdongSpacing.s20,
-                vertical: 22,
+                vertical: BubdongSpacing.s22,
               ),
               decoration: BoxDecoration(
                 color: BubdongColors.bgFieldSelected,
@@ -148,24 +148,31 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
               ),
               child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
-                  spacing: 26, // 항목 사이 간격 (Figma 계산값)
+                  spacing: BubdongSpacing.s10, // 항목과 구분선 사이 (Figma 프레임 4)
                   children: [
-                    for (final item in widget.items)
+                    for (var i = 0; i < widget.items.length; i++) ...[
+                      if (i > 0)
+                        Container(
+                          width: BubdongLayout.dropdownDividerWidth,
+                          height: 1,
+                          color: BubdongColors.dividerDropdown,
+                        ), // 항목 사이 구분선
                       GestureDetector(
                         behavior: HitTestBehavior.opaque, // 글자 옆 빈 곳도 눌리게
-                        onTap: () => _select(item),
+                        onTap: () => _select(widget.items[i]),
                         child: SizedBox(
                           width: double.infinity, // 한 줄 전체를 누를 수 있게
                           child: Text(
-                            item,
+                            widget.items[i],
+                            textAlign: TextAlign.center, // Figma: 가운데 정렬
                             style: BubdongTypography.placeHolder.copyWith(
                               color: BubdongColors.textPrimary,
                             ),
                           ),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),

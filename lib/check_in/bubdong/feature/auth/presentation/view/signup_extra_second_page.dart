@@ -29,7 +29,7 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
           const SizedBox(height: BubdongSpacing.s40),
           SignupCard(
             width: 1080,
-            padding: const EdgeInsets.fromLTRB(60, 40, 60, 180),
+            padding: BubdongLayout.signupCardPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -50,7 +50,7 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                       onPressed: () {},
                       variant: BubdongButtonVariant.outlineSmall,
                     ),
-                    const SizedBox(width: 66),
+                    const SizedBox(width: BubdongLayout.signupSchoolGradeGap),
                     Expanded(
                       flex: 1,
                       child: BubdongInput(
@@ -70,7 +70,7 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
 
                 // 주소
                 const BubdongInput(label: '어디에 살아?', hintText: '주소를 입력해줘'),
-                const SizedBox(height: 54),
+                const SizedBox(height: BubdongLayout.signupAddressGap),
 
                 // 방문 경로
                 Text('문화 센터를 어떻게 알게 되었어?', style: BubdongTypography.fieldLabel),

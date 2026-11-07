@@ -38,7 +38,7 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
           color: BubdongColors.bgSurface,
           borderRadius: BubdongRadius.r30All,
           child: Container(
-            width: 700, // Figma 확인 후 조정
+            width: BubdongLayout.schoolSearchDialogWidth,
             padding: const EdgeInsets.all(BubdongSpacing.s40),
             child: Column(
               mainAxisSize: MainAxisSize.min,
