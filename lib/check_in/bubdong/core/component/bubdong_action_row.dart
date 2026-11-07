@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_button.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
-/// 회원가입 화면 아래 이전 / 다음 버튼 줄
-class SignupActionRow extends StatelessWidget {
-  const SignupActionRow({
+/// 화면 아래 이전 / 다음 버튼 줄 (회원가입·이용대장 선택에서 같이 씀)
+class BubdongActionRow extends StatelessWidget {
+  const BubdongActionRow({
     super.key,
     required this.onPrevious,
     required this.onNext,
@@ -19,7 +19,7 @@ class SignupActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: const BoxConstraints(
-        maxWidth: BubdongLayout.signupActionRowWidth,
+        maxWidth: BubdongLayout.actionRowWidth,
       ),
       child: Row(
         children: [

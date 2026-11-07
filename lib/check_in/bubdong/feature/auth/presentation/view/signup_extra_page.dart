@@ -3,7 +3,6 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdo
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_second_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_action_row.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
@@ -164,7 +163,7 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
             ),
           ),
           const SizedBox(height: BubdongSpacing.s64),
-          SignupActionRow(
+          BubdongActionRow(
             onPrevious: () => Navigator.of(context).pop(),
             onNext: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SignupExtraSecondPage()),

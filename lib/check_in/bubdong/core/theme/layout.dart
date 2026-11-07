@@ -2,6 +2,12 @@ import 'package:flutter/painting.dart';
 
 /// Figma 화면 배치용 크기·간격 (한 화면에서만 쓰는 값)
 abstract final class BubdongLayout {
+  // 이용대장 선택 화면 (Figma 사이트 흐름 10장 카드 화면)
+  static const double facilityGridWidth = 1340; // 카드 4장 줄 너비
+  static const double facilityGridRowGap = 60; // 카드 줄 사이
+  static const double facilityGridToSummaryGap = 168; // 카드 목록과 선택 요약 글자 사이
+  static const double facilitySummaryToButtonGap = 56; // 선택 요약 글자와 버튼 줄 사이
+
   // 시설 카드 (Figma 305×188, 너비는 부모를 채움)
   static const double facilityCardHeight = 188;
   static const double facilityCardIconSize = 128; // 체크·손 그림
@@ -14,7 +20,7 @@ abstract final class BubdongLayout {
 
   // 버튼 줄이 차지하는 최대 너비
   static const double homeActionRowWidth = 1240;
-  static const double signupActionRowWidth = 680;
+  static const double actionRowWidth = 680; // 이전/다음 버튼 줄
 
   // 홈
   static const double homeLogoGap = 109; // 로고와 안내 글자 사이

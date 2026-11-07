@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_page_header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
 class SignupHeader extends StatelessWidget {
@@ -22,28 +23,7 @@ class SignupHeader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '법동 청소년 문화센터',
-          style: BubdongTypography.bodyMd.copyWith(
-            color: BubdongColors.textPlaceholder,
-          ),
-        ),
-        const SizedBox(height: BubdongSpacing.s24),
-        Text(
-          title,
-          style: BubdongTypography.h2.copyWith(
-            color: BubdongColors.textPrimary,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: BubdongSpacing.s8),
-          Text(
-            subtitle!,
-            style: BubdongTypography.bodyLg.copyWith(
-              color: BubdongColors.textPlaceholder,
-            ),
-          ),
-        ],
+        BubdongPageHeader(title: title, subtitle: subtitle),
         const SizedBox(height: BubdongSpacing.s26),
         Row(
           mainAxisSize: MainAxisSize.min,
