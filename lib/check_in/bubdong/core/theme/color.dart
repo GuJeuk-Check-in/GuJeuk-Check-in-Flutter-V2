@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 //화면에서는 직접 쓰지않는 변수명
 abstract final class BubdongPalette {
   static const white = Color(0xFFFFFFFF);
+  static const ink = Color(0xFF2E2E32);
 
   static const gray0 = Color(0xFF000000);
   static const gray10 = Color(0xFF1A1A1A);
@@ -17,7 +18,7 @@ abstract final class BubdongPalette {
   static const gray100 = Color(0xFFCCCCCC);
 
   static const orange500 = Color(0xFFFF9200);
-  static const orange700 = Color(0xFFC27A2A);
+  static const orange700 = Color(0xFFCE7600);
   static const orange900 = Color(0xFF9B4D00);
   static const amber400 = Color(0xFFF5C343);
   static const orange50 = Color(0xFFFFF4E4);
@@ -58,9 +59,11 @@ abstract final class BubdongColors {
   //버튼
   static const actionPrimaryPressed = BubdongPalette.orange700;
   static const actionPrimary = BubdongPalette.orange500;
+  static const actionDisabled = BubdongPalette.gray60;
 
   //텍스트
   static const textPrimary = BubdongPalette.gray0;
+  static const textOnAction = BubdongPalette.ink;
   static const textAccent = BubdongPalette.orange500;
   static const textAccentDark = BubdongPalette.orange900;
   static const textPlaceholder = BubdongPalette.gray40;
@@ -99,4 +102,10 @@ abstract final class BubdongColors {
 
   // 주황 등 진한 배경 위의 흰 글자
   static const textOnPrimary = BubdongPalette.white;
+
+  /// 노란 버튼 (아이들 방문 기록)
+  static const actionSecondary = BubdongPalette.yellow200;
+
+  /// 파란 버튼 (어른 방문 기록)
+  static const actionBlue = BubdongPalette.blue500;
 }

@@ -3,6 +3,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdo
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/agree_all_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/consent_article_item.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_action_row.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
@@ -99,22 +100,10 @@ class _SignupConsentPageState extends State<SignupConsentPage> {
             ),
           ),
           const SizedBox(height: BubdongSpacing.s64),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BubdongButton(
-                width: 320,
-                label: '이전',
-                variant: BubdongButtonVariant.tone,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(width: BubdongSpacing.s40),
-              BubdongButton(
-                width: 320,
-                label: '동의',
-                onPressed: _allAgreed ? () {} : null, // 전부 동의해야 누를 수 있음
-              ),
-            ],
+          SignupActionRow(
+            nextLabel: '동의',
+            onPrevious: () => Navigator.of(context).pop(),
+            onNext: _allAgreed ? () {} : null, // 전부 동의해야 누를 수 있음
           ),
         ],
       ),

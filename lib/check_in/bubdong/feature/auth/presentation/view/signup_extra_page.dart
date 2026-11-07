@@ -3,6 +3,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdo
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_second_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_action_row.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
@@ -163,24 +164,11 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
             ),
           ),
           const SizedBox(height: BubdongSpacing.s64),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BubdongButton(
-                label: '이전',
-                width: 320,
-                variant: BubdongButtonVariant.tone,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(width: BubdongSpacing.s40),
-              BubdongButton(
-                label: '다음',
-                width: 320,
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SignupExtraSecondPage()),
-                ),
-              ),
-            ],
+          SignupActionRow(
+            onPrevious: () => Navigator.of(context).pop(),
+            onNext: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SignupExtraSecondPage()),
+            ),
           ),
         ],
       ),

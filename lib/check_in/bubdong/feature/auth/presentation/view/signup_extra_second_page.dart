@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/visit_route.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_action_row.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_consent_page.dart';
@@ -47,8 +48,7 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
                     BubdongButton(
                       label: '학교 검색',
                       onPressed: () {},
-                      variant: BubdongButtonVariant.tone,
-                      size: BubdongButtonSize.large,
+                      variant: BubdongButtonVariant.outlineSmall,
                     ),
                     const SizedBox(width: 66),
                     Expanded(
@@ -121,24 +121,11 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
             ),
           ),
           const SizedBox(height: BubdongSpacing.s64),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BubdongButton(
-                width: 320,
-                label: '이전',
-                onPressed: () => Navigator.of(context).pop(),
-                variant: BubdongButtonVariant.tone,
-              ),
-              const SizedBox(width: BubdongSpacing.s40),
-              BubdongButton(
-                width: 320,
-                label: '다음',
-                onPressed: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => SignupConsentPage())),
-              ),
-            ],
+          SignupActionRow(
+            onPrevious: () => Navigator.of(context).pop(),
+            onNext: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => SignupConsentPage())),
           ),
         ],
       ),

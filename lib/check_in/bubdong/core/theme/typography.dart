@@ -82,6 +82,12 @@ abstract final class BubdongTypography{
     fontWeight: FontWeight.w700,
     height: 1.4,
   );
+  static const buttonSemibold = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+  );
   //서브 제목
   static const subtitle = TextStyle(
     fontFamily: pretendard,
