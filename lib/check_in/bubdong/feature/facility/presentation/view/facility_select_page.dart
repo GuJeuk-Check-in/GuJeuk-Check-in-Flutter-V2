@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/facility_card_color.dart';
 
 /// 오늘 사용할 이용대장 고르기 (여러 개 선택 가능)
@@ -13,7 +14,7 @@ class FacilitySelectPage extends StatefulWidget {
 }
 
 class _FacilitySelectPageState extends State<FacilitySelectPage> {
-  static const _columnCount = 4; // Figma: 한 줄에 카드 4장
+  static const _columnCount = 4;
 
   // TODO: API 연결 시 교체 (자리 없는 이용대장과 남은 시간)
   static const Map<Facility, int> _unavailable = {};
@@ -67,9 +68,8 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
             child: Text(
               '선택한 이용대장 ${_selected.length}개 · '
               '${_selected.map((f) => f.label).join(', ')}',
-              // TODO: Figma 캡처 받으면 글자 크기·굵기·색 교체
-              style: BubdongTypography.subtitle.copyWith(
-                color: BubdongColors.textAccentDark,
+              style: BubdongTypography.selectionSummary.copyWith(
+                color: BubdongColors.textAccentDark, // Figma #9B4D00
               ),
             ),
           ),
@@ -78,7 +78,10 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _selected.isEmpty
                 ? null // 하나도 안 고르면 다음 비활성
-                : () {}, // TODO: 신청서가 필요한 이용대장이면 신청서 화면으로 연결 (작업 6)
+                : () => openNextApplication(
+                      context,
+                      _selected.where((f) => f.needsApplication).toList(),
+                    ),
           ),
         ],
       ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
@@ -18,8 +17,8 @@ class SignupBasicPage extends StatelessWidget {
         children: [
           const SignupHeader(title: '법동에 온 걸 환영해!', currentStep: 1),
           const SizedBox(height: BubdongLayout.signupBasicHeaderGap),
-          SignupCard(
-            width: 1232,
+          BubdongContentCard(
+            width: BubdongLayout.signupBasicCardWidth,
             padding: const EdgeInsets.all(BubdongSpacing.s64),
             child: Column(
               mainAxisSize: MainAxisSize.min,

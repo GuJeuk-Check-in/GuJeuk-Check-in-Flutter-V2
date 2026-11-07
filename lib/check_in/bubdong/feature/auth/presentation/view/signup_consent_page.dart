@@ -4,7 +4,6 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_t
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/agree_all_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/consent_article_item.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
 class SignupConsentPage extends StatefulWidget {
@@ -71,8 +70,8 @@ class _SignupConsentPageState extends State<SignupConsentPage> {
             currentStep: 3,
           ),
           const SizedBox(height: BubdongSpacing.s40),
-          SignupCard(
-            width: 1080,
+          BubdongContentCard(
+            width: BubdongLayout.formCardWidth,
             padding: BubdongLayout.signupConsentCardPadding,
             child: Column(
               mainAxisSize: MainAxisSize.min,

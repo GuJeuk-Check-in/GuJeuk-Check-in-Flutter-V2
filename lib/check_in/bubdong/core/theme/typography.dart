@@ -132,5 +132,27 @@ abstract final class BubdongTypography{
     height: 1.4,
   );
 
+  // 이용대장 선택 요약 글자 (Figma 26 Bold, 행간 32)
+  static const selectionSummary = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 26,
+    fontWeight: FontWeight.w700,
+    height: 32 / 26,
+  );
+
+  // 신청서 안내 박스 글자 (Figma 26 Regular, 행간 자동)
+  static const notice = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 26,
+    fontWeight: FontWeight.w400,
+  );
+
+  // 신청서 이용 규칙 글자 (Figma 23 Regular, 행간 자동)
+  static const guide = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 23,
+    fontWeight: FontWeight.w400,
+  );
+
   static final fieldLabel = subtitle.copyWith(color: BubdongColors.textPrimary);
 }

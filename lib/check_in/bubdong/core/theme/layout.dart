@@ -25,6 +25,17 @@ abstract final class BubdongLayout {
   // 홈
   static const double homeLogoGap = 109; // 로고와 안내 글자 사이
 
+  // 가운데 흰 카드 너비
+  static const double formCardWidth = 1080; // 회원가입 2·3단계, 신청서
+  static const double signupBasicCardWidth = 1232; // 회원가입 1단계
+
+  // 신청서 화면 (Figma 프레임 13~15)
+  static const double applyCardHeight = 600; // 카드 높이
+  static const double applyHeaderToCardGap = 35; // 제목 묶음과 카드 사이
+  static const double applyCardToButtonGap = 86; // 카드와 버튼 줄 사이
+  static const double applyInputToNoticeGap = 66; // 인원 입력칸과 안내 박스 사이 (탁구·노래방)
+  static const applyCardPadding = EdgeInsets.fromLTRB(60, 40, 60, 40); // 카드 안쪽 여백
+
   // 회원가입 공통
   static const double signupStepGap = 111; // 단계 표시끼리 사이
   static const double signupStepLabelGap = 13; // 단계 번호와 단계 이름 사이

@@ -75,6 +75,8 @@ class _BubdongInputState extends State<BubdongInput> {
               ),
               child: TextField(
                 controller: widget.controller,
+                keyboardType: widget.keyboardType, // 받은 값을 실제 입력칸에 넘김
+                inputFormatters: widget.inputFormatters,
                 enabled: widget.enabled,
                 onChanged: field.didChange,
                 // 입력할 때마다 FormField에 알려줌

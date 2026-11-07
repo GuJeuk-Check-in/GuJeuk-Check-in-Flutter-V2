@@ -151,6 +151,11 @@ abstract final class BubdongColors {
   static const cardInUseBadgeBg = BubdongPalette.blue500; // 이용 중 뱃지 배경
   static const cardInUseBadgeText = BubdongPalette.blue100; // 이용 중 뱃지 글자
 
+  // 신청서 안내
+  static const bgNotice = BubdongPalette.orange50; // 안내 박스 바탕
+  static const textNotice = BubdongPalette.orange900; // 안내 박스 글자
+  static const textGuide = BubdongPalette.slate500; // 카드 아래 이용 규칙 글자
+
   // 드롭다운 목록 항목 사이 구분선 (Figma: #CCCCCC 위에 검정 20%)
   static const dividerDropdown = BubdongPalette.gray70;
 }

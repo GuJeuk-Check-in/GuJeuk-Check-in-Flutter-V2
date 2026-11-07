@@ -3,7 +3,6 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdo
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_second_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_card.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
 class SignupExtraPage extends StatefulWidget {
@@ -44,8 +43,8 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
         children: [
           const SignupHeader(title: '처음 방문하셨나요?', currentStep: 2),
           const SizedBox(height: BubdongSpacing.s40),
-          SignupCard(
-            width: 1080,
+          BubdongContentCard(
+            width: BubdongLayout.formCardWidth,
             padding: BubdongLayout.signupCardPadding,
             child: Column(
               mainAxisSize: MainAxisSize.min,
