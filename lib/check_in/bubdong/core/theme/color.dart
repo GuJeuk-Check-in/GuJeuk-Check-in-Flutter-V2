@@ -10,6 +10,7 @@ abstract final class BubdongPalette {
   static const gray0 = Color(0xFF000000);
   static const gray10 = Color(0xFF1A1A1A);
   static const gray20 = Color(0xFF333333);
+  static const gray25 = Color(0xFF404040); // Figma gray/30
   static const gray30 = Color(0xFF4D4D4D);
   static const gray40 = Color(0xFF666666);
   static const gray50 = Color(0xFF808080);
@@ -155,6 +156,7 @@ abstract final class BubdongColors {
   static const bgNotice = BubdongPalette.orange50; // 안내 박스 바탕
   static const textNotice = BubdongPalette.orange900; // 안내 박스 글자
   static const textGuide = BubdongPalette.slate500; // 카드 아래 이용 규칙 글자
+  static const textFieldLabel = BubdongPalette.gray25; // 입력칸 질문 글자
   static const textSectionTitle = BubdongPalette.inkSoft; // 신청서 카드 안 소제목 (좌석번호)
 
   // 드롭다운 목록 항목 사이 구분선 (Figma: #CCCCCC 위에 검정 20%)

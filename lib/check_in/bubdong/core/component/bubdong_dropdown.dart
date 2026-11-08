@@ -57,12 +57,7 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
       children: [
         // 질문 글자
         if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: BubdongTypography.subtitle.copyWith(
-              color: BubdongColors.textPrimary,
-            ),
-          ),
+          Text(widget.label!, style: BubdongTypography.fieldLabel),
         const SizedBox(height: BubdongSpacing.s4),
         ],
         // 박스 + 패널

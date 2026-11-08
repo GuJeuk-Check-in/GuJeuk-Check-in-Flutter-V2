@@ -55,12 +55,7 @@ class _BubdongInputState extends State<BubdongInput> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // 질문 글자
-            Text(
-              widget.label,
-              style: BubdongTypography.subtitle.copyWith(
-                color: BubdongColors.textPrimary,
-              ),
-            ),
+            Text(widget.label, style: BubdongTypography.fieldLabel),
             const SizedBox(height: BubdongSpacing.s4),
 
             // 입력칸 + 그림자

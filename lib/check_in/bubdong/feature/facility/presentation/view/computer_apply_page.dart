@@ -105,7 +105,7 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
           ),
           const SizedBox(height: BubdongLayout.applyCardToButtonGap),
           BubdongActionRow(
-            nextLabel: '${Facility.internet.label} 신청하기',
+            nextLabel: '컴퓨터 신청하기', // Figma 문구
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
                 ? () => openNextApplication(context, widget.remaining)

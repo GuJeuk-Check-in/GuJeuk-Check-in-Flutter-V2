@@ -164,5 +164,13 @@ abstract final class BubdongTypography{
     height: 30 / 25,
   );
 
-  static final fieldLabel = subtitle.copyWith(color: BubdongColors.textPrimary);
+  // 입력칸 질문 글자 (Figma Name Field 라벨: 20 Bold, 행간 32, 자간 -0.5, gray/30)
+  static const fieldLabel = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    height: 32 / 20,
+    letterSpacing: -0.5,
+    color: BubdongColors.textFieldLabel,
+  );
 }
