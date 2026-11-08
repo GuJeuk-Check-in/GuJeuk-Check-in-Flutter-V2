@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
-import 'package:flutter/services.dart';
 
 class BubdongInput extends StatefulWidget {
   const BubdongInput({
@@ -11,14 +10,8 @@ class BubdongInput extends StatefulWidget {
     this.enabled = true,
     this.validator,
     this.isLoading = false,
-    this.keyboardType,
-    this.inputFormatters,
-    this.suffixText,
   });
 
-  final String? suffixText;
-  final TextInputType? keyboardType;
-  final List<TextInputFormatter>? inputFormatters;
   final String label;
   final String hintText;
   final TextEditingController? controller;
@@ -55,12 +48,16 @@ class _BubdongInputState extends State<BubdongInput> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // 질문 글자
-            Text(widget.label, style: BubdongTypography.fieldLabel),
-            const SizedBox(height: BubdongLayout.fieldLabelGap),
+            Text(
+              widget.label,
+              style: BubdongTypography.subtitle.copyWith(
+                color: BubdongColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: BubdongSpacing.s4),
 
             // 입력칸 + 그림자
             Container(
-              height: BubdongLayout.fieldHeight, // 높이 고정, 글자는 세로 가운데
               decoration: BoxDecoration(
                 borderRadius: BubdongRadius.r9999All,
                 boxShadow: !widget.enabled
@@ -71,28 +68,17 @@ class _BubdongInputState extends State<BubdongInput> {
               ),
               child: TextField(
                 controller: widget.controller,
-                keyboardType: widget.keyboardType, // 받은 값을 실제 입력칸에 넘김
-                inputFormatters: widget.inputFormatters,
                 enabled: widget.enabled,
-                expands: true, // 고정 높이를 꽉 채움
-                maxLines: null,
-                textAlignVertical: TextAlignVertical.center,
-                onChanged: field.didChange,
-                // 입력할 때마다 FormField에 알려줌
+                onChanged: field.didChange, // 입력할 때마다 FormField에 알려줌
                 style: BubdongTypography.placeHolder.copyWith(
                   color: BubdongColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  suffixText: widget.suffixText,
-                  suffixStyle: BubdongTypography.placeHolder.copyWith(
-                    color: BubdongColors.textPrimary,
-                  ),
                   filled: true,
                   fillColor: widget.enabled
                       ? BubdongColors.bgFieldSelected
                       : BubdongColors.bgFieldDisabled,
-                  hoverColor: Colors.transparent,
-                  // 마우스 올려도 배경 안 바뀜
+                  hoverColor: Colors.transparent, // 마우스 올려도 배경 안 바뀜
                   hintText: widget.hintText,
                   hintStyle: BubdongTypography.placeHolder.copyWith(
                     color: widget.enabled
@@ -101,11 +87,10 @@ class _BubdongInputState extends State<BubdongInput> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: BubdongSpacing.s32,
+                    vertical: 22,
                   ),
                   enabledBorder: _border(
-                    hasError
-                        ? BubdongColors.borderError
-                        : null, // 에러면 빨강, 아니면 없음
+                    hasError ? BubdongColors.borderError : null, // 에러면 빨강, 아니면 없음
                   ),
                   focusedBorder: _border(
                     hasError
@@ -119,7 +104,7 @@ class _BubdongInputState extends State<BubdongInput> {
 
             // 에러 글자 (에러일 때만)
             if (hasError) ...[
-              const SizedBox(height: BubdongSpacing.s10), // 입력칸과 에러 글자 사이 (Figma 입력/Wrong)
+              const SizedBox(height: BubdongSpacing.s8), // Figma 간격 확인 후 조정
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: BubdongSpacing.s4,

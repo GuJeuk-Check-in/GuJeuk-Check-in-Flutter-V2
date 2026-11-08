@@ -76,8 +76,6 @@ flutter:
       flavors: [gujeuk]
     - path: assets/icons/gujeuk/
       flavors: [gujeuk]
-    - assets/images/bubdong/
-    - assets/icons/bubdong/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
