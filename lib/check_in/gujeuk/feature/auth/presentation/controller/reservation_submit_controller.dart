@@ -22,7 +22,7 @@ class ReservationSubmitController extends SubmitController {
   }) async {
     if (isSubmitting) return const SubmitStopped();
     final formController = ref.read(signUpFormProvider.notifier);
-    if (!formController.validateReservation()) return const SubmitStopped();
+    if (!formController.validateReservation()) return invalid();
 
     if (formController.needsTime) return _reserve(name: name);
     final form = ref.read(signUpFormProvider);
@@ -47,7 +47,7 @@ class ReservationSubmitController extends SubmitController {
     if (isSubmitting) return const SubmitStopped();
     // 번호를 적는 사이 고른 시간이 지났을 수 있어 다시 검사합니다.
     final formController = ref.read(signUpFormProvider.notifier);
-    if (!formController.validateReservation()) return const SubmitStopped();
+    if (!formController.validateReservation()) return invalid();
     return _reserve(name: name, phone: phone);
   }
 

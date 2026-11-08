@@ -7,13 +7,13 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/color.dart
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/radius.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/shadow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/spacing.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/typography.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/reservation_submit_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/submit_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/view/reservation/reservation_end_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/phone_check_dialog.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/submit_problem_dialog.dart';
 
 class ReservationPage extends ConsumerWidget {
   final String name;
@@ -36,12 +36,15 @@ class ReservationPage extends ConsumerWidget {
       if (phone == null || !context.mounted) return;
       result = await submit.retryWithPhone(name: name, phone: phone);
     }
-    if (result case SubmitDone(:final reservation) when context.mounted) {
+    if (!context.mounted) return;
+    if (result case SubmitDone(:final reservation)) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => ReservationEndPage(reservation: reservation),
         ),
       );
+    } else {
+      await showSubmitProblem(context, result);
     }
   }
 
@@ -66,15 +69,6 @@ class ReservationPage extends ConsumerWidget {
               const SizedBox(height: GujeukSpacing.s40),
               const Middle(),
               const SizedBox(height: GujeukSpacing.s100),
-              if (submit.submitError case final error?) ...[
-                Text(
-                  error,
-                  style: GujeukTypography.bodyMd.copyWith(
-                    color: GujeukColors.decorRed,
-                  ),
-                ),
-                const SizedBox(height: GujeukSpacing.s16),
-              ],
               Row(
                 children: [
                   Expanded(

@@ -22,7 +22,7 @@ class SignUpSubmitController extends SubmitController {
   Future<SubmitResult> submit(SignUpTexts texts, {bool offline = false}) async {
     if (isSubmitting) return const SubmitStopped();
     final formController = ref.read(signUpFormProvider.notifier);
-    if (!formController.validate(texts)) return const SubmitStopped();
+    if (!formController.validate(texts)) return invalid();
 
     final form = ref.read(signUpFormProvider);
     final time = formController.needsTime ? form.time : null;

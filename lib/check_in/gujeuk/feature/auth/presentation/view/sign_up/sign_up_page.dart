@@ -10,6 +10,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presenta
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/bottom.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/middle.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/widgets/submit_problem_dialog.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
   /// 이름 확인 화면에서 적은 이름. 이름 칸에 미리 채워 둡니다.
@@ -54,7 +55,8 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     final result = await ref
         .read(signUpSubmitProvider.notifier)
         .submit(_fields.values, offline: widget.offline);
-    if (result is! SubmitDone || !mounted) return;
+    if (!mounted) return;
+    if (result is! SubmitDone) return showSubmitProblem(context, result);
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => ReservationEndPage(reservation: result.reservation),
@@ -93,11 +95,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               const SizedBox(height: GujeukSpacing.s40),
               Middle(fields: _fields),
               const SizedBox(height: GujeukSpacing.s100),
-              Bottom(
-                onSubmit: _onSubmit,
-                isSubmitting: submit.isLoading,
-                submitError: submit.submitError,
-              ),
+              Bottom(onSubmit: _onSubmit, isSubmitting: submit.isLoading),
             ],
           ),
         ),

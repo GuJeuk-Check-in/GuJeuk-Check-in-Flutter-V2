@@ -9,7 +9,9 @@ class GujeukDialog extends StatelessWidget {
   final String title;
   final String description;
   final GujeukIcons icon;
-  final String cancelLabel;
+
+  /// null이면 취소 버튼 없이 확인 버튼만 둡니다 (알림 모달).
+  final String? cancelLabel;
   final String confirmLabel;
   final VoidCallback? onCancel;
   final VoidCallback? onConfirm;
@@ -59,6 +61,32 @@ class GujeukDialog extends StatelessWidget {
     );
   }
 
+  /// 확인 버튼 하나만 있는 알림 모달. 확인을 누르거나 바깥을 눌러 닫으면 끝납니다.
+  static Future<void> alert(
+    BuildContext context, {
+    required String title,
+    required String description,
+    GujeukIcons icon = GujeukIcons.wave,
+    String confirmLabel = '확인',
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => Center(
+        child: Material(
+          type: MaterialType.transparency,
+          child: GujeukDialog(
+            title: title,
+            description: description,
+            icon: icon,
+            cancelLabel: null,
+            confirmLabel: confirmLabel,
+            onConfirm: () => Navigator.of(context).pop(),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -100,14 +128,16 @@ class GujeukDialog extends StatelessWidget {
           const SizedBox(height: GujeukSpacing.s32),
           Row(
             children: [
-              Expanded(
-                child: GujeukButton(
-                  label: cancelLabel,
-                  variant: GujeukButtonVariant.neutralMedium,
-                  onPressed: onCancel,
+              if (cancelLabel case final cancelLabel?) ...[
+                Expanded(
+                  child: GujeukButton(
+                    label: cancelLabel,
+                    variant: GujeukButtonVariant.neutralMedium,
+                    onPressed: onCancel,
+                  ),
                 ),
-              ),
-              const SizedBox(width: GujeukSpacing.s20),
+                const SizedBox(width: GujeukSpacing.s20),
+              ],
               Expanded(
                 child: GujeukButton(
                   label: confirmLabel,
