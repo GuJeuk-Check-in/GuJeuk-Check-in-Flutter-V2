@@ -20,6 +20,12 @@ enum BubdongButtonVariant {
 
   /// Buttons/Button-outline / 66 · 학교 검색
   outlineSmall,
+
+  /// Buttons/Button-outline / 64 · 인터넷 좌석 (너비는 부모를 채움)
+  seat,
+
+  /// Buttons/Button-outline 선택됨 / 64 · 고른 인터넷 좌석
+  seatSelected,
 }
 
 enum _ButtonState { normal, pressed, disabled, loading }
@@ -321,6 +327,34 @@ class _ButtonSpec {
             background: Colors.transparent,
             border: BubdongColors.brandPrimary,
             text: BubdongColors.textAccent,
+          ),
+          disabled: _outlinedDisabled,
+        );
+      case BubdongButtonVariant.seat:
+        return const _ButtonSpec(
+          height: 64,
+          paddingX: 0,
+          borderWidth: 2,
+          radius: BubdongRadius.r30All,
+          textStyle: BubdongTypography.buttonSemibold,
+          normal: _ButtonColors(
+            background: Colors.transparent,
+            border: BubdongColors.brandPrimary,
+            text: BubdongColors.textAccent,
+          ),
+          disabled: _outlinedDisabled,
+        );
+      case BubdongButtonVariant.seatSelected:
+        return const _ButtonSpec(
+          height: 64,
+          paddingX: 0,
+          borderWidth: 2,
+          radius: BubdongRadius.r30All,
+          textStyle: BubdongTypography.buttonSemibold,
+          normal: _ButtonColors(
+            background: BubdongColors.actionPrimary,
+            border: BubdongColors.brandPrimary,
+            text: BubdongColors.textPrimary,
           ),
           disabled: _outlinedDisabled,
         );

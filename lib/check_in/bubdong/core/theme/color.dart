@@ -155,6 +155,7 @@ abstract final class BubdongColors {
   static const bgNotice = BubdongPalette.orange50; // 안내 박스 바탕
   static const textNotice = BubdongPalette.orange900; // 안내 박스 글자
   static const textGuide = BubdongPalette.slate500; // 카드 아래 이용 규칙 글자
+  static const textSectionTitle = BubdongPalette.inkSoft; // 신청서 카드 안 소제목 (좌석번호)
 
   // 드롭다운 목록 항목 사이 구분선 (Figma: #CCCCCC 위에 검정 20%)
   static const dividerDropdown = BubdongPalette.gray70;

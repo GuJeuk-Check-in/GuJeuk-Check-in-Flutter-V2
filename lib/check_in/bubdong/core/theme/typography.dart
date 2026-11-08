@@ -140,18 +140,28 @@ abstract final class BubdongTypography{
     height: 32 / 26,
   );
 
-  // 신청서 안내 박스 글자 (Figma 26 Regular, 행간 자동)
+  // 신청서 안내 박스 글자 (Figma 26 Regular, 글상자 높이 31)
   static const notice = TextStyle(
     fontFamily: pretendard,
     fontSize: 26,
     fontWeight: FontWeight.w400,
+    height: 31 / 26,
   );
 
-  // 신청서 이용 규칙 글자 (Figma 23 Regular, 행간 자동)
+  // 신청서 이용 규칙 글자 (Figma 23 Regular, 글상자 높이 28)
   static const guide = TextStyle(
     fontFamily: pretendard,
     fontSize: 23,
     fontWeight: FontWeight.w400,
+    height: 28 / 23,
+  );
+
+  // 신청서 카드 안 소제목 (Figma 좌석번호 25 Bold, 글상자 높이 30)
+  static const sectionTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 25,
+    fontWeight: FontWeight.w700,
+    height: 30 / 25,
   );
 
   static final fieldLabel = subtitle.copyWith(color: BubdongColors.textPrimary);

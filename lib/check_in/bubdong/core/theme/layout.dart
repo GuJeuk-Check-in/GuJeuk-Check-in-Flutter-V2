@@ -36,6 +36,11 @@ abstract final class BubdongLayout {
   static const double applyInputToNoticeGap = 66; // 인원 입력칸과 안내 박스 사이 (탁구·노래방)
   static const applyCardPadding = EdgeInsets.fromLTRB(60, 40, 60, 40); // 카드 안쪽 여백
 
+  // 인터넷 신청서 (Figma 프레임 13)
+  static const double seatGridInset = 10; // 좌석 버튼·안내 박스 좌우 들여쓰기
+  static const double seatGridToInputGap = 35; // 좌석 버튼과 사용목적 칸 사이
+  static const double seatInputToNoticeGap = 31; // 사용목적 칸과 안내 박스 사이
+
   // 회원가입 공통
   static const double signupStepGap = 111; // 단계 표시끼리 사이
   static const double signupStepLabelGap = 13; // 단계 번호와 단계 이름 사이
