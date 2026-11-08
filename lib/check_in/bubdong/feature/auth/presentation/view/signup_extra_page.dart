@@ -65,7 +65,7 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('생년월일이 뭐야?', style: BubdongTypography.fieldLabel),
-                          const SizedBox(height: BubdongSpacing.s4),
+                          const SizedBox(height: BubdongLayout.fieldLabelGap),
                           Row(
                             children: [
                               Expanded(

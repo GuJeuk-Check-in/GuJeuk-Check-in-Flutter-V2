@@ -58,7 +58,7 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
         // 질문 글자
         if (widget.label != null) ...[
           Text(widget.label!, style: BubdongTypography.fieldLabel),
-        const SizedBox(height: BubdongSpacing.s4),
+          const SizedBox(height: BubdongLayout.fieldLabelGap),
         ],
         // 박스 + 패널
         OverlayPortal(
@@ -72,9 +72,9 @@ class _BubdongDropdownState extends State<BubdongDropdown> {
               child: GestureDetector(
                 onTap: widget.enabled ? _toggle : null,
                 child: Container(
+                  height: BubdongLayout.fieldHeight, // 높이 고정, 글자는 세로 가운데
                   padding: const EdgeInsets.symmetric(
                     horizontal: BubdongSpacing.s20,
-                    vertical: BubdongSpacing.s22,
                   ),
                   decoration: BoxDecoration(
                     color: widget.enabled

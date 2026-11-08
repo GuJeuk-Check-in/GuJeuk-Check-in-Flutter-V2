@@ -12,6 +12,10 @@ abstract final class BubdongLayout {
   static const double facilityCardHeight = 188;
   static const double facilityCardIconSize = 128; // 체크·손 그림
 
+  // 입력칸·드롭다운 질문 글자와 칸 사이 (Figma Name Field)
+  static const double fieldLabelGap = 10;
+  static const double fieldHeight = 60; // 입력칸·드롭다운 박스 높이 (Figma Name Field Input)
+
   // 드롭다운 목록 구분선 길이
   static const double dropdownDividerWidth = 100;
 

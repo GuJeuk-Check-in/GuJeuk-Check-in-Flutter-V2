@@ -56,10 +56,11 @@ class _BubdongInputState extends State<BubdongInput> {
           children: [
             // 질문 글자
             Text(widget.label, style: BubdongTypography.fieldLabel),
-            const SizedBox(height: BubdongSpacing.s4),
+            const SizedBox(height: BubdongLayout.fieldLabelGap),
 
             // 입력칸 + 그림자
             Container(
+              height: BubdongLayout.fieldHeight, // 높이 고정, 글자는 세로 가운데
               decoration: BoxDecoration(
                 borderRadius: BubdongRadius.r9999All,
                 boxShadow: !widget.enabled
@@ -73,6 +74,9 @@ class _BubdongInputState extends State<BubdongInput> {
                 keyboardType: widget.keyboardType, // 받은 값을 실제 입력칸에 넘김
                 inputFormatters: widget.inputFormatters,
                 enabled: widget.enabled,
+                expands: true, // 고정 높이를 꽉 채움
+                maxLines: null,
+                textAlignVertical: TextAlignVertical.center,
                 onChanged: field.didChange,
                 // 입력할 때마다 FormField에 알려줌
                 style: BubdongTypography.placeHolder.copyWith(
@@ -97,7 +101,6 @@ class _BubdongInputState extends State<BubdongInput> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: BubdongSpacing.s32,
-                    vertical: BubdongSpacing.s22,
                   ),
                   enabledBorder: _border(
                     hasError
