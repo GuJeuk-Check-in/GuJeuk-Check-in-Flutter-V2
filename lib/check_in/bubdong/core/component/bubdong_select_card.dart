@@ -18,32 +18,6 @@ class BubdongSelectCard extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
 
-  Color get _tint {
-    switch (color) {
-      case BubdongCardColor.orange:
-        return BubdongPalette.orange50;
-      case BubdongCardColor.mint:
-        return BubdongPalette.teal50;
-      case BubdongCardColor.blue:
-        return BubdongPalette.blue50;
-      case BubdongCardColor.pink:
-        return BubdongPalette.pink100;
-    }
-  }
-
-  Color get _accent {
-    switch (color) {
-      case BubdongCardColor.orange:
-        return BubdongPalette.orange500;
-      case BubdongCardColor.mint:
-        return BubdongPalette.teal500;
-      case BubdongCardColor.blue:
-        return BubdongPalette.blue500;
-      case BubdongCardColor.pink:
-        return BubdongPalette.pink500;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -56,15 +30,15 @@ class BubdongSelectCard extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           // 선택됨: 흰 배경 + 색 테두리 / 기본: 연한 배경
-          color: selected ? BubdongColors.bgFieldSelected : _tint,
+          color: selected ? BubdongColors.bgFieldSelected : color.tint,
           borderRadius: BubdongRadius.r15All,
           border: Border.all(
-            color: selected ? _accent : Colors.transparent,
+            color: selected ? color.accent : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: _accent.withValues(alpha: 0.3),
+              color: color.accent.withValues(alpha: 0.3),
               offset: const Offset(0, 6),
             ),
           ],
@@ -72,7 +46,7 @@ class BubdongSelectCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: _accent, size: 24),
+            Icon(icon, color: color.accent, size: 24),
             const SizedBox(height: BubdongSpacing.s4),
             Text(
               label,
