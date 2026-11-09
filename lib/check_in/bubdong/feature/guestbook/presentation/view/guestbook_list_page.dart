@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/guestbook_entry.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/presentation/widgets/guestbook_item.dart';
@@ -14,31 +15,38 @@ class GuestbookListPage extends StatelessWidget {
   static const _entries = [
     GuestbookEntry(
       name: '김하늘',
+      visitorType: VisitorType.child,
       usedTime: Duration(minutes: 80),
-      facilities: [Facility.internet, Facility.tableTennis],
+      facilities: [Facility.internet, Facility.tableTennis, Facility.rest],
+      completedFacilities: {Facility.tableTennis},
     ),
     GuestbookEntry(
       name: '성인',
+      visitorType: VisitorType.adult,
       usedTime: Duration(minutes: 30),
       facilities: [Facility.rest],
     ),
     GuestbookEntry(
       name: '이바다',
+      visitorType: VisitorType.child,
       usedTime: Duration(minutes: 45),
       facilities: [Facility.boardGame, Facility.karaoke],
     ),
     GuestbookEntry(
       name: '박구름',
+      visitorType: VisitorType.child,
       usedTime: Duration(minutes: 100),
       facilities: [Facility.bangka],
     ),
     GuestbookEntry(
       name: '성인',
+      visitorType: VisitorType.adult,
       usedTime: Duration(minutes: 60),
       facilities: [Facility.club, Facility.rest],
     ),
     GuestbookEntry(
       name: '최별',
+      visitorType: VisitorType.child,
       usedTime: Duration(minutes: 20),
       facilities: [Facility.karaoke],
     ),
@@ -71,8 +79,7 @@ class GuestbookListPage extends StatelessWidget {
                     facilities: entry.facilities,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) =>
-                            FacilitySelectPage(guestName: entry.name),
+                        builder: (_) => FacilitySelectPage(guest: entry),
                       ),
                     ),
                   ),
