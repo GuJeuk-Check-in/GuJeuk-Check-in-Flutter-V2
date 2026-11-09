@@ -200,6 +200,22 @@ abstract final class BubdongTypography{
     letterSpacing: 0,
   );
 
+  /// 토스트 제목 "자동 저장까지", "3초", "저장됨" (Figma Inter Bold 28 행간 자동 → Pretendard)
+  static const toastTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+  );
+
+  /// 토스트 설명 (Figma Inter Medium 20 행간 자동 → Pretendard)
+  static const toastBody = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+  );
+
   /// 팝업 제목 "학교 검색" (Figma Pretendard 32 Bold 행간 자동)
   static const dialogTitle = TextStyle(
     fontFamily: pretendard,

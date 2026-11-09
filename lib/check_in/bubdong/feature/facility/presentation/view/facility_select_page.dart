@@ -4,6 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_t
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/auto_save_toast.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/facility_card_color.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/guestbook_entry.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/used_time_text.dart';
@@ -23,7 +24,44 @@ class FacilitySelectPage extends StatefulWidget {
   State<FacilitySelectPage> createState() => _FacilitySelectPageState();
 }
 
-class _FacilitySelectPageState extends State<FacilitySelectPage> {
+class _FacilitySelectPageState extends State<FacilitySelectPage>
+    with SingleTickerProviderStateMixin {
+  static const _autoSaveDelay = Duration(seconds: 3); // Figma "3초"
+
+  // 방명록에서 들어왔을 때 고른 뒤 3초가 지나면 자동 저장
+  late final _autoSave = AnimationController(vsync: this, duration: _autoSaveDelay)
+    ..addListener(() => setState(() {}))
+    ..addStatusListener((status) {
+      if (status == AnimationStatus.completed) _save();
+    });
+  AutoSaveStatus? _autoSaveStatus; // null이면 토스트 없음
+
+  @override
+  void dispose() {
+    _autoSave.dispose();
+    super.dispose();
+  }
+
+  // 고를 때마다 3초를 처음부터 다시 셈
+  void _restartAutoSave() {
+    if (widget.guest == null) return;
+    if (_selected.isEmpty) {
+      _autoSave.stop();
+      _autoSaveStatus = null; // 다 지우면 저장할 것이 없으니 토스트 숨김
+      return;
+    }
+    _autoSaveStatus = AutoSaveStatus.counting;
+    _autoSave.forward(from: 0);
+  }
+
+  void _save() {
+    // TODO: API 연결 시 고른 이용대장 저장
+    setState(() => _autoSaveStatus = AutoSaveStatus.saved);
+  }
+
+  int get _secondsLeft =>
+      (_autoSaveDelay.inSeconds * (1 - _autoSave.value)).ceil();
+
   static const _columnCount = 4;
 
   // TODO: API 연결 시 교체 (자리 없는 이용대장과 남은 시간)
@@ -41,6 +79,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
   void _toggle(Facility facility) {
     setState(() {
       if (!_selected.remove(facility)) _selected.add(facility);
+      _restartAutoSave();
     });
   }
 
@@ -69,8 +108,18 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
         _facilities.skip(i).take(_columnCount).toList(),
     ];
 
+    final autoSaveStatus = _autoSaveStatus;
+
     return BubdongBaseScaffold(
       showHomeButton: true,
+      // TODO: "저장됨"이 몇 초 뒤 사라지는지 정해지면 반영 (지금은 다시 고를 때까지 보임)
+      topRight: autoSaveStatus == null
+          ? null
+          : AutoSaveToast(
+              status: autoSaveStatus,
+              secondsLeft: _secondsLeft,
+              progress: 1 - _autoSave.value,
+            ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

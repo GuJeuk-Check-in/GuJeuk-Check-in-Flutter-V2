@@ -6,9 +6,13 @@ class BubdongBaseScaffold extends StatelessWidget {
     super.key,
     required this.child,
     this.showHomeButton = false,
+    this.topRight,
   });
 
   final bool showHomeButton;
+
+  /// 화면 오른쪽 위에 떠 있는 위젯 (자동 저장 토스트)
+  final Widget? topRight;
   final Widget child;
 
   @override
@@ -36,6 +40,12 @@ class BubdongBaseScaffold extends StatelessWidget {
                   ),
                 ),
               ),
+              if (topRight != null)
+                Positioned(
+                  top: BubdongLayout.toastMargin,
+                  right: BubdongLayout.toastMargin,
+                  child: topRight!,
+                ),
               if (showHomeButton)
                 Positioned(
                   left: BubdongSpacing.s48,

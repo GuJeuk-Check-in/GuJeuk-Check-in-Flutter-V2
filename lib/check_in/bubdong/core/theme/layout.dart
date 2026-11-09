@@ -49,6 +49,15 @@ abstract final class BubdongLayout {
   static const guestbookCardPadding = EdgeInsets.only(left: 40, right: 60); // 카드 좌우 여백
   static const guestbookTagPadding = EdgeInsets.symmetric(horizontal: 36, vertical: 9); // 이용대장 칩 여백
 
+  // 자동 저장 토스트 (Figma)
+  static const double toastHeight = 100;
+  static const double autoSaveToastWidth = 458;
+  static const double savedToastWidth = 420;
+  static const toastPadding = EdgeInsets.symmetric(horizontal: 24, vertical: 7);
+  static const double toastProgressTop = 72; // 남은 시간 줄 위치 (Figma Y 72)
+  static const double toastProgressHeight = 3;
+  static const double toastMargin = 40; // 화면 오른쪽·위 여백
+
   // 가운데 흰 카드 너비
   static const double formCardWidth = 1080; // 회원가입 2·3단계, 신청서
   static const double signupBasicCardWidth = 1232; // 회원가입 1단계

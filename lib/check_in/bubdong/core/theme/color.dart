@@ -171,6 +171,16 @@ abstract final class BubdongColors {
   static const textResultCount = BubdongPalette.slate500; // "검색 결과 N개" (Figma #76767C)
   static const textCaption = BubdongPalette.gray50; // "선택한 이용대장", "이용한 시간" (Figma 법동/grey/50 #808080)
 
+  // 자동 저장 토스트 (방명록에서 들어간 이용대장 선택)
+  static const toastAutoSaveBg = BubdongPalette.orange50; // Figma Main_soft
+  static const toastAutoSaveTitle = BubdongPalette.orange900; // "자동 저장까지", "3초" (Figma Main_dark)
+  static const toastAutoSaveBody = BubdongPalette.gray40; // 설명 글자 (Figma 법동/grey/40 #666666)
+  static const toastAutoSaveProgress = BubdongPalette.orange500; // 남은 시간 줄 (Figma MainColor)
+  static const toastSavedBg = BubdongPalette.teal200; // 배경 (Figma 법동/초록/green_shadow #C5DEDB)
+  static const toastSavedBorder = BubdongPalette.teal500; // 테두리 (Figma 법동/초록/green #00A89D)
+  static const toastSavedTitle = BubdongPalette.teal500; // "저장됨" (Figma green #00A89D)
+  static const toastSavedBody = BubdongPalette.gray0; // "이제 가서 놀아도 돼!" (Figma grey/0)
+
   // 드롭다운 목록 항목 사이 구분선 (Figma: #CCCCCC 위에 검정 20%)
   static const dividerDropdown = BubdongPalette.gray70;
 }
