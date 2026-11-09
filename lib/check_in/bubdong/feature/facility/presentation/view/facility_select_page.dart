@@ -15,7 +15,7 @@ class FacilitySelectPage extends StatefulWidget {
   });
 
   final VisitorType visitorType; // 아이·어른에 따라 이용대장 개수와 신청서 여부가 다름
-  final String? guestName; // 방명록에서 누른 사람 (화면에는 안 보이고 넘기기만)
+  final String? guestName; // 방명록에서 누른 사람 (있으면 부제에 이름 표시)
 
   @override
   State<FacilitySelectPage> createState() => _FacilitySelectPageState();
@@ -61,7 +61,13 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const BubdongPageHeader(title: '오늘 어떤 이용대장을 사용하시나요?'),
+          BubdongPageHeader(
+            title: '오늘 어떤 이용대장을 사용하시나요?',
+            // 방명록에서 들어왔을 때만 부제 (아이들 방문 기록·어른 흐름은 없음)
+            subtitle: widget.guestName == null
+                ? null
+                : '${widget.guestName} 님, 이용할 이용대장을 모두 선택해주세요',
+          ),
           const SizedBox(height: BubdongSpacing.s40),
           ConstrainedBox(
             constraints: const BoxConstraints(
@@ -109,6 +115,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
           Expanded(
             child: BubdongFacilityCard(
               title: facility.label,
+              // TODO: 어른은 신청서 없이 바로 완료라 표시를 뺄지 디자이너 확인
               subtitle: facility.needsApplication ? '신청서 작성' : null,
               color: facility.cardColor,
               status: _statusOf(facility),

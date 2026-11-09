@@ -17,7 +17,7 @@ class ApplyDonePage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           BubdongPageHeader(
-            // TODO: 여러 장 썼을 때 제목은 디자이너 답변 후 확정
+            // TODO: OOO 자리 디자이너 확인 (여러 장 썼을 때, 어른처럼 신청서 없이 왔을 때)
             title: lastFacility == null
                 ? '이용 신청서'
                 : '${lastFacility!.label} 이용 신청서',
