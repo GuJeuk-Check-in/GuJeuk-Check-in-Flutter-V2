@@ -124,12 +124,13 @@ abstract final class BubdongTypography{
     letterSpacing: -0.8,
   );
 
-  // 시설 카드 이름 (Figma Heading/H3: 32 SemiBold 1.4)
+  // 시설 카드 이름, 진입 화면 카드 문구 (Figma Heading/H3: 32 SemiBold 1.4)
   static const cardTitle = TextStyle(
     fontFamily: pretendard,
     fontSize: 32,
     fontWeight: FontWeight.w600,
     height: 1.4,
+    letterSpacing: 0, // 테마 기본 자간(0.25)이 섞이지 않게
   );
 
   // 이용대장 선택 요약 글자 (Figma 26 Bold, 행간 32)
