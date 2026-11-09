@@ -9,14 +9,8 @@ enum BubdongButtonVariant {
   /// Button highlight / 80 · 회원가입 다음, 동의
   primaryMedium,
 
-  /// Button tone / 80 · 회원가입 이전, 홈 이용 대장 조회
+  /// Button tone / 80 · 회원가입 이전
   toneMedium,
-
-  /// Button 노랑 채움 / 80 · 홈 아이들 방문 기록
-  yellowMedium,
-
-  /// Button 파랑 채움 / 80 · 홈 어른 방문 기록
-  blueMedium,
 
   /// Buttons/Button-outline / 66 · 학교 검색
   outlineSmall,
@@ -120,7 +114,7 @@ class _BubdongButtonState extends State<BubdongButton> {
           children: [
             if (widget.icon != null) ...[
               widget.icon!,
-              SizedBox(width: spec.iconGap),
+              const SizedBox(width: BubdongSpacing.s16), // 아이콘과 글자 사이
             ],
             Text(
               widget.label,
@@ -162,7 +156,6 @@ class _ButtonSpec {
     required this.height,
     this.width = double.infinity,
     required this.paddingX,
-    this.iconGap = BubdongSpacing.s16,
     required this.borderWidth,
     required this.radius,
     required this.textStyle,
@@ -175,7 +168,6 @@ class _ButtonSpec {
   final double height;
   final double width;
   final double paddingX;
-  final double iconGap;
   final double borderWidth;
   final BorderRadius radius;
   final TextStyle textStyle;
@@ -265,7 +257,6 @@ class _ButtonSpec {
         return _ButtonSpec(
           height: 80,
           paddingX: BubdongSpacing.s44,
-          iconGap: BubdongSpacing.s12, // 홈 이용 대장 조회 아이콘 간격
           borderWidth: 4,
           radius: BubdongRadius.r40All,
           textStyle: BubdongTypography.buttonBold,
@@ -286,34 +277,6 @@ class _ButtonSpec {
             text: BubdongColors.textAccentDark,
           ),
           disabled: _outlinedDisabled,
-        );
-      case BubdongButtonVariant.yellowMedium:
-        return const _ButtonSpec(
-          height: 80,
-          paddingX: BubdongSpacing.s44,
-          borderWidth: 4,
-          radius: BubdongRadius.r40All,
-          textStyle: BubdongTypography.buttonBold,
-          normal: _ButtonColors(
-            background: BubdongColors.actionSecondary,
-            border: Colors.transparent,
-            text: BubdongColors.textPrimary,
-          ),
-          disabled: _filledDisabled,
-        );
-      case BubdongButtonVariant.blueMedium:
-        return const _ButtonSpec(
-          height: 80,
-          paddingX: BubdongSpacing.s44,
-          borderWidth: 4,
-          radius: BubdongRadius.r40All,
-          textStyle: BubdongTypography.buttonBold,
-          normal: _ButtonColors(
-            background: BubdongColors.actionBlue,
-            border: Colors.transparent,
-            text: BubdongColors.textOnPrimary,
-          ),
-          disabled: _filledDisabled,
         );
       case BubdongButtonVariant.outlineSmall:
         return const _ButtonSpec(
