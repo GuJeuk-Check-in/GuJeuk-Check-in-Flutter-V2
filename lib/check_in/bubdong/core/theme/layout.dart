@@ -23,11 +23,17 @@ abstract final class BubdongLayout {
   static const double schoolSearchDialogWidth = 700;
 
   // 버튼 줄이 차지하는 최대 너비
-  static const double homeActionRowWidth = 1240;
   static const double actionRowWidth = 680; // 이전/다음 버튼 줄
 
   // 홈
   static const double homeLogoGap = 109; // 로고와 안내 글자 사이
+  static const double homeMenuRowWidth = 1228; // 카드 3장 줄 너비 (Figma)
+  static const double homeMenuGap = 36; // 카드 사이
+  // 카드 너비 비율 (Figma 384 : 388 : 384, 아이들 카드는 문구가 길어 4px 넓음)
+  static const int homeMenuCardFlex = 96;
+  static const int homeMenuChildCardFlex = 97;
+  static const double homeMenuImageWidth = 296; // 카드 그림
+  static const double homeMenuImageHeight = 269;
 
   // 가운데 흰 카드 너비
   static const double formCardWidth = 1080; // 회원가입 2·3단계, 신청서
