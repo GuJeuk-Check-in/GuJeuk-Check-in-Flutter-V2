@@ -79,7 +79,11 @@ class GuestbookListPage extends StatelessWidget {
                     facilities: entry.facilities,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => FacilitySelectPage(guest: entry),
+                        // 어른이면 어른 목록(10개)·신청서 없이 완료
+                        builder: (_) => FacilitySelectPage(
+                          visitorType: entry.visitorType,
+                          guest: entry,
+                        ),
                       ),
                     ),
                   ),

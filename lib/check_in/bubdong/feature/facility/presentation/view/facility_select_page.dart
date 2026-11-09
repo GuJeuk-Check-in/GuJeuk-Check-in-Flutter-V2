@@ -29,12 +29,19 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   static const _autoSaveDelay = Duration(seconds: 3); // Figma "3초"
 
   // 방명록에서 들어왔을 때 고른 뒤 3초가 지나면 자동 저장
-  late final _autoSave = AnimationController(vsync: this, duration: _autoSaveDelay)
-    ..addListener(() => setState(() {}))
-    ..addStatusListener((status) {
-      if (status == AnimationStatus.completed) _save();
-    });
+  late final AnimationController _autoSave;
   AutoSaveStatus? _autoSaveStatus; // null이면 토스트 없음
+
+  @override
+  void initState() {
+    super.initState();
+    // dispose에서 처음 만들어지지 않게 화면이 생길 때 바로 만듦
+    _autoSave = AnimationController(vsync: this, duration: _autoSaveDelay)
+      ..addListener(() => setState(() {}))
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) _save();
+      });
+  }
 
   @override
   void dispose() {
