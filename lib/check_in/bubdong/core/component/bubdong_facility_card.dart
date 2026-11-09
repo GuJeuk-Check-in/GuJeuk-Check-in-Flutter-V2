@@ -148,14 +148,27 @@ class BubdongFacilityCard extends StatelessWidget {
           ),
         ];
       case BubdongCardStatus.completed:
-        // Figma 화면: 뱃지 없이 주황 글자 (Body3 20/160, MainColor)
-        // TODO: 노란 외곽선(F5C343) 굵기·위치 Figma 값 받으면 추가
+        // Figma 화면: 뱃지 없이 주황 글자 (Body3 20/160, MainColor) + 노란 외곽선 바깥 1
         return [
-          Text(
-            '이용 완료',
-            style: BubdongTypography.bodyMd.copyWith(
-              color: BubdongColors.textCardCompleted,
-            ),
+          Stack(
+            children: [
+              // 외곽선: 선 굵기 2를 글자 가운데에 그리고 위에 채운 글자를 덮어 바깥 1만 보이게 함
+              Text(
+                '이용 완료',
+                style: BubdongTypography.bodyMd.copyWith(
+                  foreground: Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = 2
+                    ..color = BubdongColors.borderCardCompletedText,
+                ),
+              ),
+              Text(
+                '이용 완료',
+                style: BubdongTypography.bodyMd.copyWith(
+                  color: BubdongColors.textCardCompleted,
+                ),
+              ),
+            ],
           ),
         ];
       case BubdongCardStatus.inUse:
