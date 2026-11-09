@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/facility_card_color.dart';
 
 /// 오늘 사용할 이용대장 고르기 (여러 개 선택 가능)
 class FacilitySelectPage extends StatefulWidget {
-  const FacilitySelectPage({super.key, this.guestName});
+  const FacilitySelectPage({
+    super.key,
+    this.visitorType = VisitorType.child,
+    this.guestName,
+  });
 
+  final VisitorType visitorType; // 아이·어른에 따라 이용대장 개수와 신청서 여부가 다름
   final String? guestName; // 방명록에서 누른 사람 (화면에는 안 보이고 넘기기만)
 
   @override
@@ -18,13 +24,17 @@ class FacilitySelectPage extends StatefulWidget {
 class _FacilitySelectPageState extends State<FacilitySelectPage> {
   static const _columnCount = 4;
 
-  // 아이들 흐름·방명록 흐름에서 보여줄 이용대장 (아이들 기준 8개)
-  static final _facilities = Facility.children;
-
   // TODO: API 연결 시 교체 (자리 없는 이용대장과 남은 시간)
   static const Map<Facility, int> _unavailable = {};
 
   final _selected = <Facility>{}; // 고른 순서대로 들어감
+
+  List<Facility> get _facilities => widget.visitorType.facilities;
+
+  // 써야 할 신청서 목록 (어른은 신청서 없이 바로 완료)
+  List<Facility> get _applicationQueue => widget.visitorType.writesApplication
+      ? _selected.where((f) => f.needsApplication).toList()
+      : const [];
 
   void _toggle(Facility facility) {
     setState(() {
@@ -83,10 +93,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _selected.isEmpty
                 ? null // 하나도 안 고르면 다음 비활성
-                : () => openNextApplication(
-                      context,
-                      _selected.where((f) => f.needsApplication).toList(),
-                    ),
+                : () => openNextApplication(context, _applicationQueue),
           ),
         ],
       ),
