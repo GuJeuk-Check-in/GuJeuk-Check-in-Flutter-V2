@@ -4,16 +4,16 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_options.dart';
 
-/// 에러 문구를 띄우는 폼 항목.
+/// 에러 문구를 띄우는 폼 항목. 화면 위에서 아래 순서이며, 모달에도 이 순서로 띄웁니다.
 enum SignUpField {
   purpose,
   time,
-  companion,
   name,
   phone,
   gender,
   birth,
   residence,
+  companion,
   agreement,
 }
 
@@ -51,6 +51,11 @@ class SignUpFormState {
   });
 
   String? errorOf(SignUpField field) => errors[field];
+
+  /// 떠 있는 에러 문구를 화면 위에서 아래 순서로 모읍니다.
+  List<String> get errorMessages => [
+    for (final field in SignUpField.values) ?errors[field],
+  ];
 
   static const _keep = Object();
 

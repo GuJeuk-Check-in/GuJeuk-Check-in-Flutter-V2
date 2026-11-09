@@ -23,31 +23,29 @@ class SubmitNeedsPhone extends SubmitResult {
   const SubmitNeedsPhone();
 }
 
-/// 화면에 머뭅니다. 입력 에러나 실패 문구는 이미 화면에 떠 있습니다.
+/// 화면에 머뭅니다. 알려줄 것이 없을 때(이미 보내는 중 등)입니다.
 class SubmitStopped extends SubmitResult {
   const SubmitStopped();
 }
 
-/// 제출 요청이 실패했을 때 버튼 위에 띄울 문구. 제출 상태의 에러로 담깁니다.
-class SubmitFailure implements Exception {
-  final String message;
+/// 비었거나 잘못 적은 칸이 있어 보내지 않았습니다.
+/// 칸 아래 에러 문구는 화면 위쪽이라 버튼 근처에서 안 보일 수 있어, 화면이 모달로 한 번 더 알려줍니다.
+class SubmitInvalid extends SubmitResult {
+  /// 화면 위에서 아래 순서의 에러 문구.
+  final List<String> messages;
 
-  const SubmitFailure(this.message);
+  const SubmitInvalid(this.messages);
 }
 
-extension SubmitStateMessage on AsyncValue<void> {
-  /// 버튼 위에 띄울 실패 문구. 다시 보내는 동안에는 지난 문구를 숨깁니다.
-  String? get submitError {
-    if (isLoading) return null;
-    return switch (error) {
-      SubmitFailure(:final message) => message,
-      _ => null,
-    };
-  }
+/// 보냈지만 실패했습니다. 화면이 [message]를 모달로 띄웁니다.
+class SubmitFailed extends SubmitResult {
+  final String message;
+
+  const SubmitFailed(this.message);
 }
 
 /// 회원가입·이용 예약 제출의 공통 흐름.
-/// 보내는 동안은 로딩이고, 실패하면 [SubmitFailure]가 에러로 담깁니다.
+/// 보내는 동안은 로딩이고, 실패하면 [SubmitFailed]를 돌려줍니다.
 abstract class SubmitController extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {}
@@ -55,7 +53,12 @@ abstract class SubmitController extends AsyncNotifier<void> {
   /// 요청하는 동안 버튼을 다시 눌러도 무시합니다.
   bool get isSubmitting => state.isLoading;
 
-  /// [request]를 보내는 동안 로딩으로 두고, 실패하면 [failureMessage]를 띄웁니다.
+  /// 폼 검사에 걸렸을 때 돌려줄 결과. 지금 떠 있는 칸 에러를 모두 담습니다.
+  @protected
+  SubmitInvalid invalid() =>
+      SubmitInvalid(ref.read(signUpFormProvider).errorMessages);
+
+  /// [request]를 보내는 동안 로딩으로 두고, 실패하면 [failureMessage]를 담아 돌려줍니다.
   @protected
   Future<SubmitResult> run(
     String failureMessage,
@@ -67,16 +70,14 @@ abstract class SubmitController extends AsyncNotifier<void> {
       if (ref.mounted) state = const AsyncData(null);
       return result;
     } on SlotTakenException {
-      // 그사이 다른 친구가 고른 시간을 예약했으면 실패 문구 대신 시간 칸에 알려줍니다.
+      // 그사이 다른 친구가 고른 시간을 예약했으면 실패 문구 대신 시간 칸 에러로 알려줍니다.
       if (!ref.mounted) return const SubmitStopped();
       ref.read(signUpFormProvider.notifier).rejectTakenTime();
       state = const AsyncData(null);
-      return const SubmitStopped();
-    } catch (_, stackTrace) {
-      if (ref.mounted) {
-        state = AsyncError(SubmitFailure(failureMessage), stackTrace);
-      }
-      return const SubmitStopped();
+      return invalid();
+    } catch (_) {
+      if (ref.mounted) state = const AsyncData(null);
+      return SubmitFailed(failureMessage);
     }
   }
 }

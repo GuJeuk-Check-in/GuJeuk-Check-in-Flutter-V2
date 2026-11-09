@@ -9,15 +9,7 @@ class Bottom extends ConsumerWidget {
   final VoidCallback? onSubmit;
   final bool isSubmitting;
 
-  /// 제출 요청이 실패했을 때 버튼 위에 띄울 문구.
-  final String? submitError;
-
-  const Bottom({
-    super.key,
-    this.onSubmit,
-    this.isSubmitting = false,
-    this.submitError,
-  });
+  const Bottom({super.key, this.onSubmit, this.isSubmitting = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,10 +54,6 @@ class Bottom extends ConsumerWidget {
           SignUpErrorText(agreementError),
         ],
         const SizedBox(height: GujeukSpacing.s40),
-        if (submitError case final error?) ...[
-          SignUpErrorText(error),
-          const SizedBox(height: GujeukSpacing.s16),
-        ],
         Row(
           children: [
             Expanded(
