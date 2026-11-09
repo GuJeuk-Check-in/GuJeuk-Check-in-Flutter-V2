@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_basic_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/presentation/view/guestbook_list_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/home/presentation/widgets/home_menu_card.dart';
 
@@ -56,7 +58,13 @@ class HomePage extends StatelessWidget {
                     label: '어른 방문 기록 남기기',
                     imagePath: 'assets/images/bubdong/home_adult.png',
                     type: HomeMenuType.adult,
-                    onTap: () {}, // TODO: 어른 방문 기록 화면 연결
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const FacilitySelectPage(
+                          visitorType: VisitorType.adult,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
