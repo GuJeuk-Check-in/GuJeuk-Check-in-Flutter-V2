@@ -124,12 +124,13 @@ abstract final class BubdongTypography{
     letterSpacing: -0.8,
   );
 
-  // 시설 카드 이름 (Figma Heading/H3: 32 SemiBold 1.4)
+  // 시설 카드 이름, 진입 화면 카드 문구 (Figma Heading/H3: 32 SemiBold 1.4)
   static const cardTitle = TextStyle(
     fontFamily: pretendard,
     fontSize: 32,
     fontWeight: FontWeight.w600,
     height: 1.4,
+    letterSpacing: 0, // 테마 기본 자간(0.25)이 섞이지 않게
   );
 
   // 이용대장 선택 요약 글자 (Figma 26 Bold, 행간 32)
@@ -172,5 +173,27 @@ abstract final class BubdongTypography{
     height: 32 / 20,
     letterSpacing: -0.5,
     color: BubdongColors.textFieldLabel,
+  );
+
+
+  /// 작은 칩 글자 (방명록 이용대장 칩)
+  static const tagLabel = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+  );
+
+  /// 작은 안내 글자 ("선택한 이용대장", "이용한 시간")
+  static const captionSm = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 19,
+    fontWeight: FontWeight.w400,
+  );
+
+  /// 강조 숫자 ("1시간 20분")
+  static const valueLg = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 25,
+    fontWeight: FontWeight.w700,
   );
 }

@@ -110,11 +110,10 @@ abstract final class BubdongColors {
   // 주황 등 진한 배경 위의 흰 글자
   static const textOnPrimary = BubdongPalette.white;
 
-  /// 노란 버튼 (아이들 방문 기록)
-  static const actionSecondary = BubdongPalette.yellow200;
-
-  /// 파란 버튼 (어른 방문 기록)
-  static const actionBlue = BubdongPalette.blue500;
+  // 진입 화면 카드 테두리 (Figma 진입 화면 카드)
+  static const homeMenuLedgerBorder = BubdongPalette.orange500; // 이용 대장 조회 (MainColor)
+  static const homeMenuChildBorder = BubdongPalette.yellow200; // 아이들 방문 기록 (주황색/yellow)
+  static const homeMenuAdultBorder = BubdongPalette.blue500; // 어른 방문 기록 (파랑/blue)
 
   // 시설·선택 카드 색 묶음 (Figma 시설 카드 Default·Touched)
   // Bg: 기본 배경 / Shadow: 아래 그림자 / Border: 선택됐을 때 테두리 / Accent: 선택 카드 아이콘·테두리
