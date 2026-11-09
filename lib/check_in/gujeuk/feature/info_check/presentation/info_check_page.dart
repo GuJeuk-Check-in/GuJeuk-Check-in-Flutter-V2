@@ -56,64 +56,67 @@ class _InfoCheckPageState extends ConsumerState<InfoCheckPage> {
   Widget build(BuildContext context) {
     final nameError = ref.watch(infoCheckProvider);
     final isNarrow = MediaQuery.sizeOf(context).width < 800;
-    return BaseScaffold(
-      showBackButton: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s20),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1100),
-          child: Container(
-            padding: EdgeInsets.all(
-              isNarrow ? GujeukSpacing.s32 : GujeukSpacing.s64,
-            ),
-            decoration: BoxDecoration(
-              color: GujeukColors.bgSurface,
-              boxShadow: GujeukShadows.card,
-              borderRadius: BorderRadius.circular(GujeukRadius.xl),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '반가워! 청소년문화의집에 다시 와줘서 고마워',
-                  textAlign: TextAlign.center,
-                  style: GujeukTypography.titleLg.copyWith(
-                    color: GujeukColors.textBrand,
+    return PopScope(
+      canPop: false,
+      child: BaseScaffold(
+        showBackButton: true,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: GujeukSpacing.s20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: Container(
+              padding: EdgeInsets.all(
+                isNarrow ? GujeukSpacing.s32 : GujeukSpacing.s64,
+              ),
+              decoration: BoxDecoration(
+                color: GujeukColors.bgSurface,
+                boxShadow: GujeukShadows.card,
+                borderRadius: BorderRadius.circular(GujeukRadius.xl),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '반가워! 청소년문화의집에 다시 와줘서 고마워',
+                    textAlign: TextAlign.center,
+                    style: GujeukTypography.titleLg.copyWith(
+                      color: GujeukColors.textBrand,
+                    ),
                   ),
-                ),
-                const SizedBox(height: GujeukSpacing.s12),
-                Text(
-                  '시설을 이용하려면 작성해줘',
-                  textAlign: TextAlign.center,
-                  style: GujeukTypography.headingMd.copyWith(
-                    color: GujeukColors.textBrand,
+                  const SizedBox(height: GujeukSpacing.s12),
+                  Text(
+                    '시설을 이용하려면 작성해줘',
+                    textAlign: TextAlign.center,
+                    style: GujeukTypography.headingMd.copyWith(
+                      color: GujeukColors.textBrand,
+                    ),
                   ),
-                ),
-                const SizedBox(height: GujeukSpacing.s40),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: GujeukFieldLabel(
-                    label: '이름이 뭐야?',
-                    icon: GujeukIcons.user,
+                  const SizedBox(height: GujeukSpacing.s40),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: GujeukFieldLabel(
+                      label: '이름이 뭐야?',
+                      icon: GujeukIcons.user,
+                    ),
                   ),
-                ),
-                const SizedBox(height: GujeukSpacing.s10),
-                GujeukInput(
-                  hintText: '친구의 이름을 알려줘',
-                  controller: _nameController,
-                  onChanged: (_) =>
-                      ref.read(infoCheckProvider.notifier).clearError(),
-                  errorText: nameError,
-                  maxLength: 30,
-                ),
-                const SizedBox(height: GujeukSpacing.s40),
-                GujeukButton(
-                  onPressed: _onNext,
-                  label: '넘어가기!  -->',
-                  variant: GujeukButtonVariant.primaryLarge,
-                  width: double.infinity,
-                ),
-              ],
+                  const SizedBox(height: GujeukSpacing.s10),
+                  GujeukInput(
+                    hintText: '친구의 이름을 알려줘',
+                    controller: _nameController,
+                    onChanged: (_) =>
+                        ref.read(infoCheckProvider.notifier).clearError(),
+                    errorText: nameError,
+                    maxLength: 30,
+                  ),
+                  const SizedBox(height: GujeukSpacing.s40),
+                  GujeukButton(
+                    onPressed: _onNext,
+                    label: '넘어가기!  -->',
+                    variant: GujeukButtonVariant.primaryLarge,
+                    width: double.infinity,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
