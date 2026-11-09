@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/used_time_text.dart';
 
 /// 방명록 리스트의 사람 한 명 카드
 class GuestbookItem extends StatelessWidget {
@@ -16,16 +17,6 @@ class GuestbookItem extends StatelessWidget {
   final Duration usedTime;
   final VoidCallback onTap;
   final List<Facility> facilities;
-
-  /// 이용 시간 글자
-  /// 30분 → '30분', 60분 → '1시간', 80분 → '1시간 20분'
-  String get _usedTimeText {
-    final hours = usedTime.inHours;
-    final minutes = usedTime.inMinutes % 60;
-    if (hours == 0) return '$minutes분'; // 1시간 미만
-    if (minutes == 0) return '$hours시간'; // 딱 나누어떨어짐
-    return '$hours시간 $minutes분';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +79,7 @@ class GuestbookItem extends StatelessWidget {
                   style: BubdongTypography.captionSm.copyWith(color: BubdongColors.textCaption),
                 ),
                 Text(
-                  _usedTimeText,
+                  usedTime.usedTimeText, // 규칙은 used_time_text.dart
                   style: BubdongTypography.valueLg.copyWith(color: BubdongColors.textAccentDark),
                 ),
               ],
