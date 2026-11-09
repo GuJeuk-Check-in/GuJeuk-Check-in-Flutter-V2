@@ -124,12 +124,13 @@ abstract final class BubdongTypography{
     letterSpacing: -0.8,
   );
 
-  // 시설 카드 이름 (Figma Heading/H3: 32 SemiBold 1.4)
+  // 시설 카드 이름, 진입 화면 카드 문구 (Figma Heading/H3: 32 SemiBold 1.4)
   static const cardTitle = TextStyle(
     fontFamily: pretendard,
     fontSize: 32,
     fontWeight: FontWeight.w600,
     height: 1.4,
+    letterSpacing: 0, // 테마 기본 자간(0.25)이 섞이지 않게
   );
 
   // 이용대장 선택 요약 글자 (Figma 26 Bold, 행간 32)
@@ -172,5 +173,96 @@ abstract final class BubdongTypography{
     height: 32 / 20,
     letterSpacing: -0.5,
     color: BubdongColors.textFieldLabel,
+  );
+
+
+  /// 작은 칩 글자 (방명록 이용대장 칩)
+  static const tagLabel = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0, // 테마 기본 자간(0.25)이 섞이지 않게
+  );
+
+  /// 작은 안내 글자 ("선택한 이용대장", "이용한 시간", Figma 19 Regular 행간 자동)
+  static const captionSm = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 19,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+  );
+
+  /// 강조 숫자 ("1시간 20분", Figma 25 Bold 행간 자동)
+  static const valueLg = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 25,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+  );
+
+  /// 토스트 제목 "자동 저장까지", "3초", "저장됨" (Figma Inter Bold 28 행간 자동 → Pretendard)
+  static const toastTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+  );
+
+  /// 토스트 설명 (Figma Inter Medium 20 행간 자동 → Pretendard)
+  static const toastBody = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+  );
+
+  /// 팝업 제목 "학교 검색" (Figma Pretendard 32 Bold 행간 자동)
+  static const dialogTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+  );
+
+  /// 팝업 칸 이름 "학교 이름" (Figma Pretendard 24 Bold 행간 32 자간 -2.5%)
+  static const dialogFieldLabel = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    height: 32 / 24,
+    letterSpacing: -0.6,
+  );
+
+  /// 팝업 검색칸 글자 (Figma Pretendard SemiBold 20 행간 자동)
+  static const dialogInput = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+  );
+
+  /// 검색 결과 개수 (Figma Inter Regular 20 행간 자동 → Pretendard)
+  static const resultCount = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+  );
+
+  /// 검색 결과 학교 이름 (Figma Pretendard 24 Bold 행간 140%)
+  static const resultTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    height: 1.4,
+    letterSpacing: 0,
+  );
+
+  /// 방명록 이름 (Figma 32 Bold 행간 자동)
+  static const guestName = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
   );
 }

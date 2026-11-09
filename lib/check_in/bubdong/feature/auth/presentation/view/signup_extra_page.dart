@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
@@ -17,6 +18,33 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
   String? _year;
   String? _month;
   String? _day;
+
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+
+  // 이름·생년월일·성별·전화번호를 다 채워야 다음
+  bool get _isValid =>
+      _nameController.text.trim().isNotEmpty &&
+      _year != null &&
+      _month != null &&
+      _day != null &&
+      _gender != null &&
+      _phoneController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    // 입력할 때마다 버튼 상태 갱신
+    _nameController.addListener(() => setState(() {}));
+    _phoneController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   /// 고른 연도·월의 마지막 날 (안 골랐으면 31)
   int get _daysInMonth {
@@ -53,10 +81,11 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: BubdongInput(
                         label: '이름이 뭐야?',
                         hintText: '친구의 이름을 알려줘',
+                        controller: _nameController,
                       ),
                     ),
                     const SizedBox(width: BubdongSpacing.s40),
@@ -150,10 +179,14 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
                       ),
                     ),
                     const SizedBox(width: BubdongSpacing.s40),
-                    const Expanded(
+                    Expanded(
                       child: BubdongInput(
                         label: '전화번호',
                         hintText: '친구의 전화번호를 알려줘',
+                        controller: _phoneController,
+                        // 1단계 전화번호 칸과 같게 숫자만
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       ),
                     ),
                   ],
@@ -164,9 +197,11 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
           const SizedBox(height: BubdongSpacing.s64),
           BubdongActionRow(
             onPrevious: () => Navigator.of(context).pop(),
-            onNext: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SignupExtraSecondPage()),
-            ),
+            onNext: _isValid
+                ? () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SignupExtraSecondPage()),
+                    )
+                : null, // 다 채워야 누를 수 있음
           ),
         ],
       ),

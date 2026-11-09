@@ -21,13 +21,42 @@ abstract final class BubdongLayout {
 
   // 학교 검색 팝업 너비 (Figma A15)
   static const double schoolSearchDialogWidth = 700;
+  static const double schoolSearchDialogHeight = 600; // 결과가 많으면 목록만 스크롤
+  static const double schoolSearchFieldHeight = 66; // 검색칸
+  static const double schoolSearchFieldPaddingX = 33; // 검색칸 좌우 여백
+  static const double schoolResultHeight = 100; // 결과 한 줄
+  static const double schoolSearchCloseSize = 24; // 닫기 아이콘
+  static const schoolResultPadding = EdgeInsets.symmetric(horizontal: 32, vertical: 12);
 
   // 버튼 줄이 차지하는 최대 너비
-  static const double homeActionRowWidth = 1240;
   static const double actionRowWidth = 680; // 이전/다음 버튼 줄
 
   // 홈
   static const double homeLogoGap = 109; // 로고와 안내 글자 사이
+  static const double homeMenuRowWidth = 1228; // 카드 3장 줄 너비 (Figma)
+  static const double homeMenuGap = 36; // 카드 사이
+  // 카드 너비 비율 (Figma 384 : 388 : 384, 아이들 카드는 문구가 길어 4px 넓음)
+  static const int homeMenuCardFlex = 96;
+  static const int homeMenuChildCardFlex = 97;
+  static const double homeMenuImageWidth = 296; // 카드 그림
+  static const double homeMenuImageHeight = 269;
+
+  // 방명록 리스트
+  static const double guestbookListWidth = 1200; // 카드 너비
+  static const double guestbookCardGap = 24; // 카드 사이
+  static const double guestbookCardHeight = 128;
+  static const double guestbookNameWidth = 89; // 이름 칸 (Figma '김하늘' 너비, 짧은 이름은 가운데)
+  static const guestbookCardPadding = EdgeInsets.only(left: 40, right: 60); // 카드 좌우 여백
+  static const guestbookTagPadding = EdgeInsets.symmetric(horizontal: 36, vertical: 9); // 이용대장 칩 여백
+
+  // 자동 저장 토스트 (Figma)
+  static const double toastHeight = 100;
+  static const double autoSaveToastWidth = 458;
+  static const double savedToastWidth = 420;
+  static const toastPadding = EdgeInsets.symmetric(horizontal: 24, vertical: 7);
+  static const double toastProgressTop = 72; // 남은 시간 줄 위치 (Figma Y 72)
+  static const double toastProgressHeight = 3;
+  static const double toastMargin = 40; // 화면 오른쪽·위 여백
 
   // 가운데 흰 카드 너비
   static const double formCardWidth = 1080; // 회원가입 2·3단계, 신청서
@@ -39,6 +68,11 @@ abstract final class BubdongLayout {
   static const double applyCardToButtonGap = 86; // 카드와 버튼 줄 사이
   static const double applyInputToNoticeGap = 66; // 인원 입력칸과 안내 박스 사이 (탁구·노래방)
   static const applyCardPadding = EdgeInsets.fromLTRB(60, 40, 60, 40); // 카드 안쪽 여백
+
+  // 신청 완료 화면
+  static const double applyDoneCardWidth = 1232; // 카드 너비 (Figma)
+  static const double applyDoneIconSize = 72; // 체크 아이콘
+  static const double applyDoneButtonGap = 80; // 제목 묶음과 다했어요 버튼 사이
 
   // 인터넷 신청서 (Figma 프레임 13)
   static const double seatGridInset = 10; // 좌석 버튼·안내 박스 좌우 들여쓰기

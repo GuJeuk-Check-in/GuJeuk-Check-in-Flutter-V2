@@ -8,6 +8,7 @@ abstract final class BubdongRadius{
   static const double r30 = 30;
   static const double r32 = 32;
   static const double r40 = 40;
+  static const double r48 = 48;
   static const double r9999 = 9999;
 
   static const r4All = BorderRadius.all(Radius.circular(r4));
@@ -17,5 +18,6 @@ abstract final class BubdongRadius{
   static const r30All = BorderRadius.all(Radius.circular(r30));
   static const r32All = BorderRadius.all(Radius.circular(r32));
   static const r40All = BorderRadius.all(Radius.circular(r40));
+  static const r48All = BorderRadius.all(Radius.circular(r48));
   static const r9999All = BorderRadius.all(Radius.circular(r9999));
 }
