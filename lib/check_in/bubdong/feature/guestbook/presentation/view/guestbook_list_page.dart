@@ -1,56 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/guestbook_entry.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/data/fake_guestbook_store.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/presentation/widgets/guestbook_item.dart';
 
 /// 오늘 방명록을 남긴 사람 목록 (Figma 방명록 리스트)
 class GuestbookListPage extends StatelessWidget {
   const GuestbookListPage({super.key});
-
-  // TODO: API 연결 시 교체
-  static const _entries = [
-    GuestbookEntry(
-      name: '김하늘',
-      visitorType: VisitorType.child,
-      usedTime: Duration(minutes: 80),
-      facilities: [Facility.internet, Facility.tableTennis, Facility.rest],
-      completedFacilities: {Facility.tableTennis},
-    ),
-    GuestbookEntry(
-      name: '성인',
-      visitorType: VisitorType.adult,
-      usedTime: Duration(minutes: 30),
-      facilities: [Facility.rest],
-    ),
-    GuestbookEntry(
-      name: '이바다',
-      visitorType: VisitorType.child,
-      usedTime: Duration(minutes: 45),
-      facilities: [Facility.boardGame, Facility.karaoke],
-    ),
-    GuestbookEntry(
-      name: '박구름',
-      visitorType: VisitorType.child,
-      usedTime: Duration(minutes: 100),
-      facilities: [Facility.bangka],
-    ),
-    GuestbookEntry(
-      name: '성인',
-      visitorType: VisitorType.adult,
-      usedTime: Duration(minutes: 60),
-      facilities: [Facility.club, Facility.rest],
-    ),
-    GuestbookEntry(
-      name: '최별',
-      visitorType: VisitorType.child,
-      usedTime: Duration(minutes: 20),
-      facilities: [Facility.karaoke],
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -69,25 +26,29 @@ class GuestbookListPage extends StatelessWidget {
             constraints: const BoxConstraints(
               maxWidth: BubdongLayout.guestbookListWidth,
             ),
-            child: Column(
-              spacing: BubdongLayout.guestbookCardGap,
-              children: [
-                for (final entry in _entries)
-                  GuestbookItem(
-                    name: entry.name,
-                    usedTime: entry.usedTime,
-                    facilities: entry.facilities,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        // 어른이면 어른 목록(10개)·신청서 없이 완료
-                        builder: (_) => FacilitySelectPage(
-                          visitorType: entry.visitorType,
-                          guest: entry,
+            // 자동 저장으로 기록이 바뀌면 목록도 다시 그림
+            child: ValueListenableBuilder(
+              valueListenable: FakeGuestbookStore.entries,
+              builder: (context, entries, _) => Column(
+                spacing: BubdongLayout.guestbookCardGap,
+                children: [
+                  for (final entry in entries)
+                    GuestbookItem(
+                      name: entry.name,
+                      usedTime: entry.usedTime,
+                      facilities: entry.facilities,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          // 어른이면 어른 목록(10개)·신청서 없이 완료
+                          builder: (_) => FacilitySelectPage(
+                            visitorType: entry.visitorType,
+                            guest: entry,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: BubdongSpacing.s40), // 마지막 카드가 화면 끝에 붙지 않게
