@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_basic_page.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/presentation/view/guestbook_list_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/home/presentation/widgets/home_menu_card.dart';
 
 class HomePage extends StatelessWidget {
@@ -33,7 +34,9 @@ class HomePage extends StatelessWidget {
                     label: '이용 대장 조회하기',
                     imagePath: 'assets/images/bubdong/home_ledger.png',
                     type: HomeMenuType.ledger,
-                    onTap: () {}, // TODO: 방명록 리스트 화면 연결
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const GuestbookListPage()),
+                    ),
                   ),
                 ),
                 Expanded(

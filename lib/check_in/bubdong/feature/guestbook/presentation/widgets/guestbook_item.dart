@@ -17,27 +17,41 @@ class GuestbookItem extends StatelessWidget {
   final VoidCallback onTap;
   final List<Facility> facilities;
 
-  static const _height = 128.0;
-
-  /// 80분 → '1시간 20분'
-  String get _usedTimeText => '${usedTime.inHours}시간 ${usedTime.inMinutes % 60}분';
+  /// 이용 시간 글자
+  /// 30분 → '30분', 60분 → '1시간', 80분 → '1시간 20분'
+  String get _usedTimeText {
+    final hours = usedTime.inHours;
+    final minutes = usedTime.inMinutes % 60;
+    if (hours == 0) return '$minutes분'; // 1시간 미만
+    if (minutes == 0) return '$hours시간'; // 딱 나누어떨어짐
+    return '$hours시간 $minutes분';
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque, // 카드 빈 곳을 눌러도 동작
       child: Container(
-        height: _height,
-        padding: const EdgeInsets.only(left: BubdongSpacing.s40, right: 60),
+        height: BubdongLayout.guestbookCardHeight,
+        padding: BubdongLayout.guestbookCardPadding,
         decoration: BoxDecoration(
           color: BubdongColors.bgSurface,
           borderRadius: BubdongRadius.r30All,
-          border: Border.all(color: BubdongColors.borderCard, width: 1),
+          border: Border.all(color: BubdongColors.borderGuestbookCard, width: 1),
         ),
         child: Row(
           children: [
             // 왼쪽: 이름
-            Text(name, style: BubdongTypography.h3.copyWith(color: BubdongColors.textPrimary)),
+            // 칸 너비를 맞춰 이름이 짧아도 칩이 같은 자리에서 시작 (긴 이름은 칸보다 넓어짐)
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: BubdongLayout.guestbookNameWidth),
+              child: Text(
+                name,
+                textAlign: TextAlign.center,
+                style: BubdongTypography.guestName.copyWith(color: BubdongColors.textGuestName),
+              ),
+            ),
             const SizedBox(width: BubdongSpacing.s40),
 
             // 가운데: 선택한 이용대장
@@ -47,7 +61,7 @@ class GuestbookItem extends StatelessWidget {
               children: [
                 Text(
                   '선택한 이용대장',
-                  style: BubdongTypography.captionSm.copyWith(color: BubdongColors.textPlaceholder),
+                  style: BubdongTypography.captionSm.copyWith(color: BubdongColors.textCaption),
                 ),
                 const SizedBox(height: BubdongSpacing.s8),
                 Row(
@@ -71,7 +85,7 @@ class GuestbookItem extends StatelessWidget {
               children: [
                 Text(
                   '이용한 시간',
-                  style: BubdongTypography.captionSm.copyWith(color: BubdongColors.textPlaceholder),
+                  style: BubdongTypography.captionSm.copyWith(color: BubdongColors.textCaption),
                 ),
                 Text(
                   _usedTimeText,
@@ -95,7 +109,7 @@ class _FacilityTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 9),
+      padding: BubdongLayout.guestbookTagPadding,
       decoration: BoxDecoration(
         color: BubdongColors.brandSubtle,
         borderRadius: BubdongRadius.r30All,

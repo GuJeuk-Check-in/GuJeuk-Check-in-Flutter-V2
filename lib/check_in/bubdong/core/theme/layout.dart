@@ -35,6 +35,14 @@ abstract final class BubdongLayout {
   static const double homeMenuImageWidth = 296; // 카드 그림
   static const double homeMenuImageHeight = 269;
 
+  // 방명록 리스트
+  static const double guestbookListWidth = 1200; // 카드 너비
+  static const double guestbookCardGap = 24; // 카드 사이
+  static const double guestbookCardHeight = 128;
+  static const double guestbookNameWidth = 89; // 이름 칸 (Figma '김하늘' 너비, 짧은 이름은 가운데)
+  static const guestbookCardPadding = EdgeInsets.only(left: 40, right: 60); // 카드 좌우 여백
+  static const guestbookTagPadding = EdgeInsets.symmetric(horizontal: 36, vertical: 9); // 이용대장 칩 여백
+
   // 가운데 흰 카드 너비
   static const double formCardWidth = 1080; // 회원가입 2·3단계, 신청서
   static const double signupBasicCardWidth = 1232; // 회원가입 1단계

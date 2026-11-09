@@ -181,19 +181,30 @@ abstract final class BubdongTypography{
     fontFamily: pretendard,
     fontSize: 18,
     fontWeight: FontWeight.w700,
+    letterSpacing: 0, // 테마 기본 자간(0.25)이 섞이지 않게
   );
 
-  /// 작은 안내 글자 ("선택한 이용대장", "이용한 시간")
+  /// 작은 안내 글자 ("선택한 이용대장", "이용한 시간", Figma 19 Regular 행간 자동)
   static const captionSm = TextStyle(
     fontFamily: pretendard,
     fontSize: 19,
     fontWeight: FontWeight.w400,
+    letterSpacing: 0,
   );
 
-  /// 강조 숫자 ("1시간 20분")
+  /// 강조 숫자 ("1시간 20분", Figma 25 Bold 행간 자동)
   static const valueLg = TextStyle(
     fontFamily: pretendard,
     fontSize: 25,
     fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+  );
+
+  /// 방명록 이름 (Figma 32 Bold 행간 자동)
+  static const guestName = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
   );
 }

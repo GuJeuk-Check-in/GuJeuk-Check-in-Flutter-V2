@@ -46,6 +46,7 @@ abstract final class BubdongPalette {
   static const pink50 = Color(0xFFFAD6DF);
   static const lavender50 = Color(0xFFFBFBFF);
   static const gray150 = Color(0xFFEAEAF0);
+  static const stone100 = Color(0xFFE6E3DF); // Figma grey_white_tone
 }
 
 abstract final class BubdongColors {
@@ -159,6 +160,11 @@ abstract final class BubdongColors {
   static const textGuide = BubdongPalette.slate500; // 카드 아래 이용 규칙 글자
   static const textFieldLabel = BubdongPalette.gray25; // 입력칸 질문 글자
   static const textSectionTitle = BubdongPalette.inkSoft; // 신청서 카드 안 소제목 (좌석번호)
+
+  // 방명록 리스트 카드
+  static const borderGuestbookCard = BubdongPalette.stone100; // 외곽선 (Figma grey_white_tone)
+  static const textGuestName = BubdongPalette.inkSoft; // 이름 (Figma #2F2F33)
+  static const textCaption = BubdongPalette.gray50; // "선택한 이용대장", "이용한 시간" (Figma 법동/grey/50 #808080)
 
   // 드롭다운 목록 항목 사이 구분선 (Figma: #CCCCCC 위에 검정 20%)
   static const dividerDropdown = BubdongPalette.gray70;

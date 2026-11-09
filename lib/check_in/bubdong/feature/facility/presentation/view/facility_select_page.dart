@@ -7,7 +7,9 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/pre
 
 /// 오늘 사용할 이용대장 고르기 (여러 개 선택 가능)
 class FacilitySelectPage extends StatefulWidget {
-  const FacilitySelectPage({super.key});
+  const FacilitySelectPage({super.key, this.guestName});
+
+  final String? guestName; // 방명록에서 누른 사람 (화면에는 안 보이고 넘기기만)
 
   @override
   State<FacilitySelectPage> createState() => _FacilitySelectPageState();
@@ -15,6 +17,9 @@ class FacilitySelectPage extends StatefulWidget {
 
 class _FacilitySelectPageState extends State<FacilitySelectPage> {
   static const _columnCount = 4;
+
+  // 아이들 흐름·방명록 흐름에서 보여줄 이용대장 (아이들 기준 8개)
+  static final _facilities = Facility.children;
 
   // TODO: API 연결 시 교체 (자리 없는 이용대장과 남은 시간)
   static const Map<Facility, int> _unavailable = {};
@@ -37,8 +42,8 @@ class _FacilitySelectPageState extends State<FacilitySelectPage> {
   @override
   Widget build(BuildContext context) {
     final rows = [
-      for (var i = 0; i < Facility.values.length; i += _columnCount)
-        Facility.values.skip(i).take(_columnCount).toList(),
+      for (var i = 0; i < _facilities.length; i += _columnCount)
+        _facilities.skip(i).take(_columnCount).toList(),
     ];
 
     return BubdongBaseScaffold(
