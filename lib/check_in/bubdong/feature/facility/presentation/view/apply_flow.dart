@@ -8,12 +8,12 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/pre
 void openNextApplication(
   BuildContext context,
   List<Facility> queue, {
-  Facility? current, // 방금 쓴 신청서 (완료 화면 제목에 씀)
+  required List<Facility> selected, // 고른 이용대장 전체 (완료 화면 제목에 씀)
 }) {
   if (queue.isEmpty) {
     // 남은 신청서가 없으면 신청 완료 화면 (뒤로가기로 신청서에 돌아가지 않게 홈만 남김)
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => ApplyDonePage(lastFacility: current)),
+      MaterialPageRoute(builder: (_) => ApplyDonePage(facilities: selected)),
       (route) => route.isFirst,
     );
     return;
@@ -25,8 +25,12 @@ void openNextApplication(
   Navigator.of(context).push(
     MaterialPageRoute(
       builder: (_) => next == Facility.internet
-          ? ComputerApplyPage(remaining: remaining) // 좌석을 고르는 신청서
-          : PeopleApplyPage(facility: next, remaining: remaining), // 인원을 적는 신청서
+          ? ComputerApplyPage(remaining: remaining, selected: selected) // 좌석을 고르는 신청서
+          : PeopleApplyPage(
+              facility: next,
+              remaining: remaining,
+              selected: selected,
+            ), // 인원을 적는 신청서
     ),
   );
 }

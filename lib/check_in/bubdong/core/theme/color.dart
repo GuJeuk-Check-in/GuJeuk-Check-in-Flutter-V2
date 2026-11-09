@@ -145,10 +145,11 @@ abstract final class BubdongColors {
 
   // 시설 카드 상태 (카드 색과 상관없이 고정)
   static const cardUnavailableBg = BubdongPalette.gray100; // 자리 없음
-  static const cardCompletedBg = BubdongPalette.teal200; // 이용 완료 배경
-  static const cardCompletedBorder = BubdongPalette.teal500; // 이용 완료 테두리
-  static const cardCompletedBadgeBg = BubdongPalette.teal300; // 이용 완료 뱃지 배경
-  static const cardCompletedBadgeText = BubdongPalette.teal500; // 이용 완료 뱃지 글자
+  static const cardCompletedBg = BubdongPalette.teal50; // 이용 완료 배경 (Figma 화면: 민트 카드 배경)
+  static const cardCompletedBorder = BubdongPalette.orange500; // 이용 완료 테두리 (Figma 화면: MainColor)
+  static const cardCompletedShadow = BubdongPalette.teal200; // 이용 완료 아래 그림자 (Figma 화면: green_shadow)
+  static const textCardCompleted = BubdongPalette.orange500; // "이용 완료" 글자 (Figma MainColor)
+  static const borderCardCompletedText = BubdongPalette.amber400; // "이용 완료" 글자 외곽선 (Figma F5C343)
   static const cardInUseBg = BubdongPalette.orange50; // 이용 중 배경
   static const cardInUseBorder = BubdongPalette.orange500; // 이용 중 테두리
   static const cardInUseBadgeBg = BubdongPalette.blue500; // 이용 중 뱃지 배경

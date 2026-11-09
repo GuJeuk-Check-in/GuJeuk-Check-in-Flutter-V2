@@ -12,10 +12,12 @@ class PeopleApplyPage extends StatefulWidget {
     super.key,
     required this.facility,
     required this.remaining,
+    required this.selected,
   });
 
   final Facility facility; // tableTennis 또는 karaoke
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
+  final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
 
   @override
   State<PeopleApplyPage> createState() => _PeopleApplyPageState();
@@ -111,7 +113,7 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
                 ? () => openNextApplication(
                       context,
                       widget.remaining,
-                      current: widget.facility,
+                      selected: widget.selected,
                     )
                 : null, // 인원을 맞게 적어야 누를 수 있음
           ),

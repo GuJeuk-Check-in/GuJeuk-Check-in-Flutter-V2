@@ -6,9 +6,9 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/dom
 
 /// 시설 이용 신청을 마친 뒤 보여주는 화면 (Figma 신청 완료)
 class ApplyDonePage extends StatelessWidget {
-  const ApplyDonePage({super.key, this.lastFacility});
+  const ApplyDonePage({super.key, required this.facilities});
 
-  final Facility? lastFacility; // 마지막에 쓴 신청서 (신청서 없이 왔으면 null)
+  final List<Facility> facilities; // 이번에 신청한 이용대장 (고른 순서)
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +17,8 @@ class ApplyDonePage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           BubdongPageHeader(
-            // TODO: OOO 자리 디자이너 확인 (여러 장 썼을 때, 어른처럼 신청서 없이 왔을 때)
-            title: lastFacility == null
-                ? '이용 신청서'
-                : '${lastFacility!.label} 이용 신청서',
+            // 디자이너 확인: OOO = 내가 신청하는 이용대장 이름 (여러 개면 쉼표로 이음)
+            title: '${facilities.map((f) => f.label).join(', ')} 이용 신청서',
             subtitle: '신청을 완료했습니다. 처음으로 돌아가주세요',
           ),
           // TODO: Figma 간격 확인 전이라 다른 신청서와 같은 값 사용

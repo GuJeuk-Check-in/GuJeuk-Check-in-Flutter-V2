@@ -148,11 +148,14 @@ class BubdongFacilityCard extends StatelessWidget {
           ),
         ];
       case BubdongCardStatus.completed:
+        // Figma 화면: 뱃지 없이 주황 글자 (Body3 20/160, MainColor)
+        // TODO: 노란 외곽선(F5C343) 굵기·위치 Figma 값 받으면 추가
         return [
-          const _CardBadge(
-            label: '이용 완료',
-            background: BubdongColors.cardCompletedBadgeBg,
-            textColor: BubdongColors.cardCompletedBadgeText,
+          Text(
+            '이용 완료',
+            style: BubdongTypography.bodyMd.copyWith(
+              color: BubdongColors.textCardCompleted,
+            ),
           ),
         ];
       case BubdongCardStatus.inUse:
@@ -229,11 +232,12 @@ class _CardSpec {
           background: BubdongColors.cardUnavailableBg,
           titleColor: BubdongColors.textDisabled,
         );
-      // Figma Complete: 카드 색과 상관없이 민트
+      // Figma 화면 이용 완료: 민트 배경 + 주황 테두리 + 민트 그림자 + 체크 그림
       case BubdongCardStatus.completed:
         return const _CardSpec(
           background: BubdongColors.cardCompletedBg,
           border: BubdongColors.cardCompletedBorder,
+          shadow: BubdongColors.cardCompletedShadow,
           iconAsset: 'assets/icons/bubdong/icon_card_check.svg',
         );
       // Figma inUse: 카드 색과 상관없이 주황

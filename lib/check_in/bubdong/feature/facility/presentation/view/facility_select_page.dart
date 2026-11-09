@@ -175,7 +175,11 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _selected.isEmpty
                 ? null // 하나도 안 고르면 다음 비활성
-                : () => openNextApplication(context, _applicationQueue),
+                : () => openNextApplication(
+                      context,
+                      _applicationQueue,
+                      selected: _selected.toList(),
+                    ),
           ),
         ],
       ),

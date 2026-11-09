@@ -8,9 +8,14 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/pre
 
 /// 인터넷 좌석과 사용목적을 적는 신청서 (Figma 프레임 13)
 class ComputerApplyPage extends StatefulWidget {
-  const ComputerApplyPage({super.key, required this.remaining});
+  const ComputerApplyPage({
+    super.key,
+    required this.remaining,
+    required this.selected,
+  });
 
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
+  final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
 
   @override
   State<ComputerApplyPage> createState() => _ComputerApplyPageState();
@@ -111,7 +116,7 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
                 ? () => openNextApplication(
                       context,
                       widget.remaining,
-                      current: Facility.internet,
+                      selected: widget.selected,
                     )
                 : null, // 좌석과 사용목적을 채워야 누를 수 있음
           ),

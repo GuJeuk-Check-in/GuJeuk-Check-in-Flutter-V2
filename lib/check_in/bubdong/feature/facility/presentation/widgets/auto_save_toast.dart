@@ -105,7 +105,7 @@ class AutoSaveToast extends StatelessWidget {
     return Container(
       width: BubdongLayout.savedToastWidth,
       height: BubdongLayout.toastHeight,
-      // TODO: 저장됨 토스트 안쪽 여백 Figma 값 확인 (지금은 자동 저장 토스트와 같음)
+      // 글자 묶음 왼쪽 24, 세로 가운데 (Figma X 24 · Y 19, 위아래 19씩)
       padding: BubdongLayout.toastPadding,
       decoration: BoxDecoration(
         color: BubdongColors.toastSavedBg,
@@ -119,6 +119,7 @@ class AutoSaveToast extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: BubdongSpacing.s4, // Figma 두 글자 사이
         children: [
           Text(
             '저장됨',
