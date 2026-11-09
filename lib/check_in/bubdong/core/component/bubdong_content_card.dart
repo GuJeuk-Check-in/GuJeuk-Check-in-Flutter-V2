@@ -9,12 +9,14 @@ class BubdongContentCard extends StatelessWidget {
     required this.padding,
     required this.child,
     this.height,
+    this.borderRadius = BubdongRadius.r32All,
   });
 
   final double width;
   final EdgeInsets padding;
   final Widget child;
   final double? height; // 없으면 내용 높이만큼
+  final BorderRadius borderRadius; // 신청 완료 카드는 48
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class BubdongContentCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: BubdongColors.bgSurface,
-        borderRadius: BubdongRadius.r32All,
+        borderRadius: borderRadius,
         border: Border.all(color: BubdongColors.borderCard, width: 4),
         boxShadow: [BubdongShadow.card],
       ),

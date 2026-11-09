@@ -108,7 +108,11 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
             nextLabel: '컴퓨터 신청하기', // Figma 문구
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
-                ? () => openNextApplication(context, widget.remaining)
+                ? () => openNextApplication(
+                      context,
+                      widget.remaining,
+                      current: Facility.internet,
+                    )
                 : null, // 좌석과 사용목적을 채워야 누를 수 있음
           ),
         ],

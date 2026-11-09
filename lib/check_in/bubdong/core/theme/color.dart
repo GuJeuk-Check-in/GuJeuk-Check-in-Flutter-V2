@@ -13,6 +13,7 @@ abstract final class BubdongPalette {
   static const gray25 = Color(0xFF404040); // Figma gray/30
   static const gray30 = Color(0xFF4D4D4D);
   static const gray40 = Color(0xFF666666);
+  static const gray45 = Color(0xFF6A6A6A); // Figma gray/10
   static const gray50 = Color(0xFF808080);
   static const gray60 = Color(0xFF999999);
   static const gray70 = Color(0xFFA3A3A3);
@@ -77,6 +78,7 @@ abstract final class BubdongColors {
   static const textEmphasis4 = BubdongPalette.gray40;
   static const textPasswordReset = BubdongPalette.yellow200;
   static const textDisabled = BubdongPalette.gray30;
+  static const textSecondary = BubdongPalette.gray45; // 신청 완료 부제 (Figma gray/10)
 
   //원컬러, 그림자
   static const decorRed = BubdongPalette.red500;

@@ -108,7 +108,11 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
             nextLabel: _buttonLabel,
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
-                ? () => openNextApplication(context, widget.remaining)
+                ? () => openNextApplication(
+                      context,
+                      widget.remaining,
+                      current: widget.facility,
+                    )
                 : null, // 인원을 맞게 적어야 누를 수 있음
           ),
         ],
