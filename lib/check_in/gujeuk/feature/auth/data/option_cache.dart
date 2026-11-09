@@ -53,7 +53,7 @@ class _EmptyOptionsException implements Exception {}
 /// 저장본도 없으면 예외를 던집니다.
 class OptionsLoader {
   /// 화면을 오래 막지 않게 짧게 기다립니다. 미리 받아 둘 때는 쓰지 않습니다.
-  static const _screenLimit = Duration(seconds: 3);
+  static const _screenLimit = Duration(seconds: 6);
   static const _purposesKey = 'purposes';
   static const _residencesKey = 'residences';
 

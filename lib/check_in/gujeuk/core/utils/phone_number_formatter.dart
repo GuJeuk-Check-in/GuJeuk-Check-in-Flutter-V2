@@ -40,6 +40,12 @@ class PhoneNumberFormatter extends TextInputFormatter {
       digitsBeforeCursor--;
     }
 
+    // 이미 다 찬 번호에 숫자를 더 넣으면 맨 끝 숫자가 밀려나므로 입력을 무시합니다.
+    if (digits.length > maxDigits &&
+        digitsOf(oldValue.text).length >= maxDigits) {
+      return oldValue;
+    }
+
     if (digits.length > maxDigits) {
       digits = digits.substring(0, maxDigits);
       if (digitsBeforeCursor > maxDigits) digitsBeforeCursor = maxDigits;

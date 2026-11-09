@@ -67,7 +67,8 @@ class ReservationSubmitController extends SubmitController {
               startTime: form.time!,
               maleCount: form.maleCount,
               femaleCount: form.femaleCount,
-            );
+            )
+            .timeout(SubmitController.reservationLimit);
       } on DuplicateNameException {
         return const SubmitNeedsPhone();
       }

@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_components.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/network/server_clock.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/phone_number_formatter.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/utils/server_date_format.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/sign_up_options.dart';
 
 /// 에러 문구를 띄우는 폼 항목. 화면 위에서 아래 순서이며, 모달에도 이 순서로 띄웁니다.
@@ -121,18 +123,23 @@ class SignUpFormController extends Notifier<SignUpFormState> {
       !offline && (_catalog?.needsTime(state.purpose) ?? false);
 
   /// 오늘 시작 시간이 이미 지난 칸. 화면을 띄워둔 사이에도 지나가므로 부를 때마다 다시 셉니다.
-  static Set<String> pastTimes() {
-    final now = DateTime.now();
+  /// 키오스크 시계가 틀려도 방문 시각과 같은 기준이 되도록 서버로 보정한 시각을 씁니다.
+  Set<String> pastTimes() => pastTimesAt(ref.read(serverClockProvider).now());
+
+  /// [now] 순간에 이미 지난 칸. 칸은 한국 시각이라 기기 시간대와 상관없이 한국 벽시계로 비교합니다.
+  static Set<String> pastTimesAt(DateTime now) {
+    final korea = ServerDateFormat.koreaWallClock(now);
     return {
       for (final t in times)
-        if (!_todayAt(t, now).isAfter(now)) t,
+        if (!_todayAt(t, korea).isAfter(korea)) t,
     };
   }
 
-  static DateTime _todayAt(String time, DateTime now) {
+  /// [korea]와 같은 날 [time]의 한국 벽시계 시각. [korea]처럼 UTC 필드에 담습니다.
+  static DateTime _todayAt(String time, DateTime korea) {
     final hour = int.parse(time.substring(0, 2));
     final minute = int.parse(time.substring(3, 5));
-    return DateTime(now.year, now.month, now.day, hour, minute);
+    return DateTime.utc(korea.year, korea.month, korea.day, hour, minute);
   }
 
   void selectPurpose(String value) {

@@ -47,6 +47,11 @@ class SubmitFailed extends SubmitResult {
 /// 회원가입·이용 예약 제출의 공통 흐름.
 /// 보내는 동안은 로딩이고, 실패하면 [SubmitFailed]를 돌려줍니다.
 abstract class SubmitController extends AsyncNotifier<void> {
+  /// 예약 요청을 키오스크 앞에서 기다리는 최대 시간. 예약은 기기에 저장해 둘 수 없어
+  /// 넘으면 실패 안내를 띄웁니다. 서버가 늦게라도 처리했다면 다시 눌렀을 때 마감으로 보일 수 있습니다.
+  @protected
+  static const reservationLimit = Duration(seconds: 10);
+
   @override
   FutureOr<void> build() {}
 

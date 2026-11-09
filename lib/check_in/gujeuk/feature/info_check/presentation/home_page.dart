@@ -35,6 +35,14 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // 첫 화면에서 시스템 뒤로가기를 누르면 앱이 꺼지므로 막습니다.
+    return PopScope(
+      canPop: false,
+      child: _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
     return BaseScaffold(
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -1,8 +1,21 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// 구즉 release 서명 키. android/key.properties에 storeFile, storePassword, keyAlias, keyPassword를 적습니다.
+// 이 파일과 키 파일은 git에 올리지 않습니다(android/.gitignore). 없으면 지금처럼 debug 키로 서명합니다.
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        FileInputStream(keystorePropertiesFile).use { load(it) }
+    }
+}
+val hasReleaseKey = keystorePropertiesFile.exists()
 
 android {
     namespace = "com.example.gujeuk_check_in_flutter_v2"
@@ -29,25 +42,39 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     flavorDimensions += "app"
     productFlavors {
         create("gujeuk") {
             dimension = "app"
             applicationIdSuffix = ".gujeuk"
             manifestPlaceholders["appName"] = "구즉 체크인"
+            // 설치된 키오스크의 대기열이 사라지지 않게 applicationId는 바꾸지 않습니다.
+            // 키가 있으면 release를 그 키로 서명합니다. debug 빌드는 build type의 debug 키를 씁니다.
+            signingConfig = signingConfigs.getByName(if (hasReleaseKey) "release" else "debug")
         }
         create("bubdong") {
             dimension = "app"
             applicationIdSuffix = ".bubdong"
             manifestPlaceholders["appName"] = "법동 체크인"
+            // 법동은 지금처럼 debug 키로 서명합니다.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // 서명 키는 flavor마다 정합니다(productFlavors). build type에 두면 flavor 설정을 덮어씁니다.
         }
     }
 }

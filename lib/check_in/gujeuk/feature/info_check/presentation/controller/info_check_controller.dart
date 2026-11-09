@@ -44,7 +44,7 @@ final infoCheckProvider =
 
 class InfoCheckController extends Notifier<String?> {
   /// 서버가 응답하지 않을 때 키오스크 앞에서 기다리는 최대 시간.
-  static const _lookupLimit = Duration(seconds: 5);
+  static const _lookupLimit = Duration(seconds: 10);
 
   /// 조회하는 동안 버튼을 다시 눌러도 무시합니다.
   bool _isChecking = false;

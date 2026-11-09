@@ -3,6 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_icon.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 
+/// 화면 키보드로 글자를 쳤다는 알림. 키보드 입력은 화면 터치가 아니어서
+/// 앱의 유휴 타이머가 이 알림을 받아 따로 초기화합니다.
+class GujeukUserActivity extends Notification {
+  const GujeukUserActivity();
+}
+
 /// Figma `Input` (이름·전화번호·거주지 검색).
 /// Placeholder → Filled → Focused 상태는 입력값과 포커스로 자동 결정됩니다.
 class GujeukInput extends StatefulWidget {
@@ -98,7 +104,10 @@ class _GujeukInputState extends State<GujeukInput> {
               onTapOutside: (_) => _focusNode.unfocus(),
               controller: _controller,
               focusNode: _focusNode,
-              onChanged: widget.onChanged,
+              onChanged: (value) {
+                const GujeukUserActivity().dispatch(context);
+                widget.onChanged?.call(value);
+              },
               onFieldSubmitted: widget.onSubmitted,
               keyboardType: widget.keyboardType,
               // TextField.maxLength는 글자 수 카운터를 함께 그리므로 formatter로 제한합니다.

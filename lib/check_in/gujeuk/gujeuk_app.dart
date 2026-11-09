@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/component/gujeuk_input.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/auth/presentation/controller/outbox_sync_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/gujeuk/feature/info_check/presentation/home_page.dart';
@@ -79,11 +80,17 @@ class _GujeukAppState extends ConsumerState<GujeukApp> {
       theme: GujeukTheme.light,
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
-      // 다이얼로그까지 Navigator 아래에 그려지므로 여기서 모든 터치를 받습니다.
-      builder: (context, child) => Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: (_) => _resetIdleTimer(),
-        child: child,
+      // 다이얼로그까지 Navigator 아래에 그려지므로 여기서 모든 터치와 키보드 입력을 받습니다.
+      builder: (context, child) => NotificationListener<GujeukUserActivity>(
+        onNotification: (_) {
+          _resetIdleTimer();
+          return true;
+        },
+        child: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => _resetIdleTimer(),
+          child: child,
+        ),
       ),
       home: const HomePage(),
     );

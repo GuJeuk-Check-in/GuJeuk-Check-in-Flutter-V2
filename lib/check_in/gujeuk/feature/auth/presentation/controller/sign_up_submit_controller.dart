@@ -48,7 +48,8 @@ class SignUpSubmitController extends SubmitController {
               femaleCount: form.femaleCount,
               visitTime: ref.read(serverClockProvider).now(),
               reservationTime: time,
-            );
+            )
+            .timeout(SubmitController.reservationLimit);
       } else if (offline) {
         await ref
             .read(checkInSubmitterProvider)

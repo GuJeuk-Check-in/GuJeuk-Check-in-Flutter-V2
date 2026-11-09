@@ -21,28 +21,43 @@ class Bottom extends ConsumerWidget {
     );
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('개인정보 수집 및 이용 동의', style: GujeukTypography.bodyLg),
-            const SizedBox(width: GujeukSpacing.s12),
-            Checkbox(
-              fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-                return states.contains(WidgetState.selected)
-                    ? GujeukColors.decorSky
-                    : Colors.white;
-              }),
-              checkColor: Colors.white,
-              side: const BorderSide(
-                color: GujeukColors.borderSubtle,
-                width: 2,
-              ),
-              value: agreed,
-              onChanged: (value) => ref
-                  .read(signUpFormProvider.notifier)
-                  .setAgreed(value ?? false),
+        // 키오스크 터치로 작은 칸을 맞히기 어려워 문구까지 한 번에 눌리게 하고 칸도 키웁니다.
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () =>
+              ref.read(signUpFormProvider.notifier).setAgreed(!agreed),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: GujeukSpacing.s16,
+              vertical: GujeukSpacing.s8,
             ),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('개인정보 수집 및 이용 동의', style: GujeukTypography.bodyLg),
+                const SizedBox(width: GujeukSpacing.s16),
+                Transform.scale(
+                  scale: 1.6,
+                  child: Checkbox(
+                    fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                      return states.contains(WidgetState.selected)
+                          ? GujeukColors.decorSky
+                          : Colors.white;
+                    }),
+                    checkColor: Colors.white,
+                    side: const BorderSide(
+                      color: GujeukColors.borderSubtle,
+                      width: 2,
+                    ),
+                    value: agreed,
+                    onChanged: (value) => ref
+                        .read(signUpFormProvider.notifier)
+                        .setAgreed(value ?? false),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: GujeukSpacing.s12),
         Text(

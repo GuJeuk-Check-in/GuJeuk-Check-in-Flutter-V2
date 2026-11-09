@@ -112,7 +112,8 @@ class Middle extends ConsumerWidget {
                   child: _birthInput(
                     fields.birthYear,
                     '년도',
-                    '2009',
+                    // 힌트가 입력한 값처럼 보이지 않게 '예)'를 붙입니다.
+                    '예) 2009',
                     NumberRangeFormatter(
                       min: 1900,
                       max: DateTime.now().year,
@@ -125,7 +126,7 @@ class Middle extends ConsumerWidget {
                   child: _birthInput(
                     fields.birthMonth,
                     '월',
-                    '3',
+                    '예) 3',
                     NumberRangeFormatter(
                       min: 1,
                       max: 12,
@@ -138,7 +139,7 @@ class Middle extends ConsumerWidget {
                   child: _birthInput(
                     fields.birthDay,
                     '일',
-                    '5',
+                    '예) 5',
                     NumberRangeFormatter(
                       min: 1,
                       max: 31,
@@ -216,7 +217,7 @@ class Middle extends ConsumerWidget {
         reservedTimes: availableTimes == null
             ? const {}
             : SignUpFormController.times.toSet().difference(availableTimes),
-        pastTimes: SignUpFormController.pastTimes(),
+        pastTimes: controller.pastTimes(),
         selectedTime: form.time,
         isLoading: available.isLoading,
         onSelected: failed ? null : controller.selectTime,
