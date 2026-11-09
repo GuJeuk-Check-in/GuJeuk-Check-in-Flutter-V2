@@ -19,3 +19,17 @@ workflows:
         script: flutter build appbundle --debug --flavor gujeuk -t lib/main_gujeuk.dart
     artifacts:
       - build/app/outputs/bundle/**/*.aab
+
+  bubdong-android:
+    name: 법동 Android
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - name: 패키지 받기
+        script: flutter pub get
+      - name: 법동 App Bundle 빌드
+        script: flutter build appbundle --debug --flavor bubdong -t lib/main_bubdong.dart
+    artifacts:
+      - build/app/outputs/bundle/**/*.aab
