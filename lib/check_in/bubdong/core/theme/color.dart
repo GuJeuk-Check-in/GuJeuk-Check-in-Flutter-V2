@@ -79,7 +79,7 @@ abstract final class BubdongColors {
   static const textEmphasis4 = BubdongPalette.gray40;
   static const textPasswordReset = BubdongPalette.yellow200;
   static const textDisabled = BubdongPalette.gray30;
-  static const textSecondary = BubdongPalette.gray45; // 신청 완료 부제 (Figma gray/10)
+  static const textSecondary = BubdongPalette.gray45; // 신청 완료 부제, 학교 주소 (Figma #6A6A6A)
 
   //원컬러, 그림자
   static const decorRed = BubdongPalette.red500;
@@ -164,6 +164,11 @@ abstract final class BubdongColors {
   // 방명록 리스트 카드
   static const borderGuestbookCard = BubdongPalette.stone100; // 외곽선 (Figma grey_white_tone)
   static const textGuestName = BubdongPalette.inkSoft; // 이름 (Figma #2F2F33)
+  // 학교 검색 팝업
+  static const borderSearchField = BubdongPalette.gray0; // 검색칸 테두리 (Figma #000000)
+  static const borderSchoolResult = BubdongPalette.gray45; // 결과 기본 테두리 (Figma color/grey/42 #6A6A6A)
+  static const textDialogLabel = BubdongPalette.inkSoft; // "학교 이름" (Figma #2F2F33)
+  static const textResultCount = BubdongPalette.slate500; // "검색 결과 N개" (Figma #76767C)
   static const textCaption = BubdongPalette.gray50; // "선택한 이용대장", "이용한 시간" (Figma 법동/grey/50 #808080)
 
   // 드롭다운 목록 항목 사이 구분선 (Figma: #CCCCCC 위에 검정 20%)

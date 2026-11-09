@@ -21,6 +21,12 @@ abstract final class BubdongLayout {
 
   // 학교 검색 팝업 너비 (Figma A15)
   static const double schoolSearchDialogWidth = 700;
+  static const double schoolSearchDialogHeight = 600; // 결과가 많으면 목록만 스크롤
+  static const double schoolSearchFieldHeight = 66; // 검색칸
+  static const double schoolSearchFieldPaddingX = 33; // 검색칸 좌우 여백
+  static const double schoolResultHeight = 100; // 결과 한 줄
+  static const double schoolSearchCloseSize = 24; // 닫기 아이콘
+  static const schoolResultPadding = EdgeInsets.symmetric(horizontal: 32, vertical: 12);
 
   // 버튼 줄이 차지하는 최대 너비
   static const double actionRowWidth = 680; // 이전/다음 버튼 줄

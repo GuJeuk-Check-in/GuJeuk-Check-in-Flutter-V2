@@ -43,6 +43,11 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
     _queryController.addListener(() => setState(() {})); // 입력할 때마다 결과 갱신
   }
 
+  static const _fieldBorder = OutlineInputBorder(
+    borderRadius: BubdongRadius.r24All,
+    borderSide: BorderSide(color: BubdongColors.borderSearchField, width: 1),
+  );
+
   @override
   void dispose() {
     _queryController.dispose();
@@ -61,9 +66,9 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
           borderRadius: BubdongRadius.r30All,
           child: Container(
             width: BubdongLayout.schoolSearchDialogWidth,
-            padding: const EdgeInsets.all(BubdongSpacing.s40),
+            height: BubdongLayout.schoolSearchDialogHeight,
+            padding: const EdgeInsets.all(BubdongSpacing.s40), // 좌우 40 (Figma 700 - 칸 620)
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 제목 + 닫기
@@ -72,42 +77,45 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                     Expanded(
                       child: Text(
                         '학교 검색',
-                        style: BubdongTypography.h4.copyWith(color: BubdongColors.textPrimary),
+                        style: BubdongTypography.dialogTitle.copyWith(color: BubdongColors.textPrimary),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: BubdongColors.textPrimary),
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      behavior: HitTestBehavior.opaque,
+                      child: const Icon(
+                        Icons.close,
+                        size: BubdongLayout.schoolSearchCloseSize, // Figma 24×24
+                        color: BubdongColors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: BubdongSpacing.s24),
 
                 // 검색칸
-                Text('학교 이름', style: BubdongTypography.fieldLabel),
+                Text(
+                  '학교 이름',
+                  style: BubdongTypography.dialogFieldLabel.copyWith(color: BubdongColors.textDialogLabel),
+                ),
                 const SizedBox(height: BubdongSpacing.s8),
+                // Figma "법동중학교"는 입력한 모습 예시라, 처음에는 비우고 안내 글자를 보여줌
                 TextField(
                   controller: _queryController,
-                  style: BubdongTypography.bodyMd.copyWith(color: BubdongColors.textPrimary),
+                  style: BubdongTypography.dialogInput.copyWith(color: BubdongColors.textPrimary),
                   decoration: InputDecoration(
                     hintText: '학교 이름을 입력해줘',
-                    hintStyle: BubdongTypography.bodyMd.copyWith(color: BubdongColors.textPlaceholder),
+                    hintStyle: BubdongTypography.dialogInput.copyWith(color: BubdongColors.textPlaceholder),
+                    // Figma 검색칸: 높이 66, 좌우 33, 모서리 24, 검정 테두리 1
+                    constraints: const BoxConstraints.tightFor(
+                      height: BubdongLayout.schoolSearchFieldHeight,
+                    ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: BubdongSpacing.s24,
-                      vertical: BubdongSpacing.s16,
+                      horizontal: BubdongLayout.schoolSearchFieldPaddingX,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BubdongRadius.r9999All,
-                      borderSide: const BorderSide(color: BubdongColors.borderCard, width: 2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BubdongRadius.r9999All,
-                      borderSide: const BorderSide(color: BubdongColors.borderCard, width: 2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BubdongRadius.r9999All,
-                      borderSide: const BorderSide(color: BubdongColors.brandPrimary, width: 2),
-                    ),
+                    border: _fieldBorder,
+                    enabledBorder: _fieldBorder,
+                    focusedBorder: _fieldBorder,
                   ),
                 ),
                 const SizedBox(height: BubdongSpacing.s24),
@@ -115,21 +123,25 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                 // 결과 개수
                 Text(
                   '검색 결과 ${results.length}개',
-                  style: BubdongTypography.bodySm.copyWith(color: BubdongColors.textPlaceholder),
+                  style: BubdongTypography.resultCount.copyWith(color: BubdongColors.textResultCount),
                 ),
                 const SizedBox(height: BubdongSpacing.s16),
 
-                // 결과 목록
-                for (var i = 0; i < results.length; i++) ...[
-                  _SchoolResultItem(
-                    name: results[i].name,
-                    address: results[i].address,
-                    selected: results[i].name == widget.selectedName,
-                    // Figma에 확인 버튼이 없어서 누르면 바로 고르고 닫음
-                    onTap: () => Navigator.of(context).pop(results[i].name),
+                // 결과 목록 (팝업 높이가 고정이라 넘치면 목록만 스크롤)
+                Expanded(
+                  child: ListView.separated(
+                    padding: EdgeInsets.zero,
+                    itemCount: results.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: BubdongSpacing.s16),
+                    itemBuilder: (_, i) => _SchoolResultItem(
+                      name: results[i].name,
+                      address: results[i].address,
+                      selected: results[i].name == widget.selectedName,
+                      // Figma에 확인 버튼이 없어서 누르면 바로 고르고 닫음
+                      onTap: () => Navigator.of(context).pop(results[i].name),
+                    ),
                   ),
-                  if (i != results.length - 1) const SizedBox(height: BubdongSpacing.s16),
-                ],
+                ),
               ],
             ),
           ),
@@ -159,24 +171,28 @@ class _SchoolResultItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: BubdongSpacing.s24,
-          vertical: BubdongSpacing.s16,
-        ),
+        height: BubdongLayout.schoolResultHeight,
+        padding: BubdongLayout.schoolResultPadding,
         decoration: BoxDecoration(
           color: selected ? BubdongColors.brandSubtle : BubdongColors.bgSurface,
-          borderRadius: BubdongRadius.r15All,
+          borderRadius: BubdongRadius.r24All,
+        ),
+        // 테두리를 위에 덮어 그림 (Figma 안쪽 테두리처럼 글자 자리를 줄이지 않음)
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BubdongRadius.r24All,
           border: Border.all(
-            color: selected ? BubdongColors.brandPrimary : BubdongColors.borderCard,
+            color: selected ? BubdongColors.brandPrimary : BubdongColors.borderSchoolResult,
             width: 2,
           ),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // Figma 세로 가운데
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(name, style: BubdongTypography.subtitle.copyWith(color: BubdongColors.textPrimary)),
-            const SizedBox(height: BubdongSpacing.s4),
-            Text(address, style: BubdongTypography.bodySm.copyWith(color: BubdongColors.textPlaceholder)),
+            Text(name, style: BubdongTypography.resultTitle.copyWith(color: BubdongColors.textPrimary)),
+            const SizedBox(height: BubdongSpacing.s10), // Figma 이름과 주소 사이
+            // Figma Body/Large 18/160, color/grey/42
+            Text(address, style: BubdongTypography.bodySm.copyWith(color: BubdongColors.textSecondary)),
           ],
         ),
       ),

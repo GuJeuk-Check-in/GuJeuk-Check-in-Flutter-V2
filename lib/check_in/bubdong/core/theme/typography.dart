@@ -200,6 +200,48 @@ abstract final class BubdongTypography{
     letterSpacing: 0,
   );
 
+  /// 팝업 제목 "학교 검색" (Figma Pretendard 32 Bold 행간 자동)
+  static const dialogTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+  );
+
+  /// 팝업 칸 이름 "학교 이름" (Figma Pretendard 24 Bold 행간 32 자간 -2.5%)
+  static const dialogFieldLabel = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    height: 32 / 24,
+    letterSpacing: -0.6,
+  );
+
+  /// 팝업 검색칸 글자 (Figma Pretendard SemiBold 20 행간 자동)
+  static const dialogInput = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+  );
+
+  /// 검색 결과 개수 (Figma Inter Regular 20 행간 자동 → Pretendard)
+  static const resultCount = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 20,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+  );
+
+  /// 검색 결과 학교 이름 (Figma Pretendard 24 Bold 행간 140%)
+  static const resultTitle = TextStyle(
+    fontFamily: pretendard,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    height: 1.4,
+    letterSpacing: 0,
+  );
+
   /// 방명록 이름 (Figma 32 Bold 행간 자동)
   static const guestName = TextStyle(
     fontFamily: pretendard,
