@@ -5,8 +5,27 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/present
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
-class SignupBasicPage extends StatelessWidget {
+class SignupBasicPage extends StatefulWidget {
   const SignupBasicPage({super.key});
+
+  @override
+  State<SignupBasicPage> createState() => _SignupBasicPageState();
+}
+
+class _SignupBasicPageState extends State<SignupBasicPage> {
+  final _phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController.addListener(() => setState(() {})); // 입력할 때마다 버튼 상태 갱신
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,16 +61,20 @@ class SignupBasicPage extends StatelessWidget {
                   hintText: "친구의 전화번호를 알려줘",
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  controller: _phoneController,
                 ),
                 const SizedBox(height: BubdongLayout.signupBasicButtonGap),
                 BubdongButton(
                   label: "다음으로 넘어가기 →",
                   variant: BubdongButtonVariant.primaryLarge,
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SignupExtraPage(),
-                    ),
-                  ),
+                  // TODO: API 연결 시 전화번호로 다시 온 친구인지 확인해서, 다시 왔으면 이용대장 선택으로 바로 이동
+                  onPressed: _phoneController.text.trim().isEmpty
+                      ? null // 전화번호를 적어야 누를 수 있음
+                      : () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SignupExtraPage(),
+                            ),
+                          ),
                 ),
               ],
             ),
