@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'color.dart';
 import 'typography.dart';
 
-export 'layout.dart';
 export 'radius.dart';
 export 'spacing.dart';
 export 'color.dart';
