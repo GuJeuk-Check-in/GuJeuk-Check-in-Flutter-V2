@@ -15,12 +15,8 @@ class PhoneCheckDialog extends StatefulWidget {
   static Future<String?> show(BuildContext context, {String? errorText}) {
     return showDialog<String>(
       context: context,
-      builder: (_) => Center(
-        child: Material(
-          type: MaterialType.transparency,
-          child: PhoneCheckDialog(initialError: errorText),
-        ),
-      ),
+      builder: (_) =>
+          GujeukModalFrame(child: PhoneCheckDialog(initialError: errorText)),
     );
   }
 

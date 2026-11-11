@@ -21,7 +21,8 @@ class GujeukOptionCard extends StatelessWidget {
   /// 기본은 부모 너비를 채웁니다. 고정하려면 값을 넘기세요.
   final double width;
 
-  /// null이면 Figma 기본 높이(168)를 씁니다.
+  /// 최소 높이. null이면 Figma 기본 높이(168)를 씁니다.
+  /// 글자가 커지면 그만큼 늘어납니다.
   final double? height;
 
   const GujeukOptionCard({
@@ -64,7 +65,7 @@ class GujeukOptionCard extends StatelessWidget {
       onTap: disabled ? null : onTap,
       child: Container(
         width: width,
-        height: height ?? 168,
+        constraints: BoxConstraints(minHeight: height ?? 168),
         // 세로 가운데 정렬은 Column이 맡으므로 위아래 여백은 최소한만 둡니다.
         padding: const EdgeInsets.symmetric(
           horizontal: GujeukSpacing.s26,

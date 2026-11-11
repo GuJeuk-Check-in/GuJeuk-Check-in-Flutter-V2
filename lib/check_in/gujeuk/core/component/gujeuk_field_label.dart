@@ -20,10 +20,12 @@ class GujeukFieldLabel extends StatelessWidget {
       children: [
         GujeukIcon(icon),
         const SizedBox(width: GujeukSpacing.s8),
-        Text(
-          label,
-          style: GujeukTypography.bodyMd.copyWith(
-            color: GujeukColors.textSecondary,
+        Flexible(
+          child: Text(
+            label,
+            style: GujeukTypography.bodyMd.copyWith(
+              color: GujeukColors.textSecondary,
+            ),
           ),
         ),
       ],

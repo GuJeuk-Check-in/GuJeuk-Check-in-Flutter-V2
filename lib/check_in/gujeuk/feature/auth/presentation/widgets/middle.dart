@@ -172,27 +172,40 @@ class Middle extends ConsumerWidget {
           label: '친구들과 함께 왔니?',
           icon: GujeukIcons.friends,
           errorText: form.errorOf(SignUpField.companion),
-          child: Row(
-            children: [
-              Expanded(
-                child: GujeukCompanionStepper(
-                  gender: GujeukGender.male,
-                  count: form.maleCount,
-                  // 남녀를 합쳐 정원을 넘지 않게, 한쪽 최대는 다른 쪽 수만큼 줄입니다.
-                  max: _companionMax(catalog, purpose, form.femaleCount),
-                  onChanged: controller.setMaleCount,
-                ),
-              ),
-              const SizedBox(width: GujeukSpacing.s16),
-              Expanded(
-                child: GujeukCompanionStepper(
-                  gender: GujeukGender.female,
-                  count: form.femaleCount,
-                  max: _companionMax(catalog, purpose, form.maleCount),
-                  onChanged: controller.setFemaleCount,
-                ),
-              ),
-            ],
+          // 두 칸을 나란히 놓을 폭이 안 되면 위아래로 쌓습니다.
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final male = GujeukCompanionStepper(
+                gender: GujeukGender.male,
+                count: form.maleCount,
+                // 남녀를 합쳐 정원을 넘지 않게, 한쪽 최대는 다른 쪽 수만큼 줄입니다.
+                max: _companionMax(catalog, purpose, form.femaleCount),
+                onChanged: controller.setMaleCount,
+              );
+              final female = GujeukCompanionStepper(
+                gender: GujeukGender.female,
+                count: form.femaleCount,
+                max: _companionMax(catalog, purpose, form.maleCount),
+                onChanged: controller.setFemaleCount,
+              );
+              if (constraints.maxWidth <
+                  _stepperMinWidth * 2 + GujeukSpacing.s16) {
+                return Column(
+                  children: [
+                    male,
+                    const SizedBox(height: GujeukSpacing.s16),
+                    female,
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: male),
+                  const SizedBox(width: GujeukSpacing.s16),
+                  Expanded(child: female),
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -271,37 +284,69 @@ class Middle extends ConsumerWidget {
     }
     final purposes = loaded.purposes;
 
-    // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그립니다.
-    // 너비 0인 GridView는 assert로 렌더 트리를 깨뜨리므로 그릴 너비가 생길 때까지 비워둡니다.
+    // 화면 폭에 맞춰 한 줄에 몇 장 놓을지 정하고, 줄마다 카드 높이를 가장 높은 카드에 맞춥니다.
+    // 칸 높이를 고정하지 않아 글자가 커져도 카드가 늘어날 뿐 넘치지 않습니다.
+    // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그리므로 그릴 너비가 생길 때까지 비워둡니다.
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth <= 0) return const SizedBox.shrink();
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          // 카드 아래 3D 그림자가 잘리지 않게 합니다.
-          clipBehavior: Clip.none,
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 206,
-            mainAxisExtent: 140,
-            crossAxisSpacing: GujeukSpacing.s16,
-            mainAxisSpacing: GujeukSpacing.s16,
-          ),
-          itemCount: purposes.length,
-          itemBuilder: (context, index) {
-            final purpose = purposes[index];
-            return GujeukOptionCard(
-              // `친친마루(게임, 독서 등)`을 이름과 설명 두 줄로 나눕니다.
-              label: purpose.purpose.replaceFirst('(', '\n('),
-              // 목적 개수가 API에 따라 달라지므로 색은 순서대로 돌려 씁니다.
-              accent: GujeukOptionAccent
-                  .values[index % GujeukOptionAccent.values.length],
-              selected: form.purpose == purpose.purpose,
-              onTap: () => controller.selectPurpose(purpose.purpose),
-            );
-          },
+        // GridView의 maxCrossAxisExtent와 같은 계산: 카드 한 장이 최대 206이 되도록 열 수를 고릅니다.
+        final columns =
+            (constraints.maxWidth / (_purposeCardMaxWidth + GujeukSpacing.s16))
+                .ceil();
+        return Column(
+          children: [
+            for (var start = 0; start < purposes.length; start += columns) ...[
+              if (start > 0) const SizedBox(height: GujeukSpacing.s16),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var column = 0; column < columns; column++) ...[
+                      if (column > 0) const SizedBox(width: GujeukSpacing.s16),
+                      Expanded(
+                        child: start + column < purposes.length
+                            ? _purposeCard(
+                                purposes[start + column].purpose,
+                                start + column,
+                                form,
+                                controller,
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
         );
       },
+    );
+  }
+
+  /// 방문 목적 카드 한 장의 최대 너비.
+  static const double _purposeCardMaxWidth = 206;
+
+  /// 동행 인원 칸이 성별 글자와 −·+ 버튼을 한 줄에 담는 데 필요한 너비.
+  static const double _stepperMinWidth = 400;
+
+  Widget _purposeCard(
+    String purpose,
+    int index,
+    SignUpFormState form,
+    SignUpFormController controller,
+  ) {
+    return GujeukOptionCard(
+      // `친친마루(게임, 독서 등)`을 이름과 설명 두 줄로 나눕니다.
+      label: purpose.replaceFirst('(', '\n('),
+      // 목적 개수가 API에 따라 달라지므로 색은 순서대로 돌려 씁니다.
+      accent:
+          GujeukOptionAccent.values[index % GujeukOptionAccent.values.length],
+      // 방문 목적 카드는 Figma 기본(168)보다 낮은 140을 씁니다.
+      height: 140,
+      selected: form.purpose == purpose,
+      onTap: () => controller.selectPurpose(purpose),
     );
   }
 
@@ -360,7 +405,8 @@ class _LoadError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SignUpErrorText(message),
+        // 문구가 길면 버튼을 밀어내지 않고 줄을 바꿉니다.
+        Flexible(child: SignUpErrorText(message)),
         GujeukButton(
           label: '다시 시도',
           variant: GujeukButtonVariant.neutralMedium,

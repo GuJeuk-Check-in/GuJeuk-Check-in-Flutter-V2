@@ -30,7 +30,7 @@ class GujeukCompanionStepper extends StatelessWidget {
     final canIncrease = max == null || count < max;
     return Container(
       width: width,
-      height: 104,
+      constraints: const BoxConstraints(minHeight: 104),
       padding: const EdgeInsets.symmetric(
         horizontal: GujeukSpacing.s40,
         vertical: GujeukSpacing.s24,
@@ -43,18 +43,25 @@ class GujeukCompanionStepper extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              GujeukIcon(gender.icon),
-              const SizedBox(width: GujeukSpacing.s16),
-              Text(
-                gender.label,
-                style: GujeukTypography.bodyMdMedium.copyWith(
-                  color: GujeukColors.textPrimary,
+          // 폭이 모자라면 −·+ 버튼은 그대로 두고 성별 글자만 줄을 바꿉니다.
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GujeukIcon(gender.icon),
+                const SizedBox(width: GujeukSpacing.s16),
+                Flexible(
+                  child: Text(
+                    gender.label,
+                    style: GujeukTypography.bodyMdMedium.copyWith(
+                      color: GujeukColors.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          const SizedBox(width: GujeukSpacing.s16),
           Row(
             children: [
               _StepButton(
