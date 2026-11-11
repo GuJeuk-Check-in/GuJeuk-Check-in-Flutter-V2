@@ -34,6 +34,7 @@ class DoneBox extends StatelessWidget {
           const SizedBox(height: GujeukSpacing.s20),
           Text(
             title,
+            textAlign: TextAlign.center,
             style: GujeukTypography.titleLg.copyWith(
               color: GujeukColors.textBrand,
             ),
@@ -41,6 +42,7 @@ class DoneBox extends StatelessWidget {
           const SizedBox(height: GujeukSpacing.s8),
           Text(
             smallTitle,
+            textAlign: TextAlign.center,
             style: GujeukTypography.headingMd.copyWith(
               color: GujeukColors.textTertiary,
             ),
@@ -51,6 +53,7 @@ class DoneBox extends StatelessWidget {
             const SizedBox(height: GujeukSpacing.s48),
             Text(
               '이용 시간이 끝나면 대표자 전화번호로 안내 문자를 보내줄게',
+              textAlign: TextAlign.center,
               style: GujeukTypography.bodyMd.copyWith(
                 color: GujeukColors.textTertiary,
               ),
@@ -124,6 +127,7 @@ class _ReservationCard extends StatelessWidget {
 
   Widget _row(String label, String value) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
         label,
@@ -131,7 +135,17 @@ class _ReservationCard extends StatelessWidget {
           color: GujeukColors.textTertiary,
         ),
       ),
-      Text(value, style: GujeukTypography.headingMd.copyWith(color: GujeukColors.textPrimary)),
+      const SizedBox(width: GujeukSpacing.s24),
+      // 값이 길면 라벨을 밀어내지 않고 오른쪽 정렬로 줄을 바꿉니다.
+      Flexible(
+        child: Text(
+          value,
+          textAlign: TextAlign.end,
+          style: GujeukTypography.headingMd.copyWith(
+            color: GujeukColors.textPrimary,
+          ),
+        ),
+      ),
     ],
   );
 }

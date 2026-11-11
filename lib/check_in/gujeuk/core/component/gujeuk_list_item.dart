@@ -24,7 +24,7 @@ class GujeukListItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: width,
-        height: 56,
+        constraints: const BoxConstraints(minHeight: 56),
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.symmetric(horizontal: GujeukSpacing.s28),
         color: selected ? GujeukColors.listSelected : GujeukColors.bgSurface,

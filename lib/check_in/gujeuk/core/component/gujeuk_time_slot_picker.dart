@@ -34,19 +34,31 @@ class GujeukTimeSlotPicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const GujeukFieldLabel(
-              label: '몇 시에 이용할 거야?',
-              icon: GujeukIcons.clock,
-            ),
-            if (isLoading) ...[
-              const SizedBox(width: GujeukSpacing.s16),
-              const _LoadingHint(),
+        // 한 줄에 다 들어가면 범례를 오른쪽 끝에 두고, 모자라면 범례를 아랫줄로 내립니다.
+        // Wrap은 내용 폭만큼만 차지하므로 폭을 끝까지 채워야 범례가 오른쪽 끝으로 갑니다.
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: GujeukSpacing.s16,
+            runSpacing: GujeukSpacing.s12,
+            children: [
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: GujeukSpacing.s16,
+                runSpacing: GujeukSpacing.s8,
+                children: [
+                  const GujeukFieldLabel(
+                    label: '몇 시에 이용할 거야?',
+                    icon: GujeukIcons.clock,
+                  ),
+                  if (isLoading) const _LoadingHint(),
+                ],
+              ),
+              const _Legend(),
             ],
-            const Spacer(),
-            const _Legend(),
-          ],
+          ),
         ),
         const SizedBox(height: GujeukSpacing.s20),
         AnimatedOpacity(
@@ -80,18 +92,22 @@ class GujeukTimeSlotPicker extends StatelessWidget {
   }
 
   /// 마지막 줄이 6개보다 적어도 슬롯 너비가 다른 줄과 같도록 빈칸을 채웁니다.
+  /// 마감 칸은 문구가 한 줄 더 있어 글자가 커지면 먼저 높아지므로, 한 줄의 칸 높이를 가장 높은 칸에 맞춥니다.
   Widget _row(int start) {
-    return Row(
-      children: [
-        for (var column = 0; column < _columns; column++) ...[
-          if (column > 0) const SizedBox(width: GujeukSpacing.s16),
-          Expanded(
-            child: start + column < times.length
-                ? _slot(times[start + column])
-                : const SizedBox.shrink(),
-          ),
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var column = 0; column < _columns; column++) ...[
+            if (column > 0) const SizedBox(width: GujeukSpacing.s16),
+            Expanded(
+              child: start + column < times.length
+                  ? _slot(times[start + column])
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 

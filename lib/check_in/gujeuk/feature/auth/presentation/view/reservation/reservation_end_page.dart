@@ -11,9 +11,13 @@ class ReservationEndPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 좁은 화면에서는 바깥 여백을 줄여 예약 정보가 들어갈 폭을 남깁니다.
+    final isNarrow = MediaQuery.sizeOf(context).width < 800;
     return BaseScaffold(
       child: Padding(
-        padding: const EdgeInsets.all(GujeukSpacing.s100),
+        padding: EdgeInsets.all(
+          isNarrow ? GujeukSpacing.s20 : GujeukSpacing.s100,
+        ),
         child: DoneBox(
           title: reservation == null ? '시설 이용 신청이 끝났어' : '시설 예약이 끝났어!',
           smallTitle: reservation == null

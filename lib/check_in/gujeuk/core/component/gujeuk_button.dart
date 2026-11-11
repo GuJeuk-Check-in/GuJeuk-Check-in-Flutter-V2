@@ -31,7 +31,8 @@ class GujeukButton extends StatelessWidget {
   /// 기본은 라벨 + 패딩 크기에 맞춥니다. 부모를 채우려면 `double.infinity`를 넘기세요.
   final double? width;
 
-  /// 버튼 높이. 넘기지 않으면 variant의 기본 높이를 씁니다.
+  /// 버튼 최소 높이. 넘기지 않으면 variant의 기본 높이를 씁니다.
+  /// 글자가 커져 두 줄이 되면 그만큼 늘어납니다.
   final double? height;
 
   /// 안쪽 여백. 넘기지 않으면 variant의 기본 좌우 패딩을 씁니다.
@@ -60,7 +61,7 @@ class GujeukButton extends StatelessWidget {
       onTap: isLoading ? null : onPressed,
       child: Container(
         width: width,
-        height: height ?? spec.height,
+        constraints: BoxConstraints(minHeight: height ?? spec.height),
         padding: padding ?? EdgeInsets.symmetric(horizontal: spec.paddingX),
         decoration: BoxDecoration(
           color: spec.background,
@@ -74,7 +75,14 @@ class GujeukButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(label, style: spec.textStyle.copyWith(color: spec.textColor)),
+            // 버튼 폭이 모자라면 라벨이 넘치지 않고 줄을 바꿉니다.
+            Flexible(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: spec.textStyle.copyWith(color: spec.textColor),
+              ),
+            ),
             if (isLoading) ...[
               SizedBox(width: spec.gap),
               // 아이콘과 같은 크기로 잡아 버튼 크기가 흔들리지 않게 합니다.

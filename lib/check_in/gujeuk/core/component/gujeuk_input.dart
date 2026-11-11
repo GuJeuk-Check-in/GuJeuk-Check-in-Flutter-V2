@@ -85,7 +85,8 @@ class _GujeukInputState extends State<GujeukInput> {
 
     final field = Container(
       width: widget.width,
-      height: 80,
+      // 글자가 커지면 칸도 따라 늘어나게 최소 높이로 둡니다.
+      constraints: const BoxConstraints(minHeight: 80),
       padding: const EdgeInsets.symmetric(horizontal: GujeukSpacing.s32),
       decoration: BoxDecoration(
         color: GujeukColors.bgField,

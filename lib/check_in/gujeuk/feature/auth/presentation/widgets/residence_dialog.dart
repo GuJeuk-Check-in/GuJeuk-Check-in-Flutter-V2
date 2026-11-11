@@ -26,15 +26,12 @@ class ResidenceDialog extends StatefulWidget {
   }) {
     return showDialog<String>(
       context: context,
-      builder: (context) => Center(
-        child: Material(
-          type: MaterialType.transparency,
-          child: ResidenceDialog(
-            residences: residences,
-            selected: selected,
-            onSelected: (residence) => Navigator.of(context).pop(residence),
-            onClose: () => Navigator.of(context).pop(),
-          ),
+      builder: (context) => GujeukModalFrame(
+        child: ResidenceDialog(
+          residences: residences,
+          selected: selected,
+          onSelected: (residence) => Navigator.of(context).pop(residence),
+          onClose: () => Navigator.of(context).pop(),
         ),
       ),
     );
@@ -58,7 +55,9 @@ class _ResidenceDialogState extends State<ResidenceDialog> {
     final residences = _filtered;
 
     return Container(
-      width: 528,
+      // 넓은 화면에서는 528, 좁은 화면에서는 화면 폭에 맞춰 줄어듭니다.
+      width: double.infinity,
+      constraints: const BoxConstraints(maxWidth: 528),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: GujeukColors.bgSurface,
@@ -73,38 +72,41 @@ class _ResidenceDialogState extends State<ResidenceDialog> {
             onClose: widget.onClose,
           ),
           // 목록이 길면 모달이 화면 밖으로 넘치지 않게 스크롤합니다.
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.4,
-            ),
-            child: residences.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(GujeukSpacing.s32),
-                    child: Text(
-                      '검색 결과가 없어',
-                      style: GujeukTypography.bodyMdMedium.copyWith(
-                        color: GujeukColors.textMuted,
+          // 키보드가 올라와 남은 높이가 40%보다 적으면 남은 만큼만 씁니다.
+          Flexible(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.4,
+              ),
+              child: residences.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(GujeukSpacing.s32),
+                      child: Text(
+                        '검색 결과가 없어',
+                        style: GujeukTypography.bodyMdMedium.copyWith(
+                          color: GujeukColors.textMuted,
+                        ),
                       ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemCount: residences.length,
+                      separatorBuilder: (_, _) => const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: GujeukColors.borderCard,
+                      ),
+                      itemBuilder: (context, index) {
+                        final residence = residences[index];
+                        return GujeukListItem(
+                          label: residence,
+                          selected: residence == widget.selected,
+                          onTap: () => widget.onSelected?.call(residence),
+                        );
+                      },
                     ),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    itemCount: residences.length,
-                    separatorBuilder: (_, _) => const Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: GujeukColors.borderCard,
-                    ),
-                    itemBuilder: (context, index) {
-                      final residence = residences[index];
-                      return GujeukListItem(
-                        label: residence,
-                        selected: residence == widget.selected,
-                        onTap: () => widget.onSelected?.call(residence),
-                      );
-                    },
-                  ),
+            ),
           ),
         ],
       ),
@@ -164,7 +166,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: GujeukSpacing.s20),
           Container(
-            height: 56,
+            constraints: const BoxConstraints(minHeight: 56),
             padding: const EdgeInsets.only(
               left: GujeukSpacing.s24,
               right: GujeukSpacing.s20,

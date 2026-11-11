@@ -47,7 +47,7 @@ class GujeukTimeSlot extends StatelessWidget {
       onTap: disabled ? null : onTap,
       child: Container(
         width: width,
-        height: 80,
+        constraints: const BoxConstraints(minHeight: 80),
         decoration: BoxDecoration(
           color: background,
           borderRadius: GujeukRadius.fullAll,

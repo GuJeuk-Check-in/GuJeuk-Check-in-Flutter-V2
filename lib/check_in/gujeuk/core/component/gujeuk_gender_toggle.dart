@@ -47,7 +47,7 @@ class GujeukGenderToggle extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: width,
-        height: 80,
+        constraints: const BoxConstraints(minHeight: 80),
         padding: const EdgeInsets.symmetric(horizontal: GujeukSpacing.s40),
         decoration: BoxDecoration(
           color: selected ? selectedBg : GujeukColors.bgField,
@@ -59,12 +59,14 @@ class GujeukGenderToggle extends StatelessWidget {
           children: [
             GujeukIcon(selected ? gender.inverseIcon : gender.icon),
             const SizedBox(width: GujeukSpacing.s12),
-            Text(
-              gender.label,
-              style: GujeukTypography.bodyMdMedium.copyWith(
-                color: selected
-                    ? GujeukColors.textInverse
-                    : GujeukColors.textPrimary,
+            Flexible(
+              child: Text(
+                gender.label,
+                style: GujeukTypography.bodyMdMedium.copyWith(
+                  color: selected
+                      ? GujeukColors.textInverse
+                      : GujeukColors.textPrimary,
+                ),
               ),
             ),
           ],

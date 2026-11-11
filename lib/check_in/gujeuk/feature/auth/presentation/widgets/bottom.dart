@@ -34,7 +34,12 @@ class Bottom extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('개인정보 수집 및 이용 동의', style: GujeukTypography.bodyLg),
+                Flexible(
+                  child: Text(
+                    '개인정보 수집 및 이용 동의',
+                    style: GujeukTypography.bodyLg,
+                  ),
+                ),
                 const SizedBox(width: GujeukSpacing.s16),
                 Transform.scale(
                   scale: 1.6,
@@ -62,6 +67,7 @@ class Bottom extends ConsumerWidget {
         const SizedBox(height: GujeukSpacing.s12),
         Text(
           '(이름,생년월일,연락처,방문 목적,성별,cctv 촬영,거주지)',
+          textAlign: TextAlign.center,
           style: GujeukTypography.bodyMd,
         ),
         if (agreementError != null) ...[
