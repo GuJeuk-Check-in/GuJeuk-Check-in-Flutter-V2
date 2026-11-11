@@ -80,6 +80,8 @@ flutter:
       flavors: [bubdong]
     - path: assets/icons/bubdong/
       flavors: [bubdong]
+    - path: .env.bubdong
+      flavors: [bubdong]
     - path: shorebird.yaml
 
   # An image asset can refer to one or more resolution-specific "variants", see

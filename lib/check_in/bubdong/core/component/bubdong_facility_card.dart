@@ -148,27 +148,12 @@ class BubdongFacilityCard extends StatelessWidget {
           ),
         ];
       case BubdongCardStatus.completed:
-        // Figma 화면: 뱃지 없이 주황 글자 (Body3 20/160, MainColor) + 노란 외곽선 바깥 1
+        // Figma Complete 뱃지 (이용 중 뱃지와 같은 모양, 민트 색)
         return [
-          Stack(
-            children: [
-              // 외곽선: 선 굵기 2를 글자 가운데에 그리고 위에 채운 글자를 덮어 바깥 1만 보이게 함
-              Text(
-                '이용 완료',
-                style: BubdongTypography.bodyMd.copyWith(
-                  foreground: Paint()
-                    ..style = PaintingStyle.stroke
-                    ..strokeWidth = 2
-                    ..color = BubdongColors.borderCardCompletedText,
-                ),
-              ),
-              Text(
-                '이용 완료',
-                style: BubdongTypography.bodyMd.copyWith(
-                  color: BubdongColors.textCardCompleted,
-                ),
-              ),
-            ],
+          const _CardBadge(
+            label: '이용 완료',
+            background: BubdongColors.cardCompletedBadgeBg,
+            textColor: BubdongColors.cardCompletedBadgeText,
           ),
         ];
       case BubdongCardStatus.inUse:

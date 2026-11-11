@@ -22,7 +22,7 @@ class ComputerApplyPage extends StatefulWidget {
 }
 
 class _ComputerApplyPageState extends State<ComputerApplyPage> {
-  // TODO: API 연결 시 교체 (좌석 수)
+
   static const _seatCount = 10;
 
   final _purposeController = TextEditingController();
