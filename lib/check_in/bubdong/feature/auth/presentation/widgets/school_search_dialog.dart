@@ -28,8 +28,6 @@ class SchoolSearchDialog extends StatefulWidget {
 
 class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
   final _queryController = TextEditingController();
-
-  // 검색어가 들어간 학교만 (비어 있으면 전부)
   final _repository = RemoteSchoolRepository(bubdongApiClient);
 
   List<School> _schools = []; // 서버가 준 검색 결과
