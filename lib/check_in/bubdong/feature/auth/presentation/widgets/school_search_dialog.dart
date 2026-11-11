@@ -3,7 +3,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 
-/// 학교 검색 팝업 (퍼블리싱용: 가짜 데이터)
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/data/remote_school_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/school_repository.dart';
+
+/// 학교 검색 팝업
 class SchoolSearchDialog extends StatefulWidget {
   const SchoolSearchDialog({super.key, this.selectedName});
 
@@ -23,24 +27,34 @@ class SchoolSearchDialog extends StatefulWidget {
 }
 
 class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
-  // TODO: NEIS Open API(학교기본정보) 연결 시 검색 결과로 교체 (지금은 가짜 데이터를 검색어로 거름)
-  static const _schools = [
-    (name: '법동중학교', address: '대전 광역시 대덕구'),
-    (name: '법동초등학교', address: '대전 광역시 대덕구'),
-  ];
-
   final _queryController = TextEditingController();
 
   // 검색어가 들어간 학교만 (비어 있으면 전부)
-  List<({String name, String address})> get _results {
-    final query = _queryController.text.trim();
-    return _schools.where((school) => school.name.contains(query)).toList();
-  }
+  final _repository = RemoteSchoolRepository(bubdongApiClient);
 
-  @override
-  void initState() {
-    super.initState();
-    _queryController.addListener(() => setState(() {})); // 입력할 때마다 결과 갱신
+  List<School> _schools = []; // 서버가 준 검색 결과
+  bool _isLoading = false; // 검색 중
+  String? _error; // 실패했을 때 보여줄 문구
+
+  /// 검색어로 서버에 학교를 찾음 (엔터 누를 때)
+  Future<void> _search(String keyword) async {
+    final name = keyword.trim();
+    if (name.isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final result = await _repository.search(name: name);
+      if (!mounted) return; // 기다리는 동안 팝업이 닫혔으면 멈춤
+      setState(() => _schools = result.schools);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _error = '학교를 불러오지 못했어요. 다시 검색해줘');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   static const _fieldBorder = OutlineInputBorder(
@@ -56,8 +70,6 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final results = _results;
-
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6), // 뒤 화면 흐리게
       child: Center(
@@ -67,7 +79,8 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
           child: Container(
             width: BubdongLayout.schoolSearchDialogWidth,
             height: BubdongLayout.schoolSearchDialogHeight,
-            padding: const EdgeInsets.all(BubdongSpacing.s40), // 좌우 40 (Figma 700 - 칸 620)
+            padding: const EdgeInsets.all(BubdongSpacing.s40),
+            // 좌우 40 (Figma 700 - 칸 620)
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -77,7 +90,9 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                     Expanded(
                       child: Text(
                         '학교 검색',
-                        style: BubdongTypography.dialogTitle.copyWith(color: BubdongColors.textPrimary),
+                        style: BubdongTypography.dialogTitle.copyWith(
+                          color: BubdongColors.textPrimary,
+                        ),
                       ),
                     ),
                     GestureDetector(
@@ -85,7 +100,8 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                       behavior: HitTestBehavior.opaque,
                       child: const Icon(
                         Icons.close,
-                        size: BubdongLayout.schoolSearchCloseSize, // Figma 24×24
+                        size: BubdongLayout.schoolSearchCloseSize,
+                        // Figma 24×24
                         color: BubdongColors.textPrimary,
                       ),
                     ),
@@ -96,16 +112,24 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                 // 검색칸
                 Text(
                   '학교 이름',
-                  style: BubdongTypography.dialogFieldLabel.copyWith(color: BubdongColors.textDialogLabel),
+                  style: BubdongTypography.dialogFieldLabel.copyWith(
+                    color: BubdongColors.textDialogLabel,
+                  ),
                 ),
                 const SizedBox(height: BubdongSpacing.s8),
                 // Figma "법동중학교"는 입력한 모습 예시라, 처음에는 비우고 안내 글자를 보여줌
                 TextField(
                   controller: _queryController,
-                  style: BubdongTypography.dialogInput.copyWith(color: BubdongColors.textPrimary),
+                  onSubmitted: _search,
+                  textInputAction: TextInputAction.search,
+                  style: BubdongTypography.dialogInput.copyWith(
+                    color: BubdongColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     hintText: '학교 이름을 입력해줘',
-                    hintStyle: BubdongTypography.dialogInput.copyWith(color: BubdongColors.textPlaceholder),
+                    hintStyle: BubdongTypography.dialogInput.copyWith(
+                      color: BubdongColors.textPlaceholder,
+                    ),
                     // Figma 검색칸: 높이 66, 좌우 33, 모서리 24, 검정 테두리 1
                     constraints: const BoxConstraints.tightFor(
                       height: BubdongLayout.schoolSearchFieldHeight,
@@ -122,30 +146,60 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
 
                 // 결과 개수
                 Text(
-                  '검색 결과 ${results.length}개',
-                  style: BubdongTypography.resultCount.copyWith(color: BubdongColors.textResultCount),
+                  '검색 결과 ${_schools.length}개',
+                  style: BubdongTypography.resultCount.copyWith(
+                    color: BubdongColors.textResultCount,
+                  ),
                 ),
                 const SizedBox(height: BubdongSpacing.s16),
 
                 // 결과 목록 (팝업 높이가 고정이라 넘치면 목록만 스크롤)
-                Expanded(
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    itemCount: results.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: BubdongSpacing.s16),
-                    itemBuilder: (_, i) => _SchoolResultItem(
-                      name: results[i].name,
-                      address: results[i].address,
-                      selected: results[i].name == widget.selectedName,
-                      // Figma에 확인 버튼이 없어서 누르면 바로 고르고 닫음
-                      onTap: () => Navigator.of(context).pop(results[i].name),
-                    ),
-                  ),
-                ),
+                Expanded(child: _buildResults()),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// 결과 자리: 검색 중 / 실패 / 결과 없음 / 목록
+  Widget _buildResults() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: BubdongColors.brandPrimary),
+      );
+    }
+    if (_error != null) {
+      return Center(
+        child: Text(
+          _error!,
+          style: BubdongTypography.bodySm.copyWith(
+            color: BubdongColors.textSecondary,
+          ),
+        ),
+      );
+    }
+    if (_schools.isEmpty) {
+      return Center(
+        child: Text(
+          '학교 이름을 입력하고 검색해줘',
+          style: BubdongTypography.bodySm.copyWith(
+            color: BubdongColors.textSecondary,
+          ),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      itemCount: _schools.length,
+      separatorBuilder: (_, _) => const SizedBox(height: BubdongSpacing.s16),
+      itemBuilder: (_, i) => _SchoolResultItem(
+        name: _schools[i].name,
+        address: _schools[i].address,
+        selected: _schools[i].name == widget.selectedName,
+        onTap: () =>
+            Navigator.of(context).pop(_schools[i].name), // 누르면 바로 고르고 닫음
       ),
     );
   }
@@ -181,7 +235,9 @@ class _SchoolResultItem extends StatelessWidget {
         foregroundDecoration: BoxDecoration(
           borderRadius: BubdongRadius.r24All,
           border: Border.all(
-            color: selected ? BubdongColors.brandPrimary : BubdongColors.borderSchoolResult,
+            color: selected
+                ? BubdongColors.brandPrimary
+                : BubdongColors.borderSchoolResult,
             width: 2,
           ),
         ),
@@ -189,10 +245,20 @@ class _SchoolResultItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center, // Figma 세로 가운데
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(name, style: BubdongTypography.resultTitle.copyWith(color: BubdongColors.textPrimary)),
+            Text(
+              name,
+              style: BubdongTypography.resultTitle.copyWith(
+                color: BubdongColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: BubdongSpacing.s10), // Figma 이름과 주소 사이
             // Figma Body/Large 18/160, color/grey/42
-            Text(address, style: BubdongTypography.bodySm.copyWith(color: BubdongColors.textSecondary)),
+            Text(
+              address,
+              style: BubdongTypography.bodySm.copyWith(
+                color: BubdongColors.textSecondary,
+              ),
+            ),
           ],
         ),
       ),

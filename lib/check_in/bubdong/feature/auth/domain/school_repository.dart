@@ -1,4 +1,4 @@
-enum SchoolType { elementary, middle, high, other }
+enum SchoolType { elementary, middle, high, other } //초, 중, 고교 타입 enum
 
 class School {
   const School({
