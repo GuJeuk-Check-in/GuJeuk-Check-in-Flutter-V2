@@ -11,6 +11,12 @@ definitions:
       script: |
         # .env.gujeuk 은 gitignore 대상이라 저장소에 없으므로 환경 변수로 만든다.
         echo "API_BASE_URL=$API_BASE_URL" > .env.gujeuk
+    # ← 추가
+    - &bubdong_env_file
+      name: .env.bubdong 만들기 (분석용)
+      script: |
+        # pubspec에 등록된 .env.bubdong 이 없으면 정적 분석이 실패하므로 예시 파일로 만든다.
+        cp .env.bubdong.example .env.bubdong
     - &pub_get
       name: 패키지 받기
       script: flutter pub get
@@ -35,6 +41,7 @@ workflows:
       cancel_previous_builds: true
     scripts:
       - *gujeuk_env_file
+      - *bubdong_env_file # ← 추가
       - *pub_get
       - name: 정적 분석
         script: flutter analyze
@@ -55,6 +62,7 @@ workflows:
           source: true
     scripts:
       - *gujeuk_env_file
+      - *bubdong_env_file # ← 추가
       - *pub_get
       - name: 정적 분석
         script: flutter analyze
