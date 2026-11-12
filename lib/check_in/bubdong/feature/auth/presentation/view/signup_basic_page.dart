@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/data/remote_user_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
+
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
@@ -14,6 +20,9 @@ class SignupBasicPage extends StatefulWidget {
 
 class _SignupBasicPageState extends State<SignupBasicPage> {
   final _phoneController = TextEditingController();
+  final _repository = RemoteUserRepository(bubdongApiClient);
+  bool _isLoading = false;
+  String? _error;
 
   @override
   void initState() {
@@ -25,6 +34,37 @@ class _SignupBasicPageState extends State<SignupBasicPage> {
   void dispose() {
     _phoneController.dispose();
     super.dispose();
+  }
+
+  //전화번호로 회원인지 확인하고 다음 화면으로
+  Future<void> _next() async {
+    final phone = _phoneController.text.trim();
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final userId = await _repository.findUserId(phone);
+      if (!mounted) return;
+      if (userId != null) {
+        //다시 온친구 -> 이용대장 선택화면으로 이동
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                const FacilitySelectPage(visitorType: VisitorType.child),
+          ),
+        );
+      } else {
+        //처음 온 친구 -> 회원가입 화면으로 이동
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const SignupExtraPage()));
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _error = '확인하지 못했어요. 잠시 후 다시 시도해주세요');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -63,18 +103,23 @@ class _SignupBasicPageState extends State<SignupBasicPage> {
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   controller: _phoneController,
                 ),
+                if (_error != null) ...[
+                  const SizedBox(height: BubdongSpacing.s12),
+                  Text(
+                    _error!,
+                    style: BubdongTypography.bodySm.copyWith(
+                      color: BubdongColors.borderError,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: BubdongLayout.signupBasicButtonGap),
                 BubdongButton(
                   label: "다음으로 넘어가기 →",
                   variant: BubdongButtonVariant.primaryLarge,
-                  // TODO: API 연결 시 전화번호로 다시 온 친구인지 확인해서, 다시 왔으면 이용대장 선택으로 바로 이동
+                  isLoading: _isLoading,
                   onPressed: _phoneController.text.trim().isEmpty
-                      ? null // 전화번호를 적어야 누를 수 있음
-                      : () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SignupExtraPage(),
-                            ),
-                          ),
+                      ? null //전화번를 적어야 누를수 있음
+                      : _next,
                 ),
               ],
             ),
