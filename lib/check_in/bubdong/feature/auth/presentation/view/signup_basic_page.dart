@@ -46,6 +46,8 @@ class _SignupBasicPageState extends State<SignupBasicPage> {
     try {
       final userId = await _repository.findUserId(phone);
       if (!mounted) return;
+      //조회하는 동안 전화번호가 바뀌었으면 이 결과는 쓰지 않음
+      if (_phoneController.text.trim() != phone) return;
       if (userId != null) {
         //다시 온친구 -> 이용대장 선택화면으로 이동
         Navigator.of(context).push(
