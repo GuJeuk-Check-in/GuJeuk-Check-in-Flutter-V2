@@ -19,6 +19,11 @@ analyzer:
     - macos/**
     - linux/**
 
+  errors:
+    # Flutter 3.50에서 material.dart / cupertino.dart import가 deprecated 처리됨.
+    # material_ui로 교체하기 전까지 이 경고는 무시한다.
+    deprecated_member_use: ignore
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

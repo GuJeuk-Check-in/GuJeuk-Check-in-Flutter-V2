@@ -11,6 +11,11 @@ definitions:
       script: |
         # .env.gujeuk 은 gitignore 대상이라 저장소에 없으므로 환경 변수로 만든다.
         echo "API_BASE_URL=$API_BASE_URL" > .env.gujeuk
+    - &bubdong_env_file
+      name: .env.bubdong 만들기 (분석용)
+      script: |
+        # pubspec에 등록된 .env.bubdong 이 없으면 정적 분석이 실패하므로 예시 파일로 만든다.
+        cp .env.bubdong.example .env.bubdong
     - &pub_get
       name: 패키지 받기
       script: flutter pub get
@@ -35,6 +40,7 @@ workflows:
       cancel_previous_builds: true
     scripts:
       - *gujeuk_env_file
+      - *bubdong_env_file
       - *pub_get
       - name: 정적 분석
         script: flutter analyze
@@ -55,6 +61,7 @@ workflows:
           source: true
     scripts:
       - *gujeuk_env_file
+      - *bubdong_env_file
       - *pub_get
       - name: 정적 분석
         script: flutter analyze
@@ -63,16 +70,33 @@ workflows:
     artifacts:
       - build/app/outputs/bundle/**/*.aab
 
-  bubdong-android:
-    name: 법동 Android
+  # 법동: PR을 열거나 커밋을 더 올릴 때. 분석하고 법동 앱이 빌드되는지 본다.
+  bubdong-pr:
+    name: 법동 Android PR 확인
     instance_type: mac_mini_m2
     environment:
       flutter: stable
       java: 17
+    triggering:
+      events:
+        - pull_request
+      branch_patterns:
+        # source: false 는 PR이 들어가는 쪽 브랜치를 뜻한다.
+        - pattern: develop
+          include: true
+          source: false
+        - pattern: main
+          include: true
+          source: false
+      cancel_previous_builds: true
     scripts:
-      - name: 패키지 받기
-        script: flutter pub get
-      - name: 법동 App Bundle 빌드
+      - *bubdong_env_file
+      - name: .env.gujeuk 만들기 (분석용)
+        script: |
+          # pubspec에 등록된 .env.gujeuk 이 없으면 정적 분석이 실패하므로 예시 파일로 만든다.
+          cp .env.gujeuk.example .env.gujeuk
+      - *pub_get
+      - name: 정적 분석
+        script: flutter analyze
+      - name: 법동 debug 빌드
         script: flutter build appbundle --debug --flavor bubdong -t lib/main_bubdong.dart
-    artifacts:
-      - build/app/outputs/bundle/**/*.aab
