@@ -1,4 +1,5 @@
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/check_in_result.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/user_repository.dart';
@@ -19,7 +20,7 @@ class RemoteUserRepository implements UserRepository {
 
   /// `POST /check-in/sign-up`
   @override
-  Future<SignUpResult> signUp(
+  Future<CheckInResult> signUp(
     SignUpRequest request,
     List<int> purposeIds,
   ) async {
@@ -38,8 +39,22 @@ class RemoteUserRepository implements UserRepository {
         'purpose': purposeIds,
       },
     );
-    final json = response.data!;
-    return SignUpResult(
+    return _toCheckInResult(response.data!);
+  }
+
+  /// `POST /check-in`
+  @override
+  Future<CheckInResult> checkIn(int userId, List<int> purposeIds) async {
+    final response = await _client.dio.post<Map<String, dynamic>>(
+      '/check-in',
+      data: {'userId': userId, 'purpose': purposeIds},
+    );
+    return _toCheckInResult(response.data!);
+  }
+
+  /// 회원가입·방명록 작성 응답 → 앱의 CheckInResult (두 API 응답 모양이 같음)
+  CheckInResult _toCheckInResult(Map<String, dynamic> json) {
+    return CheckInResult(
       logId: json['logId'] as int,
       pcForm: json['pcForm'] as bool,
       singForm: json['singForm'] as bool,

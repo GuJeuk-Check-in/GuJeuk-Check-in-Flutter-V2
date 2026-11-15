@@ -48,18 +48,3 @@ class SignUpRequest {
     );
   }
 }
-
-/// 회원가입 결과 (가입과 함께 첫 방문 기록도 만들어짐)
-class SignUpResult {
-  const SignUpResult({
-    required this.logId,
-    required this.pcForm,
-    required this.singForm,
-    required this.pingForm,
-  });
-
-  final int logId; // 만들어진 방문 기록 번호
-  final bool pcForm; // 컴퓨터 신청서를 써야 하는지
-  final bool singForm; // 노래방 신청서를 써야 하는지
-  final bool pingForm; // 탁구 신청서를 써야 하는지
-}

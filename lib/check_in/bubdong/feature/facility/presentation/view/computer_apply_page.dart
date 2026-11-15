@@ -39,7 +39,7 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
   /// 신청서를 보내고 다음 신청서(또는 완료 화면)로
   Future<void> _submit() async {
     final logId = widget.logId;
-    // TODO(bubdong): 다시 온 친구·어른·방명록 흐름은 logId가 아직 없어 서버에 보내지 않음 (방명록 작성 API 연동 후 연결)
+    // TODO(bubdong): 어른·방명록 흐름은 logId가 없어 서버에 보내지 않음
     if (logId != null) {
       setState(() {
         _isSubmitting = true;

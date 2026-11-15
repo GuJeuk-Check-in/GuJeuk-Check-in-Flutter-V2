@@ -4,6 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_cli
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_error.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/data/remote_user_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/check_in_result.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/data/remote_purpose_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
@@ -29,10 +30,7 @@ class FacilitySelectPage extends StatefulWidget {
 
   final VisitorType visitorType; // 아이·어른에 따라 이용대장 개수와 신청서 여부가 다름
   final GuestbookEntry? guest; // 방명록에서 누른 사람 (없으면 새로 고르는 흐름)
-  // TODO(bubdong): 방명록 작성 API(POST /check-in) 연동 보류. 사용자 값을 어떻게 보내는지 백엔드 확인 중
-  //  (응답은 회원가입과 같게 처리: true인 신청서만 띄우기, logId 넘기기, 500 문구 "기록하지 못했어요. 잠시 후 다시 시도해주세요")
-  //  어른 흐름도 답 받을 때까지 서버 요청 없이 완료 화면으로
-  final int? userId; // 다시 온 친구 (1단계 전화번호 조회 결과)
+  final int? userId; // 다시 온 친구 (1단계 전화번호 조회 결과, 방명록 작성에 씀)
   final SignUpRequest? signUpRequest; // 처음 온 친구 (고른 뒤 회원가입 요청)
 
   @override
@@ -58,32 +56,45 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   GuestbookDetail? _detail; // 방명록에서 들어왔을 때 그 기록의 상세
 
   final _userRepository = RemoteUserRepository(bubdongApiClient);
-  bool _isSubmitting = false; // 회원가입 요청 중
-  String? _submitError; // 회원가입 실패 문구
+  bool _isSubmitting = false; // 회원가입·방명록 작성 요청 중
+  String? _submitError; // 요청 실패 문구
 
-  /// 다음: 처음 온 친구면 가입 요청 후, 아니면 바로 신청서로
+  /// 다음: 처음 온 친구는 회원가입, 다시 온 친구는 방명록 작성 후 신청서로
   void _next() {
     final request = widget.signUpRequest;
-    if (request == null) {
+    final userId = widget.userId;
+    if (request != null) {
+      _submit(
+        (purposeIds) => _userRepository.signUp(request, purposeIds),
+        fallbackError: '가입하지 못했어요. 잠시 후 다시 시도해주세요',
+      );
+    } else if (userId != null) {
+      _submit(
+        (purposeIds) => _userRepository.checkIn(userId, purposeIds),
+        fallbackError: '기록하지 못했어요. 잠시 후 다시 시도해주세요',
+      );
+    } else {
+      // TODO(bubdong): 어른·방명록 흐름은 서버 요청 없이 완료 화면으로 (userId가 없음)
       openNextApplication(
         context,
         _applicationQueue,
         selected: _selected.toList(),
       );
-      return;
     }
-    _signUp(request);
   }
 
-  /// 회원가입 + 첫 방문 기록. 서버가 알려준 신청서만 이어서 씀
-  Future<void> _signUp(SignUpRequest request) async {
+  /// 방문 기록을 만들고, 서버가 알려준 신청서만 이어서 씀
+  Future<void> _submit(
+    Future<CheckInResult> Function(List<int> purposeIds) send, {
+    required String fallbackError,
+  }) async {
     final selected = _selected.toList();
     setState(() {
       _isSubmitting = true;
       _submitError = null;
     });
     try {
-      final result = await _userRepository.signUp(request, [
+      final result = await send([
         for (final facility in selected) _purposeIds[facility]!,
       ]);
       if (!mounted) return;
@@ -102,8 +113,9 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
     } catch (error) {
       if (!mounted) return;
       // 400·409는 서버 문구(예: 이미 등록된 전화번호입니다.), 나머지는 공통 문구
-      setState(() => _submitError = serverErrorMessage(error) ??
-          '가입하지 못했어요. 잠시 후 다시 시도해주세요');
+      setState(
+        () => _submitError = serverErrorMessage(error) ?? fallbackError,
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
