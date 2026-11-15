@@ -19,7 +19,8 @@ class PeopleApplyPage extends StatefulWidget {
   final Facility facility; // tableTennis 또는 karaoke
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
   final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
-  // TODO(bubdong): 5번 노래방/탁구 신청서 API(POST /check-in/sping)에서 사용
+  // TODO(bubdong): 노래방/탁구 신청서 API(POST /check-in/sping) 연동 보류
+  //  요청 {logId, purpose}의 purpose 뜻(이용대장 id인지 인원인지)과 인원 필드 이름을 백엔드 확인 중
   final int? logId; // 서버 방문 기록 번호
 
   @override

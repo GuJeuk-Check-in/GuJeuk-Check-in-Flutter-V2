@@ -11,7 +11,6 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/dom
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/auto_save_toast.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/facility_card_color.dart';
-import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/data/fake_guestbook_store.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/guestbook_entry.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/used_time_text.dart';
 
@@ -157,12 +156,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   }
 
   void _save() {
-    // 원래 기록에 이번에 고른 이용대장을 더해 저장한 뒤 "저장됨" 표시
-    final guest = widget.guest!;
-    FakeGuestbookStore.saveFacilities(guest.id, [
-      ...guest.facilities,
-      ..._selected,
-    ]);
+    // TODO(bubdong): 7번 본인 이용대장 수정 API(PATCH /check-in/purpose)로 저장한 뒤 "저장됨" 표시
     setState(() => _autoSaveStatus = AutoSaveStatus.saved);
   }
 
