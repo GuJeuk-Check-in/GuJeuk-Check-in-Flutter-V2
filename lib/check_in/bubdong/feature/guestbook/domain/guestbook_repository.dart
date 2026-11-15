@@ -44,7 +44,7 @@ class GuestbookDetail {
   final String name;
   final List<ApplyFormStatus> forms; // 신청서 3종 상태
   final int organRemainTime; // 분
-  final int purposeRemainTime; // 분
+  final int purposeRemainTime; // 분, 화면의 "이용한 시간"
 }
 
 abstract class GuestbookRepository {

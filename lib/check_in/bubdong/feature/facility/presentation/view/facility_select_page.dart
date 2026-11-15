@@ -52,7 +52,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   String? _error; // 실패했을 때 보여줄 문구
 
   final _guestbookRepository = RemoteGuestbookRepository(bubdongApiClient);
-  // TODO(bubdong): purposeState를 카드 상태(이용 중·이용 완료)에 반영, purposeRemainTime 쓰임새 확인 중
+  // TODO(bubdong): purposeState를 카드 상태(이용 중·이용 완료)에 반영
   GuestbookDetail? _detail; // 방명록에서 들어왔을 때 그 기록의 상세
 
   final _userRepository = RemoteUserRepository(bubdongApiClient);
@@ -335,7 +335,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
                     // 상세를 받았으면 최신 값, 아니면 목록에서 받은 값
                     usedTime: _detail == null
                         ? widget.guest!.usedTime
-                        : Duration(minutes: _detail!.organRemainTime),
+                        : Duration(minutes: _detail!.purposeRemainTime),
                   ),
                 ),
             ],
