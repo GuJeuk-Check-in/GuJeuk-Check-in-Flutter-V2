@@ -19,4 +19,13 @@ class RemoteApplyRepository implements ApplyRepository {
       data: {'logId': logId, 'seat': seat, 'usePurpose': usePurpose},
     );
   }
+
+  /// `POST /check-in/sping` (성공하면 204, 본문 없음)
+  @override
+  Future<void> applySping({required int logId, required int purposeId}) async {
+    await _client.dio.post<void>(
+      '/check-in/sping',
+      data: {'logId': logId, 'purpose': purposeId},
+    );
+  }
 }

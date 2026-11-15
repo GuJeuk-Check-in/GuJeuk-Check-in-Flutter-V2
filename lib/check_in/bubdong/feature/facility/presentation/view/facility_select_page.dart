@@ -77,7 +77,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
         fallbackError: '기록하지 못했어요. 잠시 후 다시 시도해주세요',
       );
     } else {
-      // TODO(bubdong): 어른 흐름은 서버 요청 없이 완료 화면으로 (userId가 없음)
+      // 어른 흐름은 방명록 작성 API를 쓰지 않음 (신청서도 없이 완료 화면으로)
       openNextApplication(
         context,
         _applicationQueue,
@@ -112,6 +112,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
         queue,
         selected: selected,
         logId: result.logId,
+        purposeIds: _purposeIds,
       );
     } catch (error) {
       if (!mounted) return;
@@ -225,6 +226,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
       _applicationQueue,
       selected: _selected.toList(),
       logId: guest.id,
+      purposeIds: _purposeIds,
     );
   }
 

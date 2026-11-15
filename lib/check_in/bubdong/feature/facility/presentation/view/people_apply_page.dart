@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_error.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/data/remote_apply_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/notice_box.dart';
@@ -14,14 +17,14 @@ class PeopleApplyPage extends StatefulWidget {
     required this.remaining,
     required this.selected,
     this.logId,
+    this.purposeIds = const {},
   });
 
   final Facility facility; // tableTennis 또는 karaoke
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
   final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
-  // TODO(bubdong): 노래방/탁구 신청서 API(POST /check-in/sping) 연동 보류
-  //  요청 {logId, purpose}의 purpose 뜻(이용대장 id인지 인원인지)과 인원 필드 이름을 백엔드 확인 중
-  final int? logId; // 서버 방문 기록 번호
+  final int? logId; // 서버 방문 기록 번호 (없으면 서버에 보내지 않음)
+  final Map<Facility, int> purposeIds; // 이용대장 서버 id
 
   @override
   State<PeopleApplyPage> createState() => _PeopleApplyPageState();
@@ -29,6 +32,42 @@ class PeopleApplyPage extends StatefulWidget {
 
 class _PeopleApplyPageState extends State<PeopleApplyPage> {
   final _controller = TextEditingController();
+
+  final _repository = RemoteApplyRepository(bubdongApiClient);
+  bool _isSubmitting = false; // 신청 보내는 중
+  String? _error; // 실패했을 때 보여줄 문구
+
+  /// 신청서를 보내고 다음 신청서(또는 완료 화면)로 (한 건 = 한 명 참가)
+  Future<void> _submit() async {
+    final logId = widget.logId;
+    final purposeId = widget.purposeIds[widget.facility];
+    if (logId != null && purposeId != null) {
+      setState(() {
+        _isSubmitting = true;
+        _error = null;
+      });
+      try {
+        await _repository.applySping(logId: logId, purposeId: purposeId);
+        if (!mounted) return;
+      } catch (error) {
+        if (!mounted) return;
+        // 400·404·409는 서버 문구(예: 이용 인원을 다시 확인해주세요. = 자리 꽉 참), 나머지는 공통 문구
+        setState(() => _error = serverErrorMessage(error) ??
+            '신청하지 못했어요. 잠시 후 다시 시도해주세요');
+        return;
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+    }
+    if (!mounted) return;
+    openNextApplication(
+      context,
+      widget.remaining,
+      selected: widget.selected,
+      logId: logId, // 뒤에 컴퓨터 신청서가 있으면 넘겨줌
+      purposeIds: widget.purposeIds,
+    );
+  }
 
   int get _maxPeople => widget.facility.maxPeople!;
 
@@ -81,6 +120,7 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // TODO(bubdong): 서버는 인원을 받지 않음 (한 명씩 신청, 빈자리에 합류). 인원 칸을 둘지 디자이너 확인
                 BubdongInput(
                   label: '사용 인원',
                   hintText: '사용 인원을 적어줘',
@@ -110,17 +150,22 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
             ),
           ),
           const SizedBox(height: BubdongLayout.applyCardToButtonGap),
+          if (_error != null) ...[
+            Text(
+              _error!,
+              style: BubdongTypography.bodySm.copyWith(
+                color: BubdongColors.borderError,
+              ),
+            ),
+            const SizedBox(height: BubdongSpacing.s12),
+          ],
           BubdongActionRow(
             nextLabel: _buttonLabel,
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
-                ? () => openNextApplication(
-                    context,
-                    widget.remaining,
-                    selected: widget.selected,
-                    logId: widget.logId, // 뒤에 컴퓨터 신청서가 있으면 넘겨줌
-                  )
+                ? _submit
                 : null, // 인원을 맞게 적어야 누를 수 있음
+            isNextLoading: _isSubmitting,
           ),
         ],
       ),

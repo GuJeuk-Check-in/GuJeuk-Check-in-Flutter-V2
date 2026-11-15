@@ -16,11 +16,13 @@ class ComputerApplyPage extends StatefulWidget {
     required this.remaining,
     required this.selected,
     this.logId,
+    this.purposeIds = const {},
   });
 
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
   final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
   final int? logId; // 서버 방문 기록 번호 (없으면 서버에 보내지 않음)
+  final Map<Facility, int> purposeIds; // 다음 신청서로 넘겨줌
 
   @override
   State<ComputerApplyPage> createState() => _ComputerApplyPageState();
@@ -39,7 +41,6 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
   /// 신청서를 보내고 다음 신청서(또는 완료 화면)로
   Future<void> _submit() async {
     final logId = widget.logId;
-    // TODO(bubdong): 어른 흐름은 logId가 없어 서버에 보내지 않음
     if (logId != null) {
       setState(() {
         _isSubmitting = true;
@@ -68,6 +69,7 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
       widget.remaining,
       selected: widget.selected,
       logId: logId,
+      purposeIds: widget.purposeIds,
     );
   }
 

@@ -6,4 +6,7 @@ abstract class ApplyRepository {
     required int seat,
     required String usePurpose,
   });
+
+  /// 노래방·탁구 신청서 (한 건 = 한 명 참가, purposeId: 노래방·탁구의 이용대장 id)
+  Future<void> applySping({required int logId, required int purposeId});
 }
