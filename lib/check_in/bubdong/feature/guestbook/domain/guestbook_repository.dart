@@ -53,4 +53,7 @@ abstract class GuestbookRepository {
 
   /// 방명록 하나의 자세한 내용
   Future<GuestbookDetail> fetchDetail(int logId);
+
+  /// 방명록의 이용대장을 바꿔 저장 (purposeIds: 바꾼 뒤 전체 id), 바뀐 신청서 상태를 돌려줌
+  Future<List<ApplyFormStatus>> updatePurposes(int logId, List<int> purposeIds);
 }

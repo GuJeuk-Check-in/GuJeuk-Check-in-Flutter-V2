@@ -63,7 +63,10 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   void _next() {
     final request = widget.signUpRequest;
     final userId = widget.userId;
-    if (request != null) {
+    final guest = widget.guest;
+    if (guest != null) {
+      _nextFromGuestbook(guest);
+    } else if (request != null) {
       _submit(
         (purposeIds) => _userRepository.signUp(request, purposeIds),
         fallbackError: '가입하지 못했어요. 잠시 후 다시 시도해주세요',
@@ -74,7 +77,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
         fallbackError: '기록하지 못했어요. 잠시 후 다시 시도해주세요',
       );
     } else {
-      // TODO(bubdong): 어른·방명록 흐름은 서버 요청 없이 완료 화면으로 (userId가 없음)
+      // TODO(bubdong): 어른 흐름은 서버 요청 없이 완료 화면으로 (userId가 없음)
       openNextApplication(
         context,
         _applicationQueue,
@@ -182,9 +185,47 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
     _autoSave.forward(from: 0);
   }
 
-  void _save() {
-    // TODO(bubdong): 7번 본인 이용대장 수정 API(PATCH /check-in/purpose)로 저장한 뒤 "저장됨" 표시
-    setState(() => _autoSaveStatus = AutoSaveStatus.saved);
+  /// 원래 기록에 고른 이용대장을 더해 서버에 저장한 뒤 "저장됨" 표시 (성공하면 true)
+  Future<bool> _save() async {
+    final guest = widget.guest!;
+    setState(() => _submitError = null);
+    try {
+      // 바꾼 뒤 전체 목록을 보냄
+      await _guestbookRepository.updatePurposes(guest.id, [
+        for (final facility in [...guest.facilities, ..._selected])
+          ?_purposeIds[facility],
+      ]);
+      if (!mounted) return false;
+      setState(() => _autoSaveStatus = AutoSaveStatus.saved);
+      return true;
+    } catch (error) {
+      if (!mounted) return false;
+      // 400은 서버 문구(예: 이용대장을 다시 선택 해주세요!), 나머지는 공통 문구
+      setState(() {
+        _autoSaveStatus = null; // 저장 못 했으니 토스트 숨김
+        _submitError = serverErrorMessage(error) ??
+            '저장하지 못했어요. 잠시 후 다시 시도해주세요';
+      });
+      return false;
+    }
+  }
+
+  /// 방명록 흐름의 다음: 저장 전이면 먼저 저장하고 신청서로 (logId = 방명록 id)
+  Future<void> _nextFromGuestbook(GuestbookEntry guest) async {
+    if (_autoSaveStatus != AutoSaveStatus.saved) {
+      _autoSave.stop(); // 3초를 기다리지 않고 바로 저장
+      setState(() => _isSubmitting = true);
+      final saved = await _save();
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      if (!saved) return;
+    }
+    openNextApplication(
+      context,
+      _applicationQueue,
+      selected: _selected.toList(),
+      logId: guest.id,
+    );
   }
 
   int get _secondsLeft =>
