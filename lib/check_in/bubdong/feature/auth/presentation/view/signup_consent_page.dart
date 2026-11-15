@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/agree_all_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/consent_article_item.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
 class SignupConsentPage extends StatefulWidget {
-  const SignupConsentPage({super.key});
+  const SignupConsentPage({super.key, required this.request});
+
+  final SignUpRequest request; // 앞 화면까지 적은 값
 
   @override
   State<SignupConsentPage> createState() => _SignupConsentPageState();
@@ -104,7 +107,13 @@ class _SignupConsentPageState extends State<SignupConsentPage> {
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _allAgreed // 전부 동의해야 누를 수 있음
                 ? () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const FacilitySelectPage()),
+                      MaterialPageRoute(
+                        // 이용대장을 고른 뒤 가입 요청을 보냄
+                        builder: (_) => FacilitySelectPage(
+                          signUpRequest:
+                              widget.request.copyWith(privacyAgreed: true),
+                        ),
+                      ),
                     )
                 : null,
           ),

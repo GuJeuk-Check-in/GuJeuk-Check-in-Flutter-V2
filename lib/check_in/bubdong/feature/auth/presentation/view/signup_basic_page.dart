@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/data/remote_user_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/facility_select_page.dart';
@@ -49,17 +50,23 @@ class _SignupBasicPageState extends State<SignupBasicPage> {
       //조회하는 동안 전화번호가 바뀌었으면 이 결과는 쓰지 않음
       if (_phoneController.text.trim() != phone) return;
       if (userId != null) {
-        //다시 온친구 -> 이용대장 선택화면으로 이동
+        //다시 온친구 -> 이용대장 선택화면으로 이동 (방명록 작성에 userId를 씀)
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) =>
-                const FacilitySelectPage(visitorType: VisitorType.child),
+            builder: (_) => FacilitySelectPage(
+              visitorType: VisitorType.child,
+              userId: userId,
+            ),
           ),
         );
       } else {
         //처음 온 친구 -> 회원가입 화면으로 이동
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const SignupExtraPage()));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                SignupExtraPage(request: SignUpRequest(phone: phone)),
+          ),
+        );
       }
     } catch (_) {
       if (!mounted) return;

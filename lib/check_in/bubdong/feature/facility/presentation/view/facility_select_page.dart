@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_error.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/data/remote_user_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/data/remote_purpose_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
@@ -18,10 +21,15 @@ class FacilitySelectPage extends StatefulWidget {
     super.key,
     this.visitorType = VisitorType.child,
     this.guest,
+    this.userId,
+    this.signUpRequest,
   });
 
   final VisitorType visitorType; // 아이·어른에 따라 이용대장 개수와 신청서 여부가 다름
   final GuestbookEntry? guest; // 방명록에서 누른 사람 (없으면 새로 고르는 흐름)
+  // TODO(bubdong): 3번 방명록 작성 API(POST /check-in)에서 사용
+  final int? userId; // 다시 온 친구 (1단계 전화번호 조회 결과)
+  final SignUpRequest? signUpRequest; // 처음 온 친구 (고른 뒤 회원가입 요청)
 
   @override
   State<FacilitySelectPage> createState() => _FacilitySelectPageState();
@@ -40,6 +48,54 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   Map<Facility, int> _purposeIds = {}; // 서버에 있는 이용대장과 그 id
   bool _isLoading = true; // 이용대장 불러오는 중
   String? _error; // 실패했을 때 보여줄 문구
+
+  final _userRepository = RemoteUserRepository(bubdongApiClient);
+  bool _isSubmitting = false; // 회원가입 요청 중
+  String? _submitError; // 회원가입 실패 문구
+
+  /// 다음: 처음 온 친구면 가입 요청 후, 아니면 바로 신청서로
+  void _next() {
+    final request = widget.signUpRequest;
+    if (request == null) {
+      openNextApplication(
+        context,
+        _applicationQueue,
+        selected: _selected.toList(),
+      );
+      return;
+    }
+    _signUp(request);
+  }
+
+  /// 회원가입 + 첫 방문 기록. 서버가 알려준 신청서만 이어서 씀
+  Future<void> _signUp(SignUpRequest request) async {
+    final selected = _selected.toList();
+    setState(() {
+      _isSubmitting = true;
+      _submitError = null;
+    });
+    try {
+      final result = await _userRepository.signUp(request, [
+        for (final facility in selected) _purposeIds[facility]!,
+      ]);
+      if (!mounted) return;
+      // TODO(bubdong): 4·5번 신청서 API에서 result.logId를 신청서 화면으로 넘기기
+      final queue = selected.where((facility) => switch (facility) {
+            Facility.internet => result.pcForm,
+            Facility.karaoke => result.singForm,
+            Facility.tableTennis => result.pingForm,
+            _ => false,
+          }).toList();
+      openNextApplication(context, queue, selected: selected);
+    } catch (error) {
+      if (!mounted) return;
+      // 400·409는 서버 문구(예: 이미 등록된 전화번호입니다.), 나머지는 공통 문구
+      setState(() => _submitError = serverErrorMessage(error) ??
+          '가입하지 못했어요. 잠시 후 다시 시도해주세요');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
 
   /// 서버에서 이용대장 목록을 받아 앱 이용대장과 짝지음
   Future<void> _loadPurposes() async {
@@ -210,15 +266,21 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
             ],
           ),
           const SizedBox(height: BubdongLayout.facilitySummaryToButtonGap),
+          if (_submitError != null) ...[
+            Text(
+              _submitError!,
+              style: BubdongTypography.bodySm.copyWith(
+                color: BubdongColors.borderError,
+              ),
+            ),
+            const SizedBox(height: BubdongSpacing.s12),
+          ],
           BubdongActionRow(
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _selected.isEmpty
                 ? null // 하나도 안 고르면 다음 비활성
-                : () => openNextApplication(
-                    context,
-                    _applicationQueue,
-                    selected: _selected.toList(),
-                  ),
+                : _next,
+            isNextLoading: _isSubmitting,
           ),
         ],
       ),

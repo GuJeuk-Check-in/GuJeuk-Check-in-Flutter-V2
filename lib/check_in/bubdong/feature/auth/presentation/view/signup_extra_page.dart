@@ -3,11 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_extra_second_page.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 
 class SignupExtraPage extends StatefulWidget {
-  const SignupExtraPage({super.key});
+  const SignupExtraPage({super.key, required this.request});
+
+  final SignUpRequest request; // 1단계에서 넘어온 전화번호
 
   @override
   State<SignupExtraPage> createState() => _SignupExtraPageState();
@@ -34,6 +37,7 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
   @override
   void initState() {
     super.initState();
+    _phoneController.text = widget.request.phone; // 1단계에서 적은 번호를 미리 채움
     // 입력할 때마다 버튼 상태 갱신
     _nameController.addListener(() => setState(() {}));
     _phoneController.addListener(() => setState(() {}));
@@ -58,6 +62,19 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
   void _clearDayIfInvalid() {
     final day = int.tryParse(_day ?? '');
     if (day != null && day > _daysInMonth) _day = null;
+  }
+
+  /// 이 화면에서 적은 값을 요청에 담아 다음 화면으로
+  void _next() {
+    final request = widget.request.copyWith(
+      name: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      gender: _gender,
+      birthDate: DateTime(int.parse(_year!), int.parse(_month!), int.parse(_day!)),
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => SignupExtraSecondPage(request: request)),
+    );
   }
 
   @override
@@ -197,11 +214,7 @@ class _SignupExtraPageState extends State<SignupExtraPage> {
           const SizedBox(height: BubdongSpacing.s64),
           BubdongActionRow(
             onPrevious: () => Navigator.of(context).pop(),
-            onNext: _isValid
-                ? () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SignupExtraSecondPage()),
-                    )
-                : null, // 다 채워야 누를 수 있음
+            onNext: _isValid ? _next : null, // 다 채워야 누를 수 있음
           ),
         ],
       ),

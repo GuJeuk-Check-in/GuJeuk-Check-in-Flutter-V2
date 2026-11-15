@@ -9,11 +9,13 @@ class BubdongActionRow extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     this.nextLabel = '다음',
+    this.isNextLoading = false,
   });
 
   final VoidCallback onPrevious;
   final VoidCallback? onNext; // null이면 비활성
   final String nextLabel;
+  final bool isNextLoading; // 다음을 누른 뒤 서버 응답을 기다리는 중
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,11 @@ class BubdongActionRow extends StatelessWidget {
           ),
           const SizedBox(width: BubdongSpacing.s40),
           Expanded(
-            child: BubdongButton(label: nextLabel, onPressed: onNext),
+            child: BubdongButton(
+              label: nextLabel,
+              onPressed: onNext,
+              isLoading: isNextLoading,
+            ),
           ),
         ],
       ),

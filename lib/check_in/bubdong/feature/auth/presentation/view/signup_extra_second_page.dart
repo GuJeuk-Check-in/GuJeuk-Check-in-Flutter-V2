@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/visit_route.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/school_search_dialog.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/signup_header.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/view/signup_consent_page.dart';
 
 class SignupExtraSecondPage extends StatefulWidget {
-  const SignupExtraSecondPage({super.key});
+  const SignupExtraSecondPage({super.key, required this.request});
+
+  final SignUpRequest request; // 앞 화면까지 적은 값
 
   @override
   State<SignupExtraSecondPage> createState() => _SignupExtraSecondPageState();
@@ -57,6 +60,23 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
       selectedName: _schoolController.text,
     );
     if (school != null) _schoolController.text = school;
+  }
+
+  /// 이 화면에서 적은 값을 요청에 담아 동의 화면으로
+  void _next() {
+    final route = _visitRoute == VisitRoute.other
+        ? _otherRouteController.text.trim() // 기타면 직접 적은 내용
+        : _visitRoute!.label;
+    // TODO(bubdong): 학교를 안 다니면 '무교' + 학년 0 (명세). 화면에 무교 선택이 없어 지금은 적은 값 그대로 보냄
+    final request = widget.request.copyWith(
+      school: _schoolController.text.trim(),
+      grade: int.parse(_gradeController.text.trim()),
+      address: _addressController.text.trim(),
+      route: route,
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => SignupConsentPage(request: request)),
+    );
   }
 
   @override
@@ -174,11 +194,7 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
           const SizedBox(height: BubdongSpacing.s64),
           BubdongActionRow(
             onPrevious: () => Navigator.of(context).pop(),
-            onNext: _isValid
-                ? () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SignupConsentPage()),
-                    )
-                : null, // 다 채워야 누를 수 있음
+            onNext: _isValid ? _next : null, // 다 채워야 누를 수 있음
           ),
         ],
       ),
