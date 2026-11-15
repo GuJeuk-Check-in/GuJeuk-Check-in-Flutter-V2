@@ -9,6 +9,7 @@ void openNextApplication(
   BuildContext context,
   List<Facility> queue, {
   required List<Facility> selected, // 고른 이용대장 전체 (완료 화면 제목에 씀)
+  int? logId, // 서버 방문 기록 번호 (신청서를 보낼 때 씀, 아직 없는 흐름은 null)
 }) {
   if (queue.isEmpty) {
     // 남은 신청서가 없으면 신청 완료 화면 (뒤로가기로 신청서에 돌아가지 않게 홈만 남김)
@@ -28,11 +29,13 @@ void openNextApplication(
           ? ComputerApplyPage(
               remaining: remaining,
               selected: selected,
+              logId: logId,
             ) // 좌석을 고르는 신청서
           : PeopleApplyPage(
               facility: next,
               remaining: remaining,
               selected: selected,
+              logId: logId,
             ), // 인원을 적는 신청서
     ),
   );

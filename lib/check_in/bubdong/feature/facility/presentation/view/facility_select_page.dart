@@ -27,7 +27,9 @@ class FacilitySelectPage extends StatefulWidget {
 
   final VisitorType visitorType; // 아이·어른에 따라 이용대장 개수와 신청서 여부가 다름
   final GuestbookEntry? guest; // 방명록에서 누른 사람 (없으면 새로 고르는 흐름)
-  // TODO(bubdong): 3번 방명록 작성 API(POST /check-in)에서 사용
+  // TODO(bubdong): 방명록 작성 API(POST /check-in) 연동 보류. 사용자 값을 어떻게 보내는지 백엔드 확인 중
+  //  (응답은 회원가입과 같게 처리: true인 신청서만 띄우기, logId 넘기기, 500 문구 "기록하지 못했어요. 잠시 후 다시 시도해주세요")
+  //  어른 흐름도 답 받을 때까지 서버 요청 없이 완료 화면으로
   final int? userId; // 다시 온 친구 (1단계 전화번호 조회 결과)
   final SignUpRequest? signUpRequest; // 처음 온 친구 (고른 뒤 회원가입 요청)
 
@@ -79,14 +81,18 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
         for (final facility in selected) _purposeIds[facility]!,
       ]);
       if (!mounted) return;
-      // TODO(bubdong): 4·5번 신청서 API에서 result.logId를 신청서 화면으로 넘기기
       final queue = selected.where((facility) => switch (facility) {
             Facility.internet => result.pcForm,
             Facility.karaoke => result.singForm,
             Facility.tableTennis => result.pingForm,
             _ => false,
           }).toList();
-      openNextApplication(context, queue, selected: selected);
+      openNextApplication(
+        context,
+        queue,
+        selected: selected,
+        logId: result.logId,
+      );
     } catch (error) {
       if (!mounted) return;
       // 400·409는 서버 문구(예: 이미 등록된 전화번호입니다.), 나머지는 공통 문구

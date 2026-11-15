@@ -13,11 +13,14 @@ class PeopleApplyPage extends StatefulWidget {
     required this.facility,
     required this.remaining,
     required this.selected,
+    this.logId,
   });
 
   final Facility facility; // tableTennis 또는 karaoke
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
   final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
+  // TODO(bubdong): 5번 노래방/탁구 신청서 API(POST /check-in/sping)에서 사용
+  final int? logId; // 서버 방문 기록 번호
 
   @override
   State<PeopleApplyPage> createState() => _PeopleApplyPageState();
@@ -114,6 +117,7 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
                     context,
                     widget.remaining,
                     selected: widget.selected,
+                    logId: widget.logId, // 뒤에 컴퓨터 신청서가 있으면 넘겨줌
                   )
                 : null, // 인원을 맞게 적어야 누를 수 있음
           ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_error.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/data/remote_apply_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/notice_box.dart';
@@ -12,10 +15,12 @@ class ComputerApplyPage extends StatefulWidget {
     super.key,
     required this.remaining,
     required this.selected,
+    this.logId,
   });
 
   final List<Facility> remaining; // 이 신청서 다음에 쓸 신청서들
   final List<Facility> selected; // 고른 이용대장 전체 (완료 화면 제목에 넘김)
+  final int? logId; // 서버 방문 기록 번호 (없으면 서버에 보내지 않음)
 
   @override
   State<ComputerApplyPage> createState() => _ComputerApplyPageState();
@@ -26,6 +31,45 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
 
   final _purposeController = TextEditingController();
   int? _seat;
+
+  final _repository = RemoteApplyRepository(bubdongApiClient);
+  bool _isSubmitting = false; // 신청 보내는 중
+  String? _error; // 실패했을 때 보여줄 문구
+
+  /// 신청서를 보내고 다음 신청서(또는 완료 화면)로
+  Future<void> _submit() async {
+    final logId = widget.logId;
+    // TODO(bubdong): 다시 온 친구·어른·방명록 흐름은 logId가 아직 없어 서버에 보내지 않음 (방명록 작성 API 연동 후 연결)
+    if (logId != null) {
+      setState(() {
+        _isSubmitting = true;
+        _error = null;
+      });
+      try {
+        await _repository.applyComputer(
+          logId: logId,
+          seat: _seat!,
+          usePurpose: _purposeController.text.trim(),
+        );
+        if (!mounted) return;
+      } catch (error) {
+        if (!mounted) return;
+        // 400·404·409는 서버 문구(예: 좌석이 사용 중), 나머지는 공통 문구
+        setState(() => _error = serverErrorMessage(error) ??
+            '신청하지 못했어요. 잠시 후 다시 시도해주세요');
+        return;
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
+    }
+    if (!mounted) return;
+    openNextApplication(
+      context,
+      widget.remaining,
+      selected: widget.selected,
+      logId: logId,
+    );
+  }
 
   // 좌석을 고르고 사용목적을 적어야 신청 가능
   bool get _isValid =>
@@ -108,16 +152,22 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
             ),
           ),
           const SizedBox(height: BubdongLayout.applyCardToButtonGap),
+          if (_error != null) ...[
+            Text(
+              _error!,
+              style: BubdongTypography.bodySm.copyWith(
+                color: BubdongColors.borderError,
+              ),
+            ),
+            const SizedBox(height: BubdongSpacing.s12),
+          ],
           BubdongActionRow(
             nextLabel: '컴퓨터 신청하기', // Figma 문구
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
-                ? () => openNextApplication(
-                    context,
-                    widget.remaining,
-                    selected: widget.selected,
-                  )
+                ? _submit
                 : null, // 좌석과 사용목적을 채워야 누를 수 있음
+            isNextLoading: _isSubmitting,
           ),
         ],
       ),
