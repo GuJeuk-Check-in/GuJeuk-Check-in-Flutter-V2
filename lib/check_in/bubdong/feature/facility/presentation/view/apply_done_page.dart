@@ -54,8 +54,8 @@ class ApplyDonePage extends StatelessWidget {
                   label: '다했어요!',
                   variant: BubdongButtonVariant.primaryLarge,
                   // 홈(진입 화면)으로 돌아감
-                  onPressed: () => Navigator.of(context)
-                      .popUntil((route) => route.isFirst),
+                  onPressed: () =>
+                      Navigator.of(context).popUntil((route) => route.isFirst),
                 ),
               ],
             ),

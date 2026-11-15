@@ -35,4 +35,13 @@ enum Facility {
 
   /// 어른 이용대장 10개 (아이들 8개 + 근로장학생, 기타)
   static const adults = values;
+
+  /// 서버 이용대장 이름으로 찾기 (없으면 null)
+  // TODO(bubdong): 서버 purposeName이 label과 같은지 확인 필요 (응답에 이름·id만 있어서 이름으로 짝지음)
+  static Facility? byName(String name) {
+    for (final facility in values) {
+      if (facility.label == name) return facility;
+    }
+    return null;
+  }
 }

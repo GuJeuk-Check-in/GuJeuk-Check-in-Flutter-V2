@@ -22,7 +22,6 @@ class ComputerApplyPage extends StatefulWidget {
 }
 
 class _ComputerApplyPageState extends State<ComputerApplyPage> {
-
   static const _seatCount = 10;
 
   final _purposeController = TextEditingController();
@@ -114,10 +113,10 @@ class _ComputerApplyPageState extends State<ComputerApplyPage> {
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
                 ? () => openNextApplication(
-                      context,
-                      widget.remaining,
-                      selected: widget.selected,
-                    )
+                    context,
+                    widget.remaining,
+                    selected: widget.selected,
+                  )
                 : null, // 좌석과 사용목적을 채워야 누를 수 있음
           ),
         ],

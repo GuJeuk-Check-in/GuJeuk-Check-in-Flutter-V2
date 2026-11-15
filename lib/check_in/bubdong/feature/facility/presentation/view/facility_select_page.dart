@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/data/remote_purpose_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
@@ -33,9 +35,39 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   late final AnimationController _autoSave;
   AutoSaveStatus? _autoSaveStatus; // null이면 토스트 없음
 
+  final _purposeRepository = RemotePurposeRepository(bubdongApiClient);
+
+  Map<Facility, int> _purposeIds = {}; // 서버에 있는 이용대장과 그 id
+  bool _isLoading = true; // 이용대장 불러오는 중
+  String? _error; // 실패했을 때 보여줄 문구
+
+  /// 서버에서 이용대장 목록을 받아 앱 이용대장과 짝지음
+  Future<void> _loadPurposes() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final purposes = await _purposeRepository.fetchAll();
+      if (!mounted) return; // 기다리는 동안 화면을 나갔으면 멈춤
+      setState(() {
+        _purposeIds = {
+          for (final purpose in purposes)
+            ?Facility.byName(purpose.name): purpose.id, // 앱에 없는 이름은 뺌
+        };
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _error = '이용대장을 불러오지 못했어요. 잠시 후 다시 시도해주세요');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadPurposes();
     // dispose에서 처음 만들어지지 않게 화면이 생길 때 바로 만듦
     _autoSave = AnimationController(vsync: this, duration: _autoSaveDelay)
       ..addListener(() => setState(() {}))
@@ -82,7 +114,9 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
 
   final _selected = <Facility>{}; // 고른 순서대로 들어감
 
-  List<Facility> get _facilities => widget.visitorType.facilities;
+  // 아이·어른 목록 중 서버에 있는 이용대장만 (순서는 Figma 순서 유지)
+  List<Facility> get _facilities =>
+      widget.visitorType.facilities.where(_purposeIds.containsKey).toList();
 
   // 써야 할 신청서 목록 (어른은 신청서 없이 바로 완료)
   List<Facility> get _applicationQueue => widget.visitorType.writesApplication
@@ -108,7 +142,9 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   BubdongCardStatus _statusOf(Facility facility) {
     final guestStatus = _guestStatusOf(facility);
     if (guestStatus != null) return guestStatus;
-    if (_unavailable.containsKey(facility)) return BubdongCardStatus.unavailable;
+    if (_unavailable.containsKey(facility)) {
+      return BubdongCardStatus.unavailable;
+    }
     return _selected.contains(facility)
         ? BubdongCardStatus.selected
         : BubdongCardStatus.normal;
@@ -144,17 +180,7 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
                 : null,
           ),
           const SizedBox(height: BubdongSpacing.s40),
-          ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: BubdongLayout.facilityGridWidth,
-            ),
-            child: Column(
-              spacing: BubdongLayout.facilityGridRowGap,
-              children: [
-                for (final row in rows) _buildRow(row),
-              ],
-            ),
-          ),
+          _buildGrid(rows),
           const SizedBox(height: BubdongLayout.facilityGridToSummaryGap),
           // 고르면 선택 요약, 고르기 전에는 방명록이면 이용한 시간 (자리는 유지)
           Stack(
@@ -189,12 +215,37 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
             onNext: _selected.isEmpty
                 ? null // 하나도 안 고르면 다음 비활성
                 : () => openNextApplication(
-                      context,
-                      _applicationQueue,
-                      selected: _selected.toList(),
-                    ),
+                    context,
+                    _applicationQueue,
+                    selected: _selected.toList(),
+                  ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 카드 자리: 불러오는 중 / 실패 / 고를 것 없음 / 카드 목록
+  Widget _buildGrid(List<List<Facility>> rows) {
+    if (_isLoading) {
+      return const CircularProgressIndicator(color: BubdongColors.brandPrimary);
+    }
+    final message = _error ?? (rows.isEmpty ? '지금 고를 수 있는 이용대장이 없어요' : null);
+    if (message != null) {
+      return Text(
+        message,
+        style: BubdongTypography.bodySm.copyWith(
+          color: BubdongColors.textSecondary,
+        ),
+      );
+    }
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxWidth: BubdongLayout.facilityGridWidth,
+      ),
+      child: Column(
+        spacing: BubdongLayout.facilityGridRowGap,
+        children: [for (final row in rows) _buildRow(row)],
       ),
     );
   }
@@ -242,11 +293,15 @@ class _UsedTimeRow extends StatelessWidget {
       children: [
         Text(
           '이용한 시간 :',
-          style: BubdongTypography.h4.copyWith(color: BubdongColors.textCaption),
+          style: BubdongTypography.h4.copyWith(
+            color: BubdongColors.textCaption,
+          ),
         ),
         Text(
           usedTime.usedTimeText,
-          style: BubdongTypography.h2.copyWith(color: BubdongColors.textAccentDark),
+          style: BubdongTypography.h2.copyWith(
+            color: BubdongColors.textAccentDark,
+          ),
         ),
       ],
     );

@@ -48,16 +48,15 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
 
   // Figma 문구 (이용대장마다 다름)
   String get _buttonLabel => switch (widget.facility) {
-        Facility.tableTennis => '탁구•포켓볼 신청하기',
-        _ => '${widget.facility.label} 신청하기',
-      };
+    Facility.tableTennis => '탁구•포켓볼 신청하기',
+    _ => '${widget.facility.label} 신청하기',
+  };
 
   String get _guide => switch (widget.facility) {
-        Facility.tableTennis => '최대 40분 · 최대 4명 이용할 수 있어요',
-        Facility.karaoke =>
-          '최대 2명 · 1명 20분 / 2명 30분 · 초등학교 3학년부터 이용할 수 있어요',
-        _ => '',
-      };
+    Facility.tableTennis => '최대 40분 · 최대 4명 이용할 수 있어요',
+    Facility.karaoke => '최대 2명 · 1명 20분 / 2명 30분 · 초등학교 3학년부터 이용할 수 있어요',
+    _ => '',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +87,8 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
                     TextInputFormatter.withFunction((oldValue, newValue) {
                       if (newValue.text.isEmpty) return newValue;
                       final count = int.tryParse(newValue.text);
-                      final ok = count != null && count >= 1 && count <= _maxPeople;
+                      final ok =
+                          count != null && count >= 1 && count <= _maxPeople;
                       return ok ? newValue : oldValue;
                     }),
                   ],
@@ -111,10 +111,10 @@ class _PeopleApplyPageState extends State<PeopleApplyPage> {
             onPrevious: () => Navigator.of(context).pop(),
             onNext: _isValid
                 ? () => openNextApplication(
-                      context,
-                      widget.remaining,
-                      selected: widget.selected,
-                    )
+                    context,
+                    widget.remaining,
+                    selected: widget.selected,
+                  )
                 : null, // 인원을 맞게 적어야 누를 수 있음
           ),
         ],

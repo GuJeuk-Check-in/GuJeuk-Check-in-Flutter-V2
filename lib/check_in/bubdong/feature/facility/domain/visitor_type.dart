@@ -10,9 +10,9 @@ enum VisitorType {
 
   /// 고를 수 있는 이용대장 (아이 8개, 어른 10개)
   List<Facility> get facilities => switch (this) {
-        VisitorType.child => Facility.children,
-        VisitorType.adult => Facility.adults,
-      };
+    VisitorType.child => Facility.children,
+    VisitorType.adult => Facility.adults,
+  };
 
   /// 신청서를 쓰는지 (Figma 어른 흐름: 시설 고르기 → 바로 신청 완료)
   bool get writesApplication => this == VisitorType.child;

@@ -25,7 +25,10 @@ void openNextApplication(
   Navigator.of(context).push(
     MaterialPageRoute(
       builder: (_) => next == Facility.internet
-          ? ComputerApplyPage(remaining: remaining, selected: selected) // 좌석을 고르는 신청서
+          ? ComputerApplyPage(
+              remaining: remaining,
+              selected: selected,
+            ) // 좌석을 고르는 신청서
           : PeopleApplyPage(
               facility: next,
               remaining: remaining,
