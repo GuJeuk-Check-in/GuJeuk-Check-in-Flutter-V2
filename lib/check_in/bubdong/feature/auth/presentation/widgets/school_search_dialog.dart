@@ -152,6 +152,14 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                 const SizedBox(height: BubdongSpacing.s16),
 
                 // 결과 목록 (팝업 높이가 고정이라 넘치면 목록만 스크롤)
+                // 학교를 안 다니면 검색 없이 고름
+                _SchoolResultItem(
+                  name: '학교 안 다님',
+                  address: '학교에 다니지 않으면 눌러줘',
+                  selected: widget.selectedName == noSchoolName,
+                  onTap: () => Navigator.of(context).pop(noSchoolName),
+                ),
+                const SizedBox(height: BubdongSpacing.s16),
                 Expanded(child: _buildResults()),
               ],
             ),

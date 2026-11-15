@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/theme/bubdong_theme.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/school_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/visit_route.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/presentation/widgets/school_search_dialog.dart';
@@ -59,7 +60,9 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
       context,
       selectedName: _schoolController.text,
     );
-    if (school != null) _schoolController.text = school;
+    if (school == null) return;
+    _schoolController.text = school;
+    if (school == noSchoolName) _gradeController.text = '0'; // 학교 안 다님 → 학년 0
   }
 
   /// 이 화면에서 적은 값을 요청에 담아 동의 화면으로
@@ -67,7 +70,6 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
     final route = _visitRoute == VisitRoute.other
         ? _otherRouteController.text.trim() // 기타면 직접 적은 내용
         : _visitRoute!.label;
-    // TODO(bubdong): 학교를 안 다니면 '무교' + 학년 0 (명세). 화면에 무교 선택이 없어 지금은 적은 값 그대로 보냄
     final request = widget.request.copyWith(
       school: _schoolController.text.trim(),
       grade: int.parse(_gradeController.text.trim()),
