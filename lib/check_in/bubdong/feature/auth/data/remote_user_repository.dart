@@ -1,6 +1,8 @@
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/check_in_result.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/school_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/visit_route.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/user_repository.dart';
 
@@ -33,7 +35,9 @@ class RemoteUserRepository implements UserRepository {
         'birthYMD': _toBirthYmd(request.birthDate!),
         'grade': request.grade,
         'school': request.school,
-        'route': request.route,
+        'schoolType': _toSchoolTypeValue(request.schoolType),
+        'route': _toRouteValue(request.route!),
+        'routeDetail': request.routeDetail,
         'address': request.address,
         'privacyAgreed': request.privacyAgreed,
         'purpose': purposeIds,
@@ -60,6 +64,26 @@ class RemoteUserRepository implements UserRepository {
       singForm: json['singForm'] as bool,
       pingForm: json['pingForm'] as bool,
     );
+  }
+
+  /// VisitRoute.friend → 'FRIEND'
+  String _toRouteValue(VisitRoute route) {
+    return switch (route) {
+      VisitRoute.friend => 'FRIEND',
+      VisitRoute.parent => 'PARENT',
+      VisitRoute.other => 'OTHER',
+    };
+  }
+
+  /// SchoolType.high → 'HIGH' (검색 결과에서 받은 값을 그대로 돌려보냄)
+  // TODO(bubdong): 학교 안 다님·직접 입력(null)과 other일 때 보낼 값 백엔드 확인 중 (지금은 null)
+  String? _toSchoolTypeValue(SchoolType? type) {
+    return switch (type) {
+      SchoolType.elementary => 'ELEMENTARY',
+      SchoolType.middle => 'MIDDLE',
+      SchoolType.high => 'HIGH',
+      SchoolType.other || null => null,
+    };
   }
 
   /// Gender.male → 'MAN'

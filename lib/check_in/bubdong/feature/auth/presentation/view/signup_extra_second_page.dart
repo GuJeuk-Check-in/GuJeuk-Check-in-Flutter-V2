@@ -55,26 +55,33 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
   }
 
   // 학교 검색 팝업에서 고른 학교를 학교 칸에 넣음
+  SchoolPick? _pickedSchool; // 팝업에서 고른 학교 (종류를 요청에 넣으려고 기억)
+
   Future<void> _searchSchool() async {
     final school = await SchoolSearchDialog.show(
       context,
       selectedName: _schoolController.text,
     );
     if (school == null) return;
-    _schoolController.text = school;
-    if (school == noSchoolName) _gradeController.text = '0'; // 학교 안 다님 → 학년 0
+    _pickedSchool = school;
+    _schoolController.text = school.name;
+    if (school.name == noSchoolName) _gradeController.text = '0'; // 학교 안 다님 → 학년 0
   }
 
   /// 이 화면에서 적은 값을 요청에 담아 동의 화면으로
   void _next() {
-    final route = _visitRoute == VisitRoute.other
-        ? _otherRouteController.text.trim() // 기타면 직접 적은 내용
-        : _visitRoute!.label;
+    final school = _schoolController.text.trim();
+    final picked = _pickedSchool;
     final request = widget.request.copyWith(
-      school: _schoolController.text.trim(),
+      school: school,
+      // 고른 뒤 칸을 직접 고쳤으면 종류를 모르니 보내지 않음
+      schoolType: picked?.name == school ? picked?.type : null,
       grade: int.parse(_gradeController.text.trim()),
       address: _addressController.text.trim(),
-      route: route,
+      route: _visitRoute,
+      routeDetail: _visitRoute == VisitRoute.other
+          ? _otherRouteController.text.trim() // 기타면 직접 적은 내용
+          : null,
     );
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => SignupConsentPage(request: request)),

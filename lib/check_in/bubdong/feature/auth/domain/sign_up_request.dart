@@ -1,4 +1,6 @@
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/gender.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/school_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/visit_route.dart';
 
 /// 회원가입 화면들을 지나며 채우는 요청 (이용대장은 마지막에 따로 붙임)
 class SignUpRequest {
@@ -8,9 +10,11 @@ class SignUpRequest {
     this.gender,
     this.birthDate,
     this.school,
+    this.schoolType,
     this.grade,
     this.address,
     this.route,
+    this.routeDetail,
     this.privacyAgreed = false,
   });
 
@@ -19,9 +23,11 @@ class SignUpRequest {
   final Gender? gender;
   final DateTime? birthDate;
   final String? school;
+  final SchoolType? schoolType; // 검색으로 고른 학교만 (그 밖은 null)
   final int? grade;
   final String? address;
-  final String? route; // 방문 경로 글자 (기타면 직접 적은 내용)
+  final VisitRoute? route; // 방문 경로
+  final String? routeDetail; // 기타일 때 직접 적은 내용
   final bool privacyAgreed;
 
   SignUpRequest copyWith({
@@ -30,9 +36,11 @@ class SignUpRequest {
     Gender? gender,
     DateTime? birthDate,
     String? school,
+    SchoolType? schoolType,
     int? grade,
     String? address,
-    String? route,
+    VisitRoute? route,
+    String? routeDetail,
     bool? privacyAgreed,
   }) {
     return SignUpRequest(
@@ -41,9 +49,11 @@ class SignUpRequest {
       gender: gender ?? this.gender,
       birthDate: birthDate ?? this.birthDate,
       school: school ?? this.school,
+      schoolType: schoolType ?? this.schoolType,
       grade: grade ?? this.grade,
       address: address ?? this.address,
       route: route ?? this.route,
+      routeDetail: routeDetail ?? this.routeDetail,
       privacyAgreed: privacyAgreed ?? this.privacyAgreed,
     );
   }

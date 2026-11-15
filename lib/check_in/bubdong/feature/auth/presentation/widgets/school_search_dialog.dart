@@ -13,9 +13,12 @@ class SchoolSearchDialog extends StatefulWidget {
 
   final String? selectedName; // 전에 고른 학교 (목록에서 주황으로 표시)
 
-  /// 팝업을 띄우고, 고른 학교 이름을 돌려줌 (닫으면 null)
-  static Future<String?> show(BuildContext context, {String? selectedName}) {
-    return showDialog<String>(
+  /// 팝업을 띄우고, 고른 학교 이름·종류를 돌려줌 (닫으면 null)
+  static Future<SchoolPick?> show(
+    BuildContext context, {
+    String? selectedName,
+  }) {
+    return showDialog<SchoolPick>(
       context: context,
       barrierColor: BubdongColors.overlay,
       builder: (_) => SchoolSearchDialog(selectedName: selectedName),
@@ -157,7 +160,9 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
                   name: '학교 안 다님',
                   address: '학교에 다니지 않으면 눌러줘',
                   selected: widget.selectedName == noSchoolName,
-                  onTap: () => Navigator.of(context).pop(noSchoolName),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pop((name: noSchoolName, type: null)),
                 ),
                 const SizedBox(height: BubdongSpacing.s16),
                 Expanded(child: _buildResults()),
@@ -205,7 +210,10 @@ class _SchoolSearchDialogState extends State<SchoolSearchDialog> {
         address: _schools[i].address,
         selected: _schools[i].name == widget.selectedName,
         onTap: () =>
-            Navigator.of(context).pop(_schools[i].name), // 누르면 바로 고르고 닫음
+            Navigator.of(context).pop((
+              name: _schools[i].name,
+              type: _schools[i].type,
+            )), // 누르면 바로 고르고 닫음
       ),
     );
   }
