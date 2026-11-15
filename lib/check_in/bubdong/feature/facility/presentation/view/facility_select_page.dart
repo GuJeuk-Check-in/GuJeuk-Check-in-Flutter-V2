@@ -7,11 +7,14 @@ import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/data/re
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/auth/domain/sign_up_request.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/data/remote_purpose_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/facility.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/purpose_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/domain/visitor_type.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/view/apply_flow.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/auto_save_toast.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/facility/presentation/widgets/facility_card_color.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/data/remote_guestbook_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/guestbook_entry.dart';
+import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/guestbook_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/feature/guestbook/domain/used_time_text.dart';
 
 /// 오늘 사용할 이용대장 고르기 (여러 개 선택 가능)
@@ -49,6 +52,10 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   Map<Facility, int> _purposeIds = {}; // 서버에 있는 이용대장과 그 id
   bool _isLoading = true; // 이용대장 불러오는 중
   String? _error; // 실패했을 때 보여줄 문구
+
+  final _guestbookRepository = RemoteGuestbookRepository(bubdongApiClient);
+  // TODO(bubdong): purposeState를 카드 상태(이용 중·이용 완료)에 반영, purposeRemainTime 쓰임새 확인 중
+  GuestbookDetail? _detail; // 방명록에서 들어왔을 때 그 기록의 상세
 
   final _userRepository = RemoteUserRepository(bubdongApiClient);
   bool _isSubmitting = false; // 회원가입 요청 중
@@ -102,24 +109,32 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
     }
   }
 
-  /// 서버에서 이용대장 목록을 받아 앱 이용대장과 짝지음
+  /// 서버에서 이용대장 목록(방명록이면 상세도 같이)을 받아 앱 이용대장과 짝지음
   Future<void> _loadPurposes() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
-      final purposes = await _purposeRepository.fetchAll();
+      final guest = widget.guest;
+      final results = await Future.wait([
+        _purposeRepository.fetchAll(),
+        if (guest != null) _guestbookRepository.fetchDetail(guest.id),
+      ]);
       if (!mounted) return; // 기다리는 동안 화면을 나갔으면 멈춤
+      final purposes = results[0] as List<Purpose>;
       setState(() {
+        if (guest != null) _detail = results[1] as GuestbookDetail;
         _purposeIds = {
           for (final purpose in purposes)
             ?Facility.byName(purpose.name): purpose.id, // 앱에 없는 이름은 뺌
         };
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
-      setState(() => _error = '이용대장을 불러오지 못했어요. 잠시 후 다시 시도해주세요');
+      // 400은 서버 문구(예: 존재하지 않는 방명록 입니다!), 나머지는 공통 문구
+      setState(() => _error = serverErrorMessage(error) ??
+          '이용대장을 불러오지 못했어요. 잠시 후 다시 시도해주세요');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -261,7 +276,12 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
                   maintainSize: true,
                   maintainAnimation: true,
                   maintainState: true,
-                  child: _UsedTimeRow(usedTime: widget.guest!.usedTime),
+                  child: _UsedTimeRow(
+                    // 상세를 받았으면 최신 값, 아니면 목록에서 받은 값
+                    usedTime: _detail == null
+                        ? widget.guest!.usedTime
+                        : Duration(minutes: _detail!.organRemainTime),
+                  ),
                 ),
             ],
           ),
