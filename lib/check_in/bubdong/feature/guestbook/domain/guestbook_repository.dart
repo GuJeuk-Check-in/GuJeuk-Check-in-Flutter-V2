@@ -51,6 +51,9 @@ abstract class GuestbookRepository {
   /// 방명록 한 페이지 (page는 0부터, 한 페이지 30개)
   Future<List<GuestbookLog>> fetchPage({int page = 0});
 
+  /// 방명록 전체 (한 페이지가 가득 차 있으면 다음 페이지를 이어서 요청)
+  Future<List<GuestbookLog>> fetchAll();
+
   /// 방명록 하나의 자세한 내용
   Future<GuestbookDetail> fetchDetail(int logId);
 

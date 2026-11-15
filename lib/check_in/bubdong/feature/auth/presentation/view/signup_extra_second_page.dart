@@ -76,7 +76,8 @@ class _SignupExtraSecondPageState extends State<SignupExtraSecondPage> {
       school: school,
       // 고른 뒤 칸을 직접 고쳤으면 종류를 모르니 보내지 않음
       schoolType: picked?.name == school ? picked?.type : null,
-      grade: int.parse(_gradeController.text.trim()),
+      // 학교 안 다님이면 학년 칸을 고쳤어도 0 (명세: 무교 + 학년 0)
+      grade: school == noSchoolName ? 0 : int.parse(_gradeController.text.trim()),
       address: _addressController.text.trim(),
       route: _visitRoute,
       routeDetail: _visitRoute == VisitRoute.other

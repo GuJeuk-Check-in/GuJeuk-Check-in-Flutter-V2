@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/component/bubdong_component.dart';
 import 'package:gujeuk_check_in_flutter_v2/check_in/bubdong/core/network/api_client.dart';
@@ -52,12 +53,14 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   String? _error; // 실패했을 때 보여줄 문구
 
   final _guestbookRepository = RemoteGuestbookRepository(bubdongApiClient);
-  // TODO(bubdong): purposeState를 카드 상태(이용 중·이용 완료)에 반영
   GuestbookDetail? _detail; // 방명록에서 들어왔을 때 그 기록의 상세
 
   final _userRepository = RemoteUserRepository(bubdongApiClient);
   bool _isSubmitting = false; // 회원가입·방명록 작성 요청 중
   String? _submitError; // 요청 실패 문구
+
+  // 이미 만든 방문 기록 (신청서에서 이전으로 돌아와 다음을 다시 눌러도 또 만들지 않게)
+  ({Set<Facility> selected, CheckInResult result})? _created;
 
   /// 다음: 처음 온 친구는 회원가입, 다시 온 친구는 방명록 작성 후 신청서로
   void _next() {
@@ -92,26 +95,39 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
     required String fallbackError,
   }) async {
     final selected = _selected.toList();
+    final purposeIds = [for (final facility in selected) _purposeIds[facility]!];
+    final created = _created;
     setState(() {
       _isSubmitting = true;
       _submitError = null;
     });
     try {
-      final result = await send([
-        for (final facility in selected) _purposeIds[facility]!,
-      ]);
-      if (!mounted) return;
-      final queue = selected.where((facility) => switch (facility) {
-            Facility.internet => result.pcForm,
-            Facility.karaoke => result.singForm,
-            Facility.tableTennis => result.pingForm,
-            _ => false,
-          }).toList();
+      final List<Facility> queue;
+      final int logId;
+      if (created == null) {
+        // 처음: 방문 기록을 만들고, 서버가 true로 준 신청서만 이어서 씀
+        final result = await send(purposeIds);
+        if (!mounted) return;
+        _created = (selected: selected.toSet(), result: result);
+        logId = result.logId;
+        queue = _queueFrom(result, selected);
+      } else if (setEquals(created.selected, selected.toSet())) {
+        // 돌아왔지만 고른 게 그대로면 서버 요청 없이 같은 신청서로
+        logId = created.result.logId;
+        queue = _queueFrom(created.result, selected);
+      } else {
+        // 돌아와서 고른 걸 바꿨으면 이미 만든 기록의 이용대장만 수정
+        logId = created.result.logId;
+        await _guestbookRepository.updatePurposes(logId, purposeIds);
+        if (!mounted) return;
+        _created = (selected: selected.toSet(), result: created.result);
+        queue = _applicationQueue;
+      }
       openNextApplication(
         context,
         queue,
         selected: selected,
-        logId: result.logId,
+        logId: logId,
         purposeIds: _purposeIds,
       );
     } catch (error) {
@@ -123,6 +139,18 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  /// 고른 이용대장 중 서버가 true로 준 신청서만
+  List<Facility> _queueFrom(CheckInResult result, List<Facility> selected) {
+    return selected
+        .where((facility) => switch (facility) {
+              Facility.internet => result.pcForm,
+              Facility.karaoke => result.singForm,
+              Facility.tableTennis => result.pingForm,
+              _ => false,
+            })
+        .toList();
   }
 
   /// 서버에서 이용대장 목록(방명록이면 상세도 같이)을 받아 앱 이용대장과 짝지음
@@ -189,14 +217,17 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   /// 원래 기록에 고른 이용대장을 더해 서버에 저장한 뒤 "저장됨" 표시 (성공하면 true)
   Future<bool> _save() async {
     final guest = widget.guest!;
+    final saving = {..._selected}; // 요청 보낼 때의 선택
     setState(() => _submitError = null);
     try {
       // 바꾼 뒤 전체 목록을 보냄
       await _guestbookRepository.updatePurposes(guest.id, [
-        for (final facility in [...guest.facilities, ..._selected])
+        for (final facility in {...guest.facilities, ...saving}) // 겹치면 한 번만
           ?_purposeIds[facility],
       ]);
       if (!mounted) return false;
+      // 기다리는 동안 선택이 바뀌었으면 저장된 게 아님 (바뀐 선택은 다시 3초 뒤 저장)
+      if (!setEquals(saving, _selected)) return false;
       setState(() => _autoSaveStatus = AutoSaveStatus.saved);
       return true;
     } catch (error) {
@@ -259,7 +290,26 @@ class _FacilitySelectPageState extends State<FacilitySelectPage>
   // 방명록에서 들어왔을 때 이미 고른 이용대장 상태 (이용 완료·이용 중)
   BubdongCardStatus? _guestStatusOf(Facility facility) {
     final guest = widget.guest;
-    if (guest == null || !guest.facilities.contains(facility)) return null;
+    if (guest == null) return null;
+
+    // 신청서가 있는 이용대장(인터넷·탁구·노래방)은 상세조회 상태를 따름
+    final form = switch (facility) {
+      Facility.internet => ApplyForm.pc,
+      Facility.tableTennis => ApplyForm.ping,
+      Facility.karaoke => ApplyForm.sing,
+      _ => null,
+    };
+    final formStatus = _detail?.forms.where((f) => f.form == form).firstOrNull;
+    if (formStatus != null) {
+      return switch (formStatus.state) {
+        ApplyFormState.success => BubdongCardStatus.completed,
+        ApplyFormState.pending => BubdongCardStatus.inUse,
+        ApplyFormState.none => null, // 고를 수 있음
+      };
+    }
+
+    // 그 밖은 목록에서 받은 이용대장으로 (모두 이용 중)
+    if (!guest.facilities.contains(facility)) return null;
     return guest.completedFacilities.contains(facility)
         ? BubdongCardStatus.completed
         : BubdongCardStatus.inUse;

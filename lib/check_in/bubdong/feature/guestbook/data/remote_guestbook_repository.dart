@@ -21,6 +21,20 @@ class RemoteGuestbookRepository implements GuestbookRepository {
         .toList();
   }
 
+  /// 응답에 다음 페이지 여부가 없어서, 30개가 꽉 찬 페이지면 다음 페이지를 더 부름
+  @override
+  Future<List<GuestbookLog>> fetchAll() async {
+    final logs = <GuestbookLog>[];
+    final seenIds = <int>{};
+    for (var page = 0; ; page++) {
+      final pageLogs = await fetchPage(page: page);
+      // 새 기록이 하나도 없으면 멈춤 (서버가 같은 페이지를 다시 줘도 끝없이 돌지 않게)
+      final newLogs = pageLogs.where((log) => seenIds.add(log.id)).toList();
+      logs.addAll(newLogs);
+      if (pageLogs.length < _pageSize || newLogs.isEmpty) return logs;
+    }
+  }
+
   /// `GET /log/{logId}`
   @override
   Future<GuestbookDetail> fetchDetail(int logId) async {

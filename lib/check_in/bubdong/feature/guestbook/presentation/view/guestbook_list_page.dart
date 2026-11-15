@@ -41,9 +41,8 @@ class _GuestbookListPageState extends State<GuestbookListPage> {
       _error = null;
     });
     try {
-      // TODO(bubdong): 다음 페이지 불러오기 (응답에 다음 페이지 여부가 없어 지금은 첫 30개만)
       final results = await Future.wait([
-        _guestbookRepository.fetchPage(),
+        _guestbookRepository.fetchAll(), // 30개 넘으면 다음 페이지까지
         _purposeRepository.fetchAll(),
       ]);
       if (!mounted) return; // 기다리는 동안 화면을 나갔으면 멈춤
