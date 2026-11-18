@@ -63,13 +63,6 @@ android {
             // 키가 있으면 release를 그 키로 서명합니다. debug 빌드는 build type의 debug 키를 씁니다.
             signingConfig = signingConfigs.getByName(if (hasReleaseKey) "release" else "debug")
         }
-        create("bubdong") {
-            dimension = "app"
-            applicationIdSuffix = ".bubdong"
-            manifestPlaceholders["appName"] = "법동 체크인"
-            // 법동은 지금처럼 debug 키로 서명합니다.
-            signingConfig = signingConfigs.getByName("debug")
-        }
     }
 
     buildTypes {
