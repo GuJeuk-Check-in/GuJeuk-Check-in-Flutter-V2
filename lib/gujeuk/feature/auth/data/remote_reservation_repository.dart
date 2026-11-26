@@ -21,8 +21,9 @@ class RemoteReservationRepository implements ReservationRepository {
   }
 
   /// `GET /user/reservation/purpose`. 목록은 `purposes` 안에 감싸져 옵니다.
-  /// 모든 목적이 `reservationStatus`(예약이 필요한지)와 함께 오므로 true인 것만 담습니다.
-  /// false인 목적은 시간 없이 바로 이용합니다.
+  /// 모든 목적이 `reservationStatus`(`RESERVATION` | `NONE` | `SUB_INCLUDE`)와 함께 오므로
+  /// `RESERVATION`인 것만 담습니다. 값이 없으면 예전처럼 예약이 필요하다고 봅니다.
+  /// `NONE`과 `SUB_INCLUDE`(하위 목록이 있는 목적)는 아직 시간 없이 바로 이용합니다.
   @override
   Future<List<VisitPurpose>> fetchReservablePurposes() async {
     final response = await _client.dio.get<Map<String, dynamic>>(
@@ -30,7 +31,11 @@ class RemoteReservationRepository implements ReservationRepository {
     );
     return (response.data!['purposes'] as List<dynamic>)
         .cast<Map<String, dynamic>>()
-        .where((json) => json['reservationStatus'] as bool? ?? true)
+        .where(
+          (json) =>
+              (json['reservationStatus'] as String? ?? 'RESERVATION') ==
+              'RESERVATION',
+        )
         .map(VisitPurpose.fromJson)
         .toList();
   }
