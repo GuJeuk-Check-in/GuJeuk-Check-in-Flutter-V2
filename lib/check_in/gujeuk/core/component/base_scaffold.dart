@@ -54,7 +54,12 @@ class BaseScaffold extends StatelessWidget {
                   left: 0,
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => Navigator.of(context).maybePop(),
+                    // maybePop은 PopScope(canPop: false)에 막히므로 pop으로 직접 닫습니다.
+                    // 시스템 뒤로가기를 막은 화면에서도 이 버튼으로는 돌아갈 수 있습니다.
+                    onTap: () {
+                      final navigator = Navigator.of(context);
+                      if (navigator.canPop()) navigator.pop();
+                    },
                     // 아이콘(24)보다 넉넉한 터치 영역을 줍니다.
                     child: const SizedBox(
                       width: GujeukSpacing.s48,
