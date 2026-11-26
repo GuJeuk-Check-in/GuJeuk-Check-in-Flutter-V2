@@ -10,10 +10,14 @@ class BaseScaffold extends StatelessWidget {
   /// 왼쪽 위에 뒤로가기 버튼을 띄웁니다. 시스템 뒤로가기가 막힌 키오스크에서도 돌아갈 수 있게 합니다.
   final bool showBackButton;
 
+  /// 오른쪽 아래 구석에 작게 띄울 위젯. 앱 버전 표시처럼 본문과 상관없는 정보에 씁니다.
+  final Widget? footer;
+
   const BaseScaffold({
     super.key,
     required this.child,
     this.showBackButton = false,
+    this.footer,
     this.horizontal,
     this.vertical,
   });
@@ -67,6 +71,12 @@ class BaseScaffold extends StatelessWidget {
                       child: Center(child: GujeukIcon(GujeukIcons.arrowLeft)),
                     ),
                   ),
+                ),
+              if (footer != null)
+                Positioned(
+                  right: 0,
+                  bottom: GujeukSpacing.s20,
+                  child: footer!,
                 ),
             ],
           ),

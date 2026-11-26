@@ -44,6 +44,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildContent() {
     return BaseScaffold(
+      // 기관에서 업데이트가 반영됐는지 확인할 수 있게 버전과 패치 번호를 보여 줍니다.
+      footer: const AppVersionLabel(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
