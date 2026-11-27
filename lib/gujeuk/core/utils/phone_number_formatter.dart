@@ -9,9 +9,9 @@ class PhoneNumberFormatter extends TextInputFormatter {
 
   static String digitsOf(String text) => text.replaceAll(RegExp(r'\D'), '');
 
-  static final _validPattern = RegExp(r'^01[016789]\d{7,8}$');
+  static final _validPattern = RegExp(r'^01[016789]\d{8}$');
 
-  /// 하이픈을 뺀 숫자가 휴대폰 번호 모양인지. 회원가입과 동명이인 확인이 같은 규칙을 씁니다.
+  /// 하이픈을 뺀 숫자가 11자리 휴대폰 번호인지. 회원가입과 동명이인 확인이 같은 규칙을 씁니다.
   static bool isValid(String text) => _validPattern.hasMatch(digitsOf(text));
 
   @override
