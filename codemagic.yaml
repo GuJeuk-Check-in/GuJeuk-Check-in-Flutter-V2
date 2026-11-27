@@ -3,8 +3,30 @@ definitions:
     flutter: stable
     java: 17
     groups:
-      # Codemagic Teams > Environment variables 에서 만든 그룹. API_BASE_URL 을 담는다.
+      # 앱 설정 > Environment variables 에서 만든 그룹. API_BASE_URL, SHOREBIRD_TOKEN 을 담는다.
       - gujeuk
+  gujeuk_shorebird_environment: &gujeuk_shorebird_environment
+    <<: *gujeuk_environment
+    # Settings > Code signing identities > Android keystores 에 올린 구즉 release 키.
+    # 빌드 중에 CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD 로 들어온다.
+    android_signing:
+      - gujeuk_keystore
+  gujeuk_shorebird_setup:
+    - &install_shorebird
+      name: Shorebird 설치
+      script: |
+        curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/shorebirdtech/install/main/install.sh -sSf | bash
+        echo "PATH=$HOME/.shorebird/bin:$PATH" >> $CM_ENV
+    - &gujeuk_key_properties
+      name: 서명 키 설정
+      script: |
+        # android/app/build.gradle.kts 는 key.properties 가 있으면 release 를 그 키로 서명한다.
+        cat > android/key.properties <<EOF
+        storeFile=$CM_KEYSTORE_PATH
+        storePassword=$CM_KEYSTORE_PASSWORD
+        keyAlias=$CM_KEY_ALIAS
+        keyPassword=$CM_KEY_PASSWORD
+        EOF
   gujeuk_setup:
     - &gujeuk_env_file
       name: .env.gujeuk 만들기
@@ -62,3 +84,41 @@ workflows:
         script: flutter build appbundle --release --flavor gujeuk -t lib/main_gujeuk.dart
     artifacts:
       - build/app/outputs/bundle/**/*.aab
+
+  # 기관에 보낼 APK를 만든다. triggering 이 없어서 Start new build 에서 직접 골라야만 돈다.
+  # 같은 버전으로 두 번 릴리스할 수 없으니 먼저 pubspec.yaml 의 version 을 올려 커밋한다.
+  gujeuk-shorebird-release:
+    name: 구즉 Shorebird release (APK)
+    instance_type: mac_mini_m2
+    environment: *gujeuk_shorebird_environment
+    scripts:
+      - *gujeuk_env_file
+      - *install_shorebird
+      - *gujeuk_key_properties
+      - *pub_get
+      - name: Shorebird release
+        script: |
+          shorebird release android --flavor gujeuk -t lib/main_gujeuk.dart --artifact apk --no-confirm
+    artifacts:
+      - build/app/outputs/flutter-apk/app-gujeuk-release.apk
+      - build/app/outputs/bundle/gujeukRelease/*.aab
+
+  # 설치된 앱에 패치를 올린다. 직접 골라야만 돈다.
+  # pubspec.yaml 의 version 이 패치를 받을 릴리스 버전이어야 한다(예: 1.0.0+3).
+  # 기관 기기는 stable 만 보므로, staging 에 올린 뒤 확인하고 아래 명령으로 내보낸다.
+  #   shorebird patches promote --flavor gujeuk --release-version <버전> --patch-number <번호>
+  gujeuk-shorebird-patch:
+    name: 구즉 Shorebird patch (staging)
+    instance_type: mac_mini_m2
+    environment: *gujeuk_shorebird_environment
+    scripts:
+      - *gujeuk_env_file
+      - *install_shorebird
+      - *gujeuk_key_properties
+      - *pub_get
+      - name: Shorebird patch
+        script: |
+          RELEASE_VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "패치할 릴리스: $RELEASE_VERSION"
+          shorebird patch --platforms=android --flavor gujeuk -t lib/main_gujeuk.dart \
+            --release-version "$RELEASE_VERSION" --track staging --no-confirm
