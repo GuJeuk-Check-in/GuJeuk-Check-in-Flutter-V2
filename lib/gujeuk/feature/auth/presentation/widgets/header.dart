@@ -4,7 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/theme/gujeuk_theme.dart';
 
 class Header extends StatelessWidget {
   final String title;
-  const Header({super.key,required this.title});
+  const Header({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

@@ -24,8 +24,7 @@ class Bottom extends ConsumerWidget {
         // 키오스크 터치로 작은 칸을 맞히기 어려워 문구까지 한 번에 눌리게 하고 칸도 키웁니다.
         GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () =>
-              ref.read(signUpFormProvider.notifier).setAgreed(!agreed),
+          onTap: () => ref.read(signUpFormProvider.notifier).setAgreed(!agreed),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: GujeukSpacing.s16,
