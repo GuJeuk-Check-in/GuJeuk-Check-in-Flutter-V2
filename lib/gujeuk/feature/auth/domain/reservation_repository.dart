@@ -8,9 +8,9 @@ abstract interface class ReservationRepository {
   /// 예약이 필요한 시설만. 이 목적을 고르면 시간도 골라야 합니다.
   Future<List<VisitPurpose>> fetchReservablePurposes();
 
-  /// [purpose] 시설에서 아직 예약할 수 있는 시간(`HH:mm`).
+  /// [unit]에서 아직 예약할 수 있는 시간(`HH:mm`).
   /// 예약할 수 없거나 없는 시설이면 [PurposeChangedException]을 던집니다.
-  Future<List<String>> fetchAvailableTimes(String purpose);
+  Future<List<String>> fetchAvailableTimes(ReservationUnit unit);
 
   /// `POST /user/reservation`. 이미 가입한 친구만 씁니다. 새 친구는 가입하면서 예약합니다.
   /// [phone]은 같은 이름의 회원이 있을 때만, 하이픈 없이 숫자만(`01012345678`) 넘깁니다.
@@ -20,7 +20,7 @@ abstract interface class ReservationRepository {
   Future<void> reserve({
     required String name,
     String? phone,
-    required String purpose,
+    required ReservationUnit unit,
     required String startTime,
     required int maleCount,
     required int femaleCount,
@@ -37,7 +37,7 @@ class SlotTakenException implements Exception {
   const SlotTakenException();
 }
 
-/// 400 `예약할 수 없는 방문 목적입니다.` 또는 404 `존재하지 않는 방문목적입니다.`
+/// 400 `예약할 수 없는 방문 목적입니다.` 또는 404 `존재하지 않는 방문목적입니다.`·`존재하지 않는 하위 방문목적입니다.`
 /// 저장해 둔 목록을 쓰는 사이 관리자가 목적을 지웠거나 예약 방식을 바꿨습니다.
 /// 목록을 다시 받아 목적을 새로 골라야 합니다.
 class PurposeChangedException implements Exception {

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/component/done_box.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/sign_up_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
 
 /// 제출을 마친 뒤 화면이 할 일. 다이얼로그와 화면 이동은 화면이 맡습니다.
@@ -84,6 +85,12 @@ abstract class SubmitController extends AsyncNotifier<void> {
       // 저장해 둔 목록을 쓰는 사이 목적이 바뀌었으면 목록을 다시 받아 새로 고르게 합니다.
       if (!ref.mounted) return const SubmitStopped();
       ref.read(signUpFormProvider.notifier).rejectChangedPurpose();
+      state = const AsyncData(null);
+      return invalid();
+    } on ResidenceChangedException {
+      // 저장해 둔 목록을 쓰는 사이 거주지가 없어졌으면 목록을 다시 받아 새로 고르게 합니다.
+      if (!ref.mounted) return const SubmitStopped();
+      ref.read(signUpFormProvider.notifier).rejectChangedResidence();
       state = const AsyncData(null);
       return invalid();
     } catch (_) {

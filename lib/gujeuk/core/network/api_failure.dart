@@ -23,10 +23,22 @@ bool isRetryableFailure(Object error) {
       _temporaryClientErrors.contains(status);
 }
 
+/// 보낸 목적·회원·거주지가 서버에서 지워졌다는 404의 `message`.
+/// 주소가 틀렸거나 배포 중인 404는 다시 보내면 성공할 수 있어 메시지로 나눕니다.
+const _goneMessages = {
+  '존재하지 않는 방문목적입니다.',
+  '존재하지 않는 하위 방문목적입니다.',
+  '해당 유저가 존재 하지 않습니다.',
+  '존재하지 않는 거주지 입니다.',
+};
+
 /// 서버가 내용을 거절해 같은 내용을 다시 보내도 소용없는 실패인지.
-bool isContentRejection(Object error) =>
-    error is DioException &&
-    _contentRejections.contains(error.response?.statusCode);
+bool isContentRejection(Object error) {
+  if (error is! DioException) return false;
+  final status = error.response?.statusCode;
+  if (_contentRejections.contains(status)) return true;
+  return status == 404 && _goneMessages.contains(rejectionMessageOf(error));
+}
 
 bool isBadRequest(Object error) =>
     error is DioException && error.response?.statusCode == 400;

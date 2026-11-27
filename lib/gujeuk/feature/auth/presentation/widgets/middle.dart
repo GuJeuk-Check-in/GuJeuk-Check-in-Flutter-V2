@@ -5,6 +5,7 @@ import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/component/gujeuk_componen
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/theme/gujeuk_theme.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/number_range_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/phone_number_formatter.dart';
+import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/visit_purpose.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/presentation/controller/sign_up_form_controller.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/presentation/controller/sign_up_options.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/presentation/controller/sign_up_text_fields.dart';
@@ -46,7 +47,11 @@ class Middle extends ConsumerWidget {
     final controller = ref.read(signUpFormProvider.notifier);
     final catalog = ref.watch(purposeCatalogProvider);
     final purpose = form.purpose;
+    final subPurposes = controller.needsSubPurpose
+        ? catalog.value?.find(purpose)?.subPurposes ?? const <SubPurpose>[]
+        : const <SubPurpose>[];
     final needsTime = controller.needsTime;
+    final unit = controller.reservationUnit;
     final fields = this.fields;
 
     return Column(
@@ -57,9 +62,27 @@ class Middle extends ConsumerWidget {
           errorText: form.errorOf(SignUpField.purpose),
           child: _purposeGrid(ref, catalog, form, controller),
         ),
-        if (needsTime && purpose != null) ...[
+        // 하위 목적이 있는 시설을 고르면 하위를 한 번 더 고릅니다.
+        if (subPurposes.isNotEmpty) ...[
           const SizedBox(height: GujeukSpacing.s60),
-          ..._timePicker(ref, purpose, form, controller),
+          GujeukLabeledField(
+            label: '자세히 무엇을 할 거야?',
+            icon: GujeukIcons.rocket,
+            errorText: form.errorOf(SignUpField.subPurpose),
+            child: _cardGrid(subPurposes.length, (index) {
+              final sub = subPurposes[index];
+              return _optionCard(
+                sub.name,
+                index,
+                selected: form.subPurpose == sub,
+                onTap: () => controller.selectSubPurpose(sub),
+              );
+            }),
+          ),
+        ],
+        if (needsTime && unit != null) ...[
+          const SizedBox(height: GujeukSpacing.s60),
+          ..._timePicker(ref, unit, form, controller),
         ],
         if (fields != null) ...[
           const SizedBox(height: GujeukSpacing.s60),
@@ -179,13 +202,13 @@ class Middle extends ConsumerWidget {
                 gender: GujeukGender.male,
                 count: form.maleCount,
                 // 남녀를 합쳐 정원을 넘지 않게, 한쪽 최대는 다른 쪽 수만큼 줄입니다.
-                max: _companionMax(catalog, purpose, form.femaleCount),
+                max: _companionMax(catalog, form, form.femaleCount),
                 onChanged: controller.setMaleCount,
               );
               final female = GujeukCompanionStepper(
                 gender: GujeukGender.female,
                 count: form.femaleCount,
-                max: _companionMax(catalog, purpose, form.maleCount),
+                max: _companionMax(catalog, form, form.maleCount),
                 onChanged: controller.setFemaleCount,
               );
               if (constraints.maxWidth <
@@ -214,11 +237,11 @@ class Middle extends ConsumerWidget {
 
   List<Widget> _timePicker(
     WidgetRef ref,
-    String purpose,
+    ReservationUnit unit,
     SignUpFormState form,
     SignUpFormController controller,
   ) {
-    final available = ref.watch(availableTimesProvider(purpose));
+    final available = ref.watch(availableTimesProvider(unit));
     final availableTimes = available.value;
     // 불러오지 못하면 어떤 칸이 찼는지 모르므로 모든 칸을 회색으로 막습니다.
     final failed = available.hasError && !available.isLoading;
@@ -239,7 +262,7 @@ class Middle extends ConsumerWidget {
         const SizedBox(height: GujeukSpacing.s16),
         _LoadError(
           message: '예약 현황을 불러오지 못했어요',
-          onRetry: () => ref.invalidate(availableTimesProvider(purpose)),
+          onRetry: () => ref.invalidate(availableTimesProvider(unit)),
         ),
       ],
       if (timeError != null) ...[
@@ -283,7 +306,19 @@ class Middle extends ConsumerWidget {
       );
     }
     final purposes = loaded.purposes;
+    return _cardGrid(purposes.length, (index) {
+      final purpose = purposes[index].purpose;
+      return _optionCard(
+        purpose,
+        index,
+        selected: form.purpose == purpose,
+        onTap: () => controller.selectPurpose(purpose),
+      );
+    });
+  }
 
+  /// 카드 [count]장을 화면 폭에 맞춰 줄지어 놓습니다.
+  Widget _cardGrid(int count, Widget Function(int index) cardAt) {
     // 화면 폭에 맞춰 한 줄에 몇 장 놓을지 정하고, 줄마다 카드 높이를 가장 높은 카드에 맞춥니다.
     // 칸 높이를 고정하지 않아 글자가 커져도 카드가 늘어날 뿐 넘치지 않습니다.
     // Android는 창 크기를 받기 전 너비 0으로 첫 프레임을 그리므로 그릴 너비가 생길 때까지 비워둡니다.
@@ -296,7 +331,7 @@ class Middle extends ConsumerWidget {
                 .ceil();
         return Column(
           children: [
-            for (var start = 0; start < purposes.length; start += columns) ...[
+            for (var start = 0; start < count; start += columns) ...[
               if (start > 0) const SizedBox(height: GujeukSpacing.s16),
               IntrinsicHeight(
                 child: Row(
@@ -305,13 +340,8 @@ class Middle extends ConsumerWidget {
                     for (var column = 0; column < columns; column++) ...[
                       if (column > 0) const SizedBox(width: GujeukSpacing.s16),
                       Expanded(
-                        child: start + column < purposes.length
-                            ? _purposeCard(
-                                purposes[start + column].purpose,
-                                start + column,
-                                form,
-                                controller,
-                              )
+                        child: start + column < count
+                            ? cardAt(start + column)
                             : const SizedBox.shrink(),
                       ),
                     ],
@@ -331,31 +361,31 @@ class Middle extends ConsumerWidget {
   /// 동행 인원 칸이 성별 글자와 −·+ 버튼을 한 줄에 담는 데 필요한 너비.
   static const double _stepperMinWidth = 400;
 
-  Widget _purposeCard(
-    String purpose,
-    int index,
-    SignUpFormState form,
-    SignUpFormController controller,
-  ) {
+  Widget _optionCard(
+    String label,
+    int index, {
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
     return GujeukOptionCard(
       // `친친마루(게임, 독서 등)`을 이름과 설명 두 줄로 나눕니다.
-      label: purpose.replaceFirst('(', '\n('),
+      label: label.replaceFirst('(', '\n('),
       // 목적 개수가 API에 따라 달라지므로 색은 순서대로 돌려 씁니다.
       accent:
           GujeukOptionAccent.values[index % GujeukOptionAccent.values.length],
       // 방문 목적 카드는 Figma 기본(168)보다 낮은 140을 씁니다.
       height: 140,
-      selected: form.purpose == purpose,
-      onTap: () => controller.selectPurpose(purpose),
+      selected: selected,
+      onTap: onTap,
     );
   }
 
   int? _companionMax(
     AsyncValue<PurposeCatalog> catalog,
-    String? purpose,
+    SignUpFormState form,
     int otherCount,
   ) {
-    final max = catalog.value?.maxCompanions(purpose);
+    final max = catalog.value?.maxCompanions(form.purpose, form.subPurpose);
     return max == null ? null : max - otherCount;
   }
 

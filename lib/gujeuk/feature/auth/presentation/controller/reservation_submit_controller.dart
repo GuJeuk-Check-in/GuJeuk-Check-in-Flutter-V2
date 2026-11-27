@@ -54,7 +54,10 @@ class ReservationSubmitController extends SubmitController {
   /// 같은 이름의 회원이 있다는 409가 오면 [SubmitNeedsPhone]을 돌려줍니다.
   Future<SubmitResult> _reserve({required String name, String? phone}) {
     final form = ref.read(signUpFormProvider);
+    // 시간을 골랐다면 목록을 받은 뒤이므로 단위가 있습니다. 없으면 실패 안내로 끝냅니다.
+    final unit = ref.read(signUpFormProvider.notifier).reservationUnit;
     return run('예약하지 못했어요. 다시 눌러주세요', () async {
+      if (unit == null) throw StateError('예약할 목적을 목록에서 찾지 못했습니다');
       try {
         await ref
             .read(reservationRepositoryProvider)
@@ -63,7 +66,7 @@ class ReservationSubmitController extends SubmitController {
               phone: phone == null
                   ? null
                   : PhoneNumberFormatter.digitsOf(phone),
-              purpose: form.purpose!,
+              unit: unit,
               startTime: form.time!,
               maleCount: form.maleCount,
               femaleCount: form.femaleCount,
@@ -75,7 +78,7 @@ class ReservationSubmitController extends SubmitController {
       return SubmitDone(
         ReservationInfo(
           name: name,
-          purpose: form.purpose!,
+          purpose: form.purposeLabel!,
           phone: phone ?? '',
           startTime: form.time!,
           maleCount: form.maleCount,

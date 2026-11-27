@@ -48,6 +48,8 @@ class SignUpSubmitController extends SubmitController {
               femaleCount: form.femaleCount,
               visitTime: ref.read(serverClockProvider).now(),
               reservationTime: time,
+              // 하위 목적을 예약할 때만 보냅니다. 상위 목적은 이름으로 보냅니다.
+              subPurposeId: form.subPurpose?.id,
             )
             .timeout(SubmitController.reservationLimit);
       } else if (offline) {
@@ -82,7 +84,7 @@ class SignUpSubmitController extends SubmitController {
             ? null
             : ReservationInfo(
                 name: name,
-                purpose: form.purpose!,
+                purpose: form.purposeLabel!,
                 phone: texts.phone.trim(),
                 startTime: time,
                 maleCount: form.maleCount,

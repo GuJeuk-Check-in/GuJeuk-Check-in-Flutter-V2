@@ -5,11 +5,13 @@ import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/network/server_clock.dart
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/server_date_format.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/reservation_repository.dart';
+import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/visit_purpose.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/presentation/controller/sign_up_options.dart';
 
 /// 에러 문구를 띄우는 폼 항목. 화면 위에서 아래 순서이며, 모달에도 이 순서로 띄웁니다.
 enum SignUpField {
   purpose,
+  subPurpose,
   time,
   name,
   phone,
@@ -33,7 +35,11 @@ typedef SignUpTexts = ({
 @immutable
 class SignUpFormState {
   /// 고른 방문 목적. API와 같은 `친친마루(게임, 독서 등)` 모양입니다.
+  /// 방문 기록에는 하위를 골라도 이 상위 이름만 남습니다.
   final String? purpose;
+
+  /// 고른 목적이 하위 목적을 고르는 목적일 때 고른 하위 목적.
+  final SubPurpose? subPurpose;
   final String? time;
   final GujeukGender? gender;
   final String? residence;
@@ -44,6 +50,7 @@ class SignUpFormState {
 
   const SignUpFormState({
     this.purpose,
+    this.subPurpose,
     this.time,
     this.gender,
     this.residence,
@@ -55,6 +62,12 @@ class SignUpFormState {
 
   String? errorOf(SignUpField field) => errors[field];
 
+  /// 완료 화면에 보여줄 시설 이름. 하위를 골랐으면 `친친마루 › 게임존`처럼 함께 보여줍니다.
+  String? get purposeLabel => switch ((purpose, subPurpose)) {
+    (final purpose?, final sub?) => '$purpose › ${sub.name}',
+    (final purpose, _) => purpose,
+  };
+
   /// 떠 있는 에러 문구를 화면 위에서 아래 순서로 모읍니다.
   List<String> get errorMessages => [
     for (final field in SignUpField.values) ?errors[field],
@@ -62,12 +75,13 @@ class SignUpFormState {
 
   static const _keep = Object();
 
-  /// [purpose]와 [time]은 null로 비울 수 있어, 넘기지 않은 것과 구분하려고 [_keep]을 씁니다.
+  /// [purpose], [subPurpose], [time], [residence]는 null로 비울 수 있어, 넘기지 않은 것과 구분하려고 [_keep]을 씁니다.
   SignUpFormState copyWith({
     Object? purpose = _keep,
+    Object? subPurpose = _keep,
     Object? time = _keep,
     GujeukGender? gender,
-    String? residence,
+    Object? residence = _keep,
     bool? agreed,
     int? maleCount,
     int? femaleCount,
@@ -75,9 +89,14 @@ class SignUpFormState {
   }) {
     return SignUpFormState(
       purpose: identical(purpose, _keep) ? this.purpose : purpose as String?,
+      subPurpose: identical(subPurpose, _keep)
+          ? this.subPurpose
+          : subPurpose as SubPurpose?,
       time: identical(time, _keep) ? this.time : time as String?,
       gender: gender ?? this.gender,
-      residence: residence ?? this.residence,
+      residence: identical(residence, _keep)
+          ? this.residence
+          : residence as String?,
       agreed: agreed ?? this.agreed,
       maleCount: maleCount ?? this.maleCount,
       femaleCount: femaleCount ?? this.femaleCount,
@@ -119,9 +138,17 @@ class SignUpFormController extends Notifier<SignUpFormState> {
 
   PurposeCatalog? get _catalog => ref.read(purposeCatalogProvider).value;
 
-  /// 고른 목적이 예약이 필요한 시설이라 시간도 골라야 하는지.
+  /// 고른 목적(과 하위 목적)이 예약이 필요한 시설이라 시간도 골라야 하는지.
   bool get needsTime =>
-      !offline && (_catalog?.needsTime(state.purpose) ?? false);
+      !offline &&
+      (_catalog?.needsTime(state.purpose, state.subPurpose) ?? false);
+
+  /// 고른 목적이 하위 목적을 하나 더 골라야 하는지. 오프라인에서도 고르게 합니다.
+  bool get needsSubPurpose => _catalog?.needsSubPurpose(state.purpose) ?? false;
+
+  /// 시간 조회와 예약을 보낼 단위. 목적을 고르지 않았거나 목록에 없으면 null입니다.
+  ReservationUnit? get reservationUnit =>
+      _catalog?.unitOf(state.purpose, state.subPurpose);
 
   /// 오늘 시작 시간이 이미 지난 칸. 화면을 띄워둔 사이에도 지나가므로 부를 때마다 다시 셉니다.
   /// 키오스크 시계가 틀려도 방문 시각과 같은 기준이 되도록 서버로 보정한 시각을 씁니다.
@@ -149,11 +176,33 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     // 정원이 더 작은 시설로 바꿨다면 고른 인원을 지우지 않고 바로 알려줍니다.
     state = state.copyWith(
       purpose: value,
+      subPurpose: null,
       time: null,
       errors: _withErrors({
         SignUpField.purpose: null,
+        SignUpField.subPurpose: null,
         SignUpField.time: null,
         SignUpField.companion: _companionError(
+          value,
+          null,
+          state.maleCount + state.femaleCount,
+        ),
+      }),
+    );
+    _watchAvailableTimes();
+  }
+
+  /// 하위 목적을 고릅니다. 하위마다 예약 여부와 예약 상황이 다르므로 고른 시간은 비웁니다.
+  void selectSubPurpose(SubPurpose value) {
+    if (state.subPurpose == value) return;
+    state = state.copyWith(
+      subPurpose: value,
+      time: null,
+      errors: _withErrors({
+        SignUpField.subPurpose: null,
+        SignUpField.time: null,
+        SignUpField.companion: _companionError(
+          state.purpose,
           value,
           state.maleCount + state.femaleCount,
         ),
@@ -166,9 +215,9 @@ class SignUpFormController extends Notifier<SignUpFormState> {
   void _watchAvailableTimes() {
     _availableTimesSub?.close();
     _availableTimesSub = null;
-    final purpose = state.purpose;
-    if (purpose == null || !needsTime) return;
-    _availableTimesSub = ref.listen(availableTimesProvider(purpose), (_, next) {
+    final unit = reservationUnit;
+    if (unit == null || !needsTime) return;
+    _availableTimesSub = ref.listen(availableTimesProvider(unit), (_, next) {
       if (next.error is PurposeChangedException) return rejectChangedPurpose();
       final available = next.value;
       final time = state.time;
@@ -184,8 +233,8 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     state = state.copyWith(
       errors: _withErrors({SignUpField.time: '그사이 다른 친구가 예약했어요. 다른 시간을 골라주세요'}),
     );
-    final purpose = state.purpose;
-    if (purpose != null) ref.invalidate(availableTimesProvider(purpose));
+    final unit = reservationUnit;
+    if (unit != null) ref.invalidate(availableTimesProvider(unit));
   }
 
   /// 고른 목적이 그사이 지워졌거나 예약할 수 없는 목적으로 바뀌었을 때.
@@ -195,14 +244,26 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     _availableTimesSub = null;
     state = state.copyWith(
       purpose: null,
+      subPurpose: null,
       time: null,
       errors: _withErrors({
         SignUpField.purpose: '시설 정보가 바뀌었어요. 다시 골라주세요',
+        SignUpField.subPurpose: null,
         SignUpField.time: null,
         SignUpField.companion: null,
       }),
     );
     ref.invalidate(purposeCatalogProvider);
+  }
+
+  /// 고른 거주지가 그사이 지워졌거나 이름이 바뀌었을 때.
+  /// 목록을 다시 받고, 고른 거주지를 비워 새로 고르게 합니다.
+  void rejectChangedResidence() {
+    state = state.copyWith(
+      residence: null,
+      errors: _withErrors({SignUpField.residence: '동네 목록이 바뀌었어요. 다시 골라주세요'}),
+    );
+    ref.invalidate(residencesProvider);
   }
 
   void selectTime(String value) {
@@ -239,6 +300,7 @@ class SignUpFormController extends Notifier<SignUpFormState> {
       errors: _withErrors({
         SignUpField.companion: _companionError(
           state.purpose,
+          state.subPurpose,
           value + state.femaleCount,
         ),
       }),
@@ -251,6 +313,7 @@ class SignUpFormController extends Notifier<SignUpFormState> {
       errors: _withErrors({
         SignUpField.companion: _companionError(
           state.purpose,
+          state.subPurpose,
           state.maleCount + value,
         ),
       }),
@@ -294,9 +357,12 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     final s = state;
     return {
       if (s.purpose == null) SignUpField.purpose: '무엇을 하러 왔는지 골라주세요',
+      if (needsSubPurpose && s.subPurpose == null)
+        SignUpField.subPurpose: '자세히 무엇을 할지 골라주세요',
       SignUpField.time: ?_timeError(),
       SignUpField.companion: ?_companionError(
         s.purpose,
+        s.subPurpose,
         s.maleCount + s.femaleCount,
       ),
     };
@@ -311,8 +377,12 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     return null;
   }
 
-  String? _companionError(String? purpose, int companions) {
-    final max = _catalog?.maxCompanions(purpose);
+  String? _companionError(
+    String? purpose,
+    SubPurpose? subPurpose,
+    int companions,
+  ) {
+    final max = _catalog?.maxCompanions(purpose, subPurpose);
     if (max == null || companions <= max) return null;
     return '이 시설은 본인 포함 최대 ${max + 1}명까지 쓸 수 있어요';
   }

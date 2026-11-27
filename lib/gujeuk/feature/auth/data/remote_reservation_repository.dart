@@ -14,8 +14,6 @@ class RemoteReservationRepository implements ReservationRepository {
 
   /// `GET /purpose/all/with-sub`. 모든 기관의 목적이 걸러지지 않고 `purposeIndex` 순으로
   /// `purposes` 안에 감싸져 옵니다. id는 `purposeId`로 옵니다.
-  /// 하위 목적(`subPurposes`)은 아직 고르는 화면이 없어 담지 않고,
-  /// 하위가 있는 `SUB_INCLUDE` 목적은 상태만 담아 화면에서 고를 수 없게 합니다.
   /// 모양이 명세와 다르면 [FormatException]을 던져, 저장해 둔 목록을 쓰게 합니다.
   @override
   Future<List<VisitPurpose>> fetchVisitPurposes() async {
@@ -34,16 +32,28 @@ class RemoteReservationRepository implements ReservationRepository {
           'purposeId': final int id,
           'purpose': final String name,
           'reservationStatus': final String status,
+          'subPurposes': final List<dynamic> subs,
         })
           VisitPurpose(
             id: id,
             purpose: name,
             reservationStatus: PurposeReservationStatus.parse(status),
+            subPurposes: [for (final sub in subs) _subPurposeOf(sub)],
           )
         else
           throw const FormatException('/purpose/all/with-sub의 목적 모양이 다릅니다'),
     ];
   }
+
+  static SubPurpose _subPurposeOf(Object? json) => switch (json) {
+    {
+      'subPurposeId': final int id,
+      'subPurpose': final String name,
+      'subPurposeReservation': final bool needsReservation,
+    } =>
+      SubPurpose(id: id, name: name, needsReservation: needsReservation),
+    _ => throw const FormatException('/purpose/all/with-sub의 하위 목적 모양이 다릅니다'),
+  };
 
   /// `GET /user/reservation/purpose`. 목록은 `purposes` 안에 감싸져 옵니다.
   /// 모든 목적이 `reservationStatus`(`RESERVATION` | `NONE` | `SUB_INCLUDE`)와 함께 오므로
@@ -66,15 +76,18 @@ class RemoteReservationRepository implements ReservationRepository {
         .toList();
   }
 
-  /// `GET /user/reservation?purpose=`. 예약된 칸을 뺀 시간이 `times` 안에 감싸져 옵니다.
+  /// `GET /user/reservation?purposeId=&subPurposeId=`. 예약된 칸을 뺀 시간이 `times` 안에 감싸져 옵니다.
   /// 이미 지난 시간도 들어 있으므로 지난 칸은 화면에서 따로 막습니다.
   @override
-  Future<List<String>> fetchAvailableTimes(String purpose) async {
+  Future<List<String>> fetchAvailableTimes(ReservationUnit unit) async {
     final Response<Map<String, dynamic>> response;
     try {
       response = await _client.dio.get<Map<String, dynamic>>(
         '/user/reservation',
-        queryParameters: {'purpose': purpose},
+        queryParameters: {
+          'purposeId': unit.purposeId,
+          'subPurposeId': ?unit.subPurposeId,
+        },
       );
     } on DioException catch (e) {
       if (isPurposeChanged(e)) throw const PurposeChangedException();
@@ -88,7 +101,7 @@ class RemoteReservationRepository implements ReservationRepository {
   Future<void> reserve({
     required String name,
     String? phone,
-    required String purpose,
+    required ReservationUnit unit,
     required String startTime,
     required int maleCount,
     required int femaleCount,
@@ -101,7 +114,9 @@ class RemoteReservationRepository implements ReservationRepository {
           if (phone != null) 'phone': PhoneNumberFormatter.format(phone),
           'maleCount': maleCount,
           'femaleCount': femaleCount,
-          'purpose': purpose,
+          'purpose': unit.purpose,
+          'purposeId': unit.purposeId,
+          'subPurposeId': ?unit.subPurposeId,
           'startTime': startTime,
         },
       );
@@ -119,7 +134,7 @@ class RemoteReservationRepository implements ReservationRepository {
   static bool isSlotTaken(DioException e) =>
       conflictMessageOf(e) == '이미 예약된 시간입니다.';
 
-  /// 고른 목적이 그사이 지워졌거나 예약할 수 없는 목적으로 바뀌었다는 400·404.
+  /// 고른 목적이나 하위 목적이 그사이 지워졌거나 예약할 수 없게 바뀌었다는 400·404.
   /// 가입하면서 예약할 때와 예약 시간을 조회할 때도 같은 응답이 옵니다.
   static bool isPurposeChanged(DioException e) =>
       _purposeChangedMessages.contains(rejectionMessageOf(e));
@@ -127,5 +142,6 @@ class RemoteReservationRepository implements ReservationRepository {
   static const _purposeChangedMessages = {
     '예약할 수 없는 방문 목적입니다.',
     '존재하지 않는 방문목적입니다.',
+    '존재하지 않는 하위 방문목적입니다.',
   };
 }

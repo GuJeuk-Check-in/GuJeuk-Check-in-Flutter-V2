@@ -1,12 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/network/api_client.dart';
+import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/network/api_failure.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/server_date_format.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/data/remote_reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/sign_up_repository.dart';
 
-/// 서버의 회원가입. 예약 칸 409와 목적이 바뀌었다는 400·404 말고는 Dio가 던지는 [DioException] 그대로 올라갑니다.
+/// 서버의 회원가입. 예약 칸 409, 목적이 바뀌었다는 400·404, 거주지가 없어졌다는 404 말고는
+/// Dio가 던지는 [DioException] 그대로 올라갑니다.
 class RemoteSignUpRepository implements SignUpRepository {
   final ApiClient _client;
 
@@ -25,6 +27,7 @@ class RemoteSignUpRepository implements SignUpRepository {
     required int femaleCount,
     required DateTime visitTime,
     String? reservationTime,
+    int? subPurposeId,
   }) async {
     try {
       await _client.dio.post<void>(
@@ -42,6 +45,8 @@ class RemoteSignUpRepository implements SignUpRepository {
           'purpose': purpose,
           'visitTime': ServerDateFormat.dateTime(visitTime),
           'reservationTime': ?reservationTime,
+          // 가입 요청은 상위 목적을 이름으로 받고, 하위는 ID로 받습니다.
+          'subPurposeId': ?subPurposeId,
         },
       );
     } on DioException catch (e) {
@@ -50,6 +55,9 @@ class RemoteSignUpRepository implements SignUpRepository {
       }
       if (RemoteReservationRepository.isPurposeChanged(e)) {
         throw const PurposeChangedException();
+      }
+      if (rejectionMessageOf(e) == '존재하지 않는 거주지 입니다.') {
+        throw const ResidenceChangedException();
       }
       rethrow;
     }
