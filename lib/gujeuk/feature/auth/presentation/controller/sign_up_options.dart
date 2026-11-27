@@ -30,6 +30,7 @@ class PurposeCatalog {
 
 /// 전체 방문 목적과 예약이 필요한 시설을 함께 받습니다.
 /// 예약이 필요 없는 목적도 카드로 보이고, 고르면 시간 없이 제출할 수 있습니다.
+/// 하위 목적이 있는 목적(`SUB_INCLUDE`)과 앱이 모르는 상태의 목적은 카드에서 뺍니다.
 /// 서버에서 못 받으면 마지막으로 저장한 묶음을 씁니다.
 /// 예약 시설을 모르면 예약 시설이 시간 없이 기록될 수 있어, 저장본도 없으면 실패로 둡니다.
 final purposeCatalogProvider = FutureProvider.autoDispose<PurposeCatalog>((
@@ -37,8 +38,18 @@ final purposeCatalogProvider = FutureProvider.autoDispose<PurposeCatalog>((
 ) async {
   final lists = await ref.watch(optionsLoaderProvider).purposeLists();
   return PurposeCatalog(
-    purposes: lists.all,
-    reservable: {for (final p in lists.reservable) p.purpose},
+    // 하위 목적이 있는 목적은 하위를 고르는 화면이 없어 예약 없이 접수되므로 카드에서 뺍니다.
+    purposes: [
+      for (final p in lists.all)
+        if (p.reservationStatus.isSelectable) p,
+    ],
+    // 두 목록 중 하나라도 예약 시설로 보면 시간을 받습니다. 예약 시설이 시간 없이 접수되지 않게 합니다.
+    reservable: {
+      for (final p in lists.reservable) p.purpose,
+      for (final p in lists.all)
+        if (p.reservationStatus == PurposeReservationStatus.reservation)
+          p.purpose,
+    },
   );
 }, retry: _noRetry);
 

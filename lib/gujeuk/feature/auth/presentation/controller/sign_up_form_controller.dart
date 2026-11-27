@@ -4,6 +4,7 @@ import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/component/gujeuk_componen
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/network/server_clock.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/phone_number_formatter.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/core/utils/server_date_format.dart';
+import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/presentation/controller/sign_up_options.dart';
 
 /// 에러 문구를 띄우는 폼 항목. 화면 위에서 아래 순서이며, 모달에도 이 순서로 띄웁니다.
@@ -168,6 +169,7 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     final purpose = state.purpose;
     if (purpose == null || !needsTime) return;
     _availableTimesSub = ref.listen(availableTimesProvider(purpose), (_, next) {
+      if (next.error is PurposeChangedException) return rejectChangedPurpose();
       final available = next.value;
       final time = state.time;
       if (available != null && time != null && !available.contains(time)) {
@@ -184,6 +186,23 @@ class SignUpFormController extends Notifier<SignUpFormState> {
     );
     final purpose = state.purpose;
     if (purpose != null) ref.invalidate(availableTimesProvider(purpose));
+  }
+
+  /// 고른 목적이 그사이 지워졌거나 예약할 수 없는 목적으로 바뀌었을 때.
+  /// 목록을 다시 받고, 고른 목적과 시간을 비워 새로 고르게 합니다.
+  void rejectChangedPurpose() {
+    _availableTimesSub?.close();
+    _availableTimesSub = null;
+    state = state.copyWith(
+      purpose: null,
+      time: null,
+      errors: _withErrors({
+        SignUpField.purpose: '시설 정보가 바뀌었어요. 다시 골라주세요',
+        SignUpField.time: null,
+        SignUpField.companion: null,
+      }),
+    );
+    ref.invalidate(purposeCatalogProvider);
   }
 
   void selectTime(String value) {

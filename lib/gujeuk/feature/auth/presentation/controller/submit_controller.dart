@@ -80,6 +80,12 @@ abstract class SubmitController extends AsyncNotifier<void> {
       ref.read(signUpFormProvider.notifier).rejectTakenTime();
       state = const AsyncData(null);
       return invalid();
+    } on PurposeChangedException {
+      // 저장해 둔 목록을 쓰는 사이 목적이 바뀌었으면 목록을 다시 받아 새로 고르게 합니다.
+      if (!ref.mounted) return const SubmitStopped();
+      ref.read(signUpFormProvider.notifier).rejectChangedPurpose();
+      state = const AsyncData(null);
+      return invalid();
     } catch (_) {
       if (ref.mounted) state = const AsyncData(null);
       return SubmitFailed(failureMessage);

@@ -6,7 +6,7 @@ import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/data/remote_reser
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/reservation_repository.dart';
 import 'package:gujeuk_check_in_flutter_v2/gujeuk/feature/auth/domain/sign_up_repository.dart';
 
-/// 서버의 회원가입. 예약 칸 409 말고는 Dio가 던지는 [DioException] 그대로 올라갑니다.
+/// 서버의 회원가입. 예약 칸 409와 목적이 바뀌었다는 400·404 말고는 Dio가 던지는 [DioException] 그대로 올라갑니다.
 class RemoteSignUpRepository implements SignUpRepository {
   final ApiClient _client;
 
@@ -47,6 +47,9 @@ class RemoteSignUpRepository implements SignUpRepository {
     } on DioException catch (e) {
       if (RemoteReservationRepository.isSlotTaken(e)) {
         throw const SlotTakenException();
+      }
+      if (RemoteReservationRepository.isPurposeChanged(e)) {
+        throw const PurposeChangedException();
       }
       rethrow;
     }

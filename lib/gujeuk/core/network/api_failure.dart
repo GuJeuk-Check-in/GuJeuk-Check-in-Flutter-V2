@@ -44,3 +44,14 @@ String? conflictMessageOf(DioException e) {
   final message = data['message'];
   return message is String ? message : null;
 }
+
+/// 서버가 요청 내용을 거절한 400·404의 `message`. 같은 상태 코드로 여러 이유가 옵니다.
+String? rejectionMessageOf(DioException e) {
+  final response = e.response;
+  final status = response?.statusCode;
+  if (status != 400 && status != 404) return null;
+  final data = response!.data;
+  if (data is! Map<String, dynamic>) return null;
+  final message = data['message'];
+  return message is String ? message : null;
+}

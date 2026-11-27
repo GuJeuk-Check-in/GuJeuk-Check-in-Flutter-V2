@@ -54,7 +54,9 @@ class _EmptyOptionsException implements Exception {}
 class OptionsLoader {
   /// 화면을 오래 막지 않게 짧게 기다립니다. 미리 받아 둘 때는 쓰지 않습니다.
   static const _screenLimit = Duration(seconds: 6);
-  static const _purposesKey = 'purposes';
+
+  /// 예약 상태가 없던 예전 저장본(`purposes`)은 하위 목적이 있는 목적을 가려낼 수 없어 읽지 않습니다.
+  static const _purposesKey = 'purposes_v2';
   static const _residencesKey = 'residences';
 
   final ReservationRepository _reservations;
